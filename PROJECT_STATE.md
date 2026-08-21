@@ -6,12 +6,14 @@
 |---|---|
 | الإصدار | `0.1.0-foundation` |
 | المرحلة | Foundation slice بعد Gap Analysis وتصميم Mobile Preview |
-| الحالة | تنفيذ أولي ناجح محليًا؛ لم يُدفع هذا التغيير بعد |
+| الحالة | Foundation + Mobile Preview + review مندفعة ومتحقق منها على GitHub |
 | أحدث commit معروف قبل التغيير | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
-| أحدث push معروف قبل التغيير | `origin/main` عند commit `79026c4368d978506ed5dad06a5f48b8f34e4036` |
+| commit المرحلة التنفيذية | `3e81421a03713dc433d61d4957ec013226e5008f` |
+| commit المراجعة والتسليم | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
+| أحدث push مؤكد | `origin/main` عند commit `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
 | آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
 | آخر اختبار ناجح | 8 اختبارات Node/tsx، 8 passed في 2026-08-22 |
-| commit الحالي لهذه المرحلة | pending؛ يُحدّث بعد push والتحقق |
+| commit الحالي لهذه المرحلة | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`؛ local وremote متطابقان |
 
 ## مكتمل
 
@@ -23,7 +25,7 @@
 
 ## العمل النشط
 
-العمل النشط هو تثبيت lockfile، تنفيذ clean-check وsecurity/license checks، تحديث الحالة والـ WORK_LOG، ثم commit/push/verify للمرحلة. بعد ذلك يبدأ SQLite/IPC أو Metro adapter في commit مستقل.
+اكتملت مرحلة Foundation + Mobile Preview + review: lockfile، clean-check، JSON validation، secret scan، license review، commit، push، وremote hash verification. الخطوة التالية هي SQLite/IPC أو Metro adapter في commit مستقل.
 
 ## العمل المتبقي
 
@@ -39,6 +41,6 @@
 
 ## الخطوة التالية الدقيقة
 
-إنشاء AI_CONTINUATION.md وdocs/WORK_LOG.md، ثم تحديث docs/reference وCHANGELOG، ثم `pnpm check` على clean install، ثم commit/push/verify. بعد نجاح ذلك يبدأ typed IPC وSQLite migration أو LightweightPreview adapter وفق قرار المالك.
+بعد اكتمال Foundation + Mobile Preview، يبدأ commit مستقل واحد فقط: typed IPC وSQLite migration أو Metro adapter وفق قرار المالك. يجب أن يسبقه architecture، contract tests، adapter in-memory، ثم implementation bounded. لا يبدأ Android/iOS native قبل doctor/resource contracts.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`. إعداد: Manus AI.

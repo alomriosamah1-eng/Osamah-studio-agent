@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف الآن Foundation slice TypeScript في `src/` وmobile preview prototype في `prototypes/mobile-preview/index.html`، وكلاهما pending commit. نجح `pnpm check` محليًا: typecheck و8 tests. لا يوجد Electron/SQLite/Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف Foundation slice TypeScript في `src/` وmobile preview prototype في `prototypes/mobile-preview/index.html`. commit التنفيذ `3e81421a03713dc433d61d4957ec013226e5008f` وcommit المراجعة `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` مدفوعان ومتحققان. نجح `pnpm check`: typecheck و8 tests. لا يوجد Electron/SQLite/Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-حدّث `docs/WORK_LOG.md` و`CHANGELOG.md`، تحقق من lockfile، شغّل clean checks، ثم commit/push للـ Foundation + gap/mobile architecture + reference maps + preview prototype. سجّل hash في `PROJECT_STATE.md` و`PROJECT_STATUS.md`. بعدها انتقل إلى أول adapter منفصل: SQLite/IPC أو Metro، وليس Android/iOS native قبل doctor contracts.
+تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md`، والتحقق من lockfile وclean checks، ثم دفع Foundation + gap/mobile architecture + reference maps + preview prototype. آخر hash متحقق هو `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`. بعدها ينتقل العمل إلى أول adapter منفصل: SQLite/IPC أو Metro، وليس Android/iOS native قبل doctor contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

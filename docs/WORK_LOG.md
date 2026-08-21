@@ -9,7 +9,8 @@
 | 2026-08-22 | Implementation | Foundation domain/application/in-memory slice | إثبات أول vertical slice قابل للاختبار | `package.json`, `tsconfig.json`, `src/**` | `pnpm check`: 4 passed | pending | pending | reference maps/state |
 | 2026-08-22 | Documentation | living maps/state/handoff | استمرار العمل دون إعادة اكتشاف | `docs/reference/**`, `PROJECT_STATE.md`, `AI_CONTINUATION.md` | ملفات maps موجودة؛ يحتاج final audit | pending | pending | CHANGELOG + commit |
 | 2026-08-22 | Implementation | Mobile detection and capability matrix | منع تشغيل scripts واختلاق iOS support | `src/domain/mobile.ts`, `src/application/mobile-services.ts`, tests | 3 tests passed | pending | pending | preview adapter |
-| 2026-08-22 | Implementation | Lightweight preview contract and prototype | إثبات device frame/orientation/theme/screenshot | `src/mobile/preview.ts`, `prototypes/mobile-preview/index.html` | 1 adapter test + browser verification passed | pending | pending | clean check + commit |
+| 2026-08-22 | Implementation | Lightweight preview contract and prototype | إثبات device frame/orientation/theme/screenshot | `src/mobile/preview.ts`, `prototypes/mobile-preview/index.html` | 1 adapter test + browser verification passed | `3e81421` | pushed/verified | review |
+| 2026-08-22 | Review/Delivery | مراجعة Architecture/Security/Performance/Open Source/UX/Mobile/AI/Docs/GitHub | كشف الضعف وتثبيت حدود الحقيقة | `research/review-round-3.md`, `research/direct-dependency-license-review.txt`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `pnpm check`: 8/8; JSON/secret/diff checks passed; local=remote | `d9e6e0c` | verified on `origin/main` | next adapter: SQLite/IPC or Metro |
 
 ## قاعدة السجل
 
