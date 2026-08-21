@@ -19,7 +19,7 @@
 | Android native | adapter مخطط، يحتاج SDK/JDK/AVD/acceleration |
 | iOS native | adapter مخطط، macOS/Xcode فقط؛ غير متاح أصليًا على Windows/Linux |
 | OpenTo | UNKNOWN / REQUIRES VALIDATION |
-| آخر push مؤكد | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`؛ local وremote متطابقان |
+| آخر push مؤكد | `befabc8863d929b55d8cca590d2b8f9cfafe2e3f`؛ local وremote متطابقان |
 
 ## المكتمل في هذه المرحلة
 
@@ -41,6 +41,6 @@
 
 ## الإجراء التالي
 
-تم تنفيذ `pnpm install --frozen-lockfile`, `pnpm check`, `git diff --check`, JSON validation، secret scan، وفحص تراخيص الاعتماديات المباشرة. commit التنفيذ هو `3e81421a03713dc433d61d4957ec013226e5008f`، وcommit المراجعة والتسليم هو `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`، وتطابقا مع remote عند كل push. الخطوة التالية adapter مستقل مع contract tests.
+تم تنفيذ `pnpm install --frozen-lockfile`, `pnpm check`, `git diff --check`, JSON validation، secret scan، وفحص تراخيص الاعتماديات المباشرة. commit التنفيذ هو `3e81421a03713dc433d61d4957ec013226e5008f`، وcommit المراجعة والتسليم هو `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`، وتقرير التسليم هو `befabc8863d929b55d8cca590d2b8f9cfafe2e3f`، وتطابقا مع remote عند كل push. الخطوة التالية adapter مستقل مع contract tests.
 
 آخر تحديث: 2026-08-22. إعداد: Manus AI.

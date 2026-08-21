@@ -10,10 +10,11 @@
 | أحدث commit معروف قبل التغيير | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
 | commit المرحلة التنفيذية | `3e81421a03713dc433d61d4957ec013226e5008f` |
 | commit المراجعة والتسليم | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
-| أحدث push مؤكد | `origin/main` عند commit `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
+| commit التقرير النهائي | `befabc8863d929b55d8cca590d2b8f9cfafe2e3f` |
+| أحدث push مؤكد | `origin/main` عند commit `befabc8863d929b55d8cca590d2b8f9cfafe2e3f` |
 | آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
 | آخر اختبار ناجح | 8 اختبارات Node/tsx، 8 passed في 2026-08-22 |
-| commit الحالي لهذه المرحلة | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`؛ local وremote متطابقان |
+| commit الحالي لهذه المرحلة | `befabc8863d929b55d8cca590d2b8f9cfafe2e3f`؛ local وremote متطابقان |
 
 ## مكتمل
 
@@ -43,4 +44,4 @@
 
 بعد اكتمال Foundation + Mobile Preview، يبدأ commit مستقل واحد فقط: typed IPC وSQLite migration أو Metro adapter وفق قرار المالك. يجب أن يسبقه architecture، contract tests، adapter in-memory، ثم implementation bounded. لا يبدأ Android/iOS native قبل doctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `befabc8863d929b55d8cca590d2b8f9cfafe2e3f`. إعداد: Manus AI.
