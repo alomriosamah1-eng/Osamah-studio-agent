@@ -2,7 +2,7 @@
 
 ## نطاق التحليل
 
-أُجري هذا التحليل بعد فحص أحدث commit `79026c4368d978506ed5dad06a5f48b8f34e4036` والشجرة الكاملة والوثائق الحالية. النتيجة الأساسية هي أن المستودع يمتلك **حزمة Discovery/Architecture قوية لكنه لا يمتلك runtime أو تطبيقًا أو اختبارات تنفيذية**. لذلك تصف كلمة «مفقود» أدناه غياب التنفيذ أو الدليل التشغيلي، لا غياب الفكرة من الوثائق.
+أُجري هذا التحليل بعد فحص أحدث commit `79026c4368d978506ed5dad06a5f48b8f34e4036` والشجرة الكاملة والوثائق الحالية. النتيجة الأساسية هي أن المستودع يمتلك **حزمة Discovery/Architecture قوية لكنه لا يمتلك runtime أو تطبيقًا أو اختبارات تنفيذية**. يحتوي التحليل الآن على 65 فجوة بعد إضافة نتائج جولة المراجعة الثالثة. لذلك تصف كلمة «مفقود» أدناه غياب التنفيذ أو الدليل التشغيلي، لا غياب الفكرة من الوثائق.
 
 | الحالة | معناها |
 |---|---|
@@ -77,6 +77,16 @@
 | GAP-058 | لا توجد backup privacy/redaction tests | عالية | backups/secrets | fixtures تحقن secret وتثبت عدم دخوله backup/log | P6 | MISSING |
 | GAP-059 | لا يوجد release acceptance checklist أو support playbook | متوسطة | CI/release/docs | release gates وincident/support/runbook | P7 | MISSING |
 | GAP-060 | لا توجد implementation traceability للـ mobile features | عالية | requirements/reference maps | تحديث requirements وfeature maps وربط كل slice باختبار | P7 | MISSING |
+
+## فجوات أضيفت من جولة المراجعة الثالثة
+
+| ID | الفجوة | الأهمية | الاعتماديات | الحل الموصى به | المرحلة | الحالة |
+|---|---|---:|---|---|---|---|
+| GAP-061 | GitHub Actions تستخدم tags بدل SHAs مثبتة | عالية | CI/security | pin actions إلى commit SHAs وتحديث دوري موثق | P6 | MISSING |
+| GAP-062 | لا يوجد CSP أو escaping فعلي للـ Presentation | عالية | Electron/renderer | typed view models وCSP وsanitized rendering | P5/P6 | MISSING |
+| GAP-063 | لا توجد benchmarks فعلية للـ preview أو native toolchains | عالية | Resource Manager/toolchains | benchmark harness وRSS/CPU/GPU thresholds | P6 | MISSING |
+| GAP-064 | prototype لا يملك RTL/keyboard/a11y automation | متوسطة | Presentation/i18n | RTL/LTR وkeyboard/accessibility fixtures | P5/P6 | MISSING |
+| GAP-065 | لا توجد dependency/license/security CI jobs فعلية | حرجة | lockfile/CI | license report، SBOM، secret scan، dependency review | P6 | PARTIAL |
 
 ## الأولويات
 
