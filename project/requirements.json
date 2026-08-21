@@ -16,6 +16,13 @@
     {"id":"NFR-011","summary":"Prompt injection resistance","priority":"P0","stage":"Core","feature":"security","architecture":"policy/data-separation","component":"InstructionBoundary","technology":"content labeling + approval","test":"injection-fixtures","acceptance":"Untrusted file text cannot change policy"},
     {"id":"NFR-029","summary":"Pinned dependencies and SBOM","priority":"P1","stage":"CI","feature":"supply-chain","architecture":"devops","component":"SecurityWorkflow","technology":"lockfiles + SBOM","test":"license-and-sbom","acceptance":"Build publishes machine-readable report"}
   ],
+  "mobile_slice": [
+    {"id":"MOB-001","summary":"Detect React Native/Expo project","priority":"P0","architecture":"mobile-context","component":"MobileProjectDetector","test":"detector-fixtures","acceptance":"Identifies Expo, bare RN, web support, Metro config, and native folders without running scripts"},
+    {"id":"MOB-002","summary":"Create DeviceProfile and lightweight preview session","priority":"P0","architecture":"simulator-context","component":"DeviceManager/PreviewSession","test":"preview-lifecycle","acceptance":"Validates geometry, safe area, orientation, theme, and bounded lifecycle"},
+    {"id":"MOB-003","summary":"Provide web compatibility preview inside Desktop","priority":"P0","architecture":"preview-adapter","component":"LightweightPreviewAdapter","test":"preview-render-contract","acceptance":"Renders compatible RN Web surface and labels unsupported native APIs"},
+    {"id":"MOB-004","summary":"Integrate Metro/Fast Refresh as worker adapter","priority":"P1","architecture":"process-adapter","component":"MetroProcessAdapter","test":"metro-health-contract","acceptance":"Starts/stops/health-checks Metro and distinguishes refresh vs reload"},
+    {"id":"MOB-005","summary":"Expose platform capability matrix","priority":"P0","architecture":"platform-policy","component":"PlatformCapabilityService","test":"platform-matrix","acceptance":"Never claims iOS Simulator on Windows/Linux and explains fallback"}
+  ],
   "full_catalog": "docs/04-functional-requirements.md and docs/05-non-functional-requirements.md",
   "traceability_policy": "Every P0 requirement must have an executable or contract test before beta."
 }

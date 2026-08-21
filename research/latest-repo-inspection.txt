@@ -1,0 +1,31 @@
+=== HEAD ===
+79026c4368d978506ed5dad06a5f48b8f34e4036
+2026-08-21T22:57:23+00:00
+docs: record final verification state
+=== BRANCHES ===
+* [32mmain[m
+  [31mremotes/origin/main[m
+=== TOP LEVEL ===
+.git
+ARCHITECTURE_DECISIONS.md
+CHANGELOG.md
+CONTRIBUTING.md
+FINAL_REPORT.md
+PROJECT_CONTEXT.md
+PROJECT_STATUS.md
+docs
+project
+research
+research-browser-findings-01.md
+=== FILE COUNTS ===
+all=71
+source=14
+docs=54
+=== RECENT COMMITS ===
+[33m79026c4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m docs: record final verification state
+[33m59c05d0[m docs: add final discovery report
+[33m95e7060[m docs: add discovery and architecture package
+[33m0f57e12[m research: establish project baseline
+=== STATUS ===
+## [32mmain[m...[31morigin/main[m
+[31m??[m research/latest-repo-inspection.txt

@@ -1,0 +1,350 @@
+=== TRACKED FILE INVENTORY ===
+ARCHITECTURE_DECISIONS.md
+CHANGELOG.md
+CONTRIBUTING.md
+FINAL_REPORT.md
+PROJECT_CONTEXT.md
+PROJECT_STATUS.md
+docs/00-project-overview.md
+docs/01-executive-summary.md
+docs/02-feasibility-study.md
+docs/03-product-requirements.md
+docs/04-functional-requirements.md
+docs/05-non-functional-requirements.md
+docs/06-system-architecture.md
+docs/07-ai-agent-architecture.md
+docs/08-open-source-landscape.md
+docs/09-frontend-architecture.md
+docs/10-backend-architecture.md
+docs/11-data-architecture.md
+docs/12-ux-ui-analysis.md
+docs/13-voice-system.md
+docs/14-provider-routing.md
+docs/15-memory-system.md
+docs/16-automation-system.md
+docs/17-security-model.md
+docs/18-performance-engineering.md
+docs/19-devops-and-ci-cd.md
+docs/20-github-actions.md
+docs/21-open-to-integration.md
+docs/22-second-brain.md
+docs/23-production-studio.md
+docs/24-smart-development-environment.md
+docs/25-project-roadmap.md
+docs/26-risk-register.md
+docs/27-technology-decision-records.md
+docs/28-open-source-license-audit.md
+docs/29-research-sources.md
+docs/30-ai-agent-handoff.md
+docs/32-traceability-matrix.md
+docs/README.md
+project/open-source-components.json
+project/project-state.json
+project/requirements.json
+project/risks.json
+project/technology-matrix.json
+research-browser-findings-01.md
+research/ecosystem-github-metadata.errors
+research/ecosystem-github-metadata.ndjson
+research/github-api-baseline.txt
+research/qa-report.txt
+research/review-round-2.md
+research/sources/deepseek-harness/README.md
+research/sources/deepseek-harness/THIRD_PARTY_NOTICES.md
+research/sources/deepseek-harness/architecture.md
+research/sources/deepseek-harness/package.json
+research/sources/hermes/README.md
+research/sources/hermes/SECURITY.md
+research/sources/hermes/architecture.md
+research/sources/hermes/desktop-package.json
+research/sources/hermes/package.json
+research/sources/hermes/pyproject.toml
+research/sources/omniroute/README.md
+research/sources/omniroute/SECURITY.md
+research/sources/omniroute/THIRD_PARTY_NOTICES.md
+research/sources/omniroute/electron-package.json
+research/sources/omniroute/opencode-plugin-package.json
+research/sources/omniroute/package.json
+research/sources/opencode/README.md
+research/sources/opencode/SECURITY.md
+research/sources/opencode/core-package.json
+research/sources/opencode/desktop-package.json
+research/sources/opencode/package.json
+=== DOC HEADINGS ===
+docs/README.md:1:# منظومة وثائق Osamah Studio Agent
+docs/README.md:5:## خريطة الوثائق
+docs/README.md:42:## ملفات الحالة خارج هذا المجلد
+docs/README.md:46:## قواعد القراءة
+docs/README.md:50:## بروتوكول تحديث مختصر
+docs/00-project-overview.md:1:# Osamah Studio Agent — نظرة المشروع
+docs/00-project-overview.md:3:## التعريف
+docs/00-project-overview.md:9:## ما هو مثبت وما هو غير مثبت
+docs/00-project-overview.md:22:## المبادئ الحاكمة
+docs/00-project-overview.md:26:## الحدود
+docs/00-project-overview.md:30:## تعريف المنتج في جملة واحدة
+docs/00-project-overview.md:34:## مراجع
+docs/01-executive-summary.md:1:# الملخص التنفيذي
+docs/01-executive-summary.md:3:## الخلاصة
+docs/01-executive-summary.md:17:## المعمارية الموصى بها
+docs/01-executive-summary.md:21:## الـ MVP
+docs/01-executive-summary.md:25:## أهم القرارات
+docs/01-executive-summary.md:29:## مخاطر تستوجب قرار المالك
+docs/01-executive-summary.md:33:## مراجع
+docs/02-feasibility-study.md:1:# دراسة الجدوى
+docs/02-feasibility-study.md:3:## منهج التقييم
+docs/02-feasibility-study.md:19:## الفرص الأقوى
+docs/02-feasibility-study.md:23:## أصعب المشكلات
+docs/02-feasibility-study.md:27:## الاختناقات المعمارية
+docs/02-feasibility-study.md:31:## التكاليف الخفية
+docs/02-feasibility-study.md:35:## افتراضات غير واقعية يجب تحديها
+docs/02-feasibility-study.md:39:## قرار الجدوى
+docs/02-feasibility-study.md:43:## مراجع
+docs/03-product-requirements.md:1:# متطلبات المنتج
+docs/03-product-requirements.md:3:## الرؤية وقيمة المستخدم
+docs/03-product-requirements.md:7:## البيئات الثلاث
+docs/03-product-requirements.md:15:## الجهات الفاعلة
+docs/03-product-requirements.md:19:## حدود النظام
+docs/03-product-requirements.md:23:## قصص المستخدم
+docs/03-product-requirements.md:36:## معايير المنتج
+docs/04-functional-requirements.md:1:# المتطلبات الوظيفية
+docs/04-functional-requirements.md:46:## use cases الحرجة
+docs/05-non-functional-requirements.md:1:# المتطلبات غير الوظيفية
+docs/05-non-functional-requirements.md:3:## الأداء والاستجابة
+docs/05-non-functional-requirements.md:16:## الأمن والخصوصية
+docs/05-non-functional-requirements.md:29:## الجودة والموثوقية
+docs/05-non-functional-requirements.md:40:## UX وإمكانية الوصول والتدويل
+docs/05-non-functional-requirements.md:51:## الصيانة والتوزيع
+docs/06-system-architecture.md:1:# المعمارية العليا
+docs/06-system-architecture.md:3:## القرار
+docs/06-system-architecture.md:9:## المخطط
+docs/06-system-architecture.md:33:## حدود العملية
+docs/06-system-architecture.md:37:## دورة المهمة
+docs/06-system-architecture.md:61:## العقود الداخلية
+docs/06-system-architecture.md:65:## OpenTo
+docs/06-system-architecture.md:69:## لماذا لا microservices الآن؟
+docs/06-system-architecture.md:73:## References / المراجع
+docs/07-ai-agent-architecture.md:1:# معمارية الوكلاء
+docs/07-ai-agent-architecture.md:3:## المبدأ
+docs/07-ai-agent-architecture.md:7:## الهيكل التنظيمي
+docs/07-ai-agent-architecture.md:20:## نمط التنسيق
+docs/07-ai-agent-architecture.md:44:## الرسائل والسياق
+docs/07-ai-agent-architecture.md:48:## التحقق والجودة
+docs/07-ai-agent-architecture.md:52:## التعارض والتراجع
+docs/07-ai-agent-architecture.md:56:## حدود الاستقلال
+docs/07-ai-agent-architecture.md:60:## References / المراجع
+docs/08-open-source-landscape.md:1:# المشهد مفتوح المصدر
+docs/08-open-source-landscape.md:3:## منهج التصنيف
+docs/08-open-source-landscape.md:7:## المكونات الرئيسية
+docs/08-open-source-landscape.md:60:## توصية الإدماج
+docs/08-open-source-landscape.md:64:## ما يجب تجنبه
+docs/08-open-source-landscape.md:68:## مراجع
+docs/09-frontend-architecture.md:1:# معمارية الواجهة الأمامية
+docs/09-frontend-architecture.md:3:## القرار
+docs/09-frontend-architecture.md:7:## المعلوماتية
+docs/09-frontend-architecture.md:25:## الحالة
+docs/09-frontend-architecture.md:29:## المكونات الحرجة
+docs/09-frontend-architecture.md:33:## RTL/LTR والعربية
+docs/09-frontend-architecture.md:37:## الأداء وإمكانية الوصول
+docs/09-frontend-architecture.md:41:## References / المراجع
+docs/10-backend-architecture.md:1:# معمارية الخلفية والنواة
+docs/10-backend-architecture.md:3:## التقسيم
+docs/10-backend-architecture.md:7:## الخدمات
+docs/10-backend-architecture.md:21:## IPC/API
+docs/10-backend-architecture.md:25:## الطوابير والمهام
+docs/10-backend-architecture.md:29:## عمليات عالية الخطورة
+docs/10-backend-architecture.md:33:## التكامل مع المرجعيات
+docs/10-backend-architecture.md:37:## التعافي
+docs/10-backend-architecture.md:41:## مراجع
+docs/11-data-architecture.md:1:# معمارية البيانات
+docs/11-data-architecture.md:3:## القرار
+docs/11-data-architecture.md:7:## طبقات التخزين
+docs/11-data-architecture.md:19:## نموذج مرجعي
+docs/11-data-architecture.md:23:## الذاكرة
+docs/11-data-architecture.md:27:## embeddings
+docs/11-data-architecture.md:31:## النسخ الاحتياطي والاستعادة
+docs/11-data-architecture.md:35:## بدائل قواعد البيانات
+docs/11-data-architecture.md:45:## References / المراجع
+docs/12-ux-ui-analysis.md:1:# تحليل UX/UI
+docs/12-ux-ui-analysis.md:3:## المبدأ التصميمي
+docs/12-ux-ui-analysis.md:7:## بنية التنقل
+docs/12-ux-ui-analysis.md:11:## حالات الوكيل
+docs/12-ux-ui-analysis.md:15:## المحادثة والخطة
+docs/12-ux-ui-analysis.md:19:## التصميم العربي
+docs/12-ux-ui-analysis.md:23:## إمكانية الوصول
+docs/12-ux-ui-analysis.md:27:## onboarding
+docs/12-ux-ui-analysis.md:31:## قابلية الفهم
+docs/13-voice-system.md:1:# نظام الصوت
+docs/13-voice-system.md:3:## القرار
+docs/13-voice-system.md:7:## الخيارات المفتوحة
+docs/13-voice-system.md:20:## العربية واللهجات
+docs/13-voice-system.md:24:## latency وresources
+docs/13-voice-system.md:28:## interruption
+docs/13-voice-system.md:32:## الخصوصية
+docs/13-voice-system.md:36:## معيار قبول الصوت
+docs/13-voice-system.md:40:## References / المراجع
+docs/14-provider-routing.md:1:# توجيه المزوّدات والنماذج
+docs/14-provider-routing.md:3:## العقد
+docs/14-provider-routing.md:7:## القرار
+docs/14-provider-routing.md:24:## score
+docs/14-provider-routing.md:28:## failure policy
+docs/14-provider-routing.md:32:## caching
+docs/14-provider-routing.md:36:## مصفوفة capability
+docs/14-provider-routing.md:49:## الرصد
+docs/14-provider-routing.md:53:## References / المراجع
+docs/15-memory-system.md:1:# نظام الذاكرة
+docs/15-memory-system.md:3:## الطبقات
+docs/15-memory-system.md:19:## دورة الإدخال
+docs/15-memory-system.md:23:## الضغط والتوفير
+docs/15-memory-system.md:27:## الاسترجاع
+docs/15-memory-system.md:31:## النسيان والخصوصية
+docs/15-memory-system.md:35:## تحسين الذاكرة
+docs/15-memory-system.md:39:## التقييم
+docs/15-memory-system.md:43:## References / المراجع
+docs/16-automation-system.md:1:# محرك الأتمتة
+docs/16-automation-system.md:3:## القرار
+docs/16-automation-system.md:7:## أوضاع التشغيل
+docs/16-automation-system.md:15:## نموذج workflow
+docs/16-automation-system.md:37:## الجدولة
+docs/16-automation-system.md:41:## event triggers
+docs/16-automation-system.md:45:## failures
+docs/16-automation-system.md:49:## References / المراجع
+docs/17-security-model.md:1:# نموذج الأمن والتهديدات
+docs/17-security-model.md:3:## مبدأ الثقة
+docs/17-security-model.md:7:## أصول يجب حمايتها
+docs/17-security-model.md:11:## تهديدات أساسية
+docs/17-security-model.md:28:## Electron baseline
+docs/17-security-model.md:32:## RBAC وagent permissions
+docs/17-security-model.md:36:## sandboxing
+docs/17-security-model.md:40:## MCP
+docs/17-security-model.md:44:## التهديدات التشغيلية
+docs/17-security-model.md:48:## مراجع
+docs/18-performance-engineering.md:1:# هندسة الأداء
+docs/18-performance-engineering.md:3:## أهداف القياس
+docs/18-performance-engineering.md:18:## العمليات
+docs/18-performance-engineering.md:22:## الضغط والتخزين المؤقت
+docs/18-performance-engineering.md:26:## GPU وlocal models
+docs/18-performance-engineering.md:30:## منع التسرب
+docs/18-performance-engineering.md:34:## Large documents/media
+docs/18-performance-engineering.md:38:## التحقق
+docs/19-devops-and-ci-cd.md:1:# DevOps وCI/CD
+docs/19-devops-and-ci-cd.md:3:## السياسة
+docs/19-devops-and-ci-cd.md:7:## pipeline
+docs/19-devops-and-ci-cd.md:21:## البناء
+docs/19-devops-and-ci-cd.md:25:## الاختبارات
+docs/19-devops-and-ci-cd.md:29:## الإصدارات
+docs/19-devops-and-ci-cd.md:33:## المراقبة
+docs/19-devops-and-ci-cd.md:37:## سلسلة التوريد
+docs/19-devops-and-ci-cd.md:41:## References / المراجع
+docs/20-github-actions.md:1:# تصميم GitHub Actions
+docs/20-github-actions.md:3:## مبدأ
+docs/20-github-actions.md:7:## الملفات المقترحة
+docs/20-github-actions.md:19:## CI
+docs/20-github-actions.md:23:## Security
+docs/20-github-actions.md:27:## build desktop
+docs/20-github-actions.md:31:## release
+docs/20-github-actions.md:35:## docs
+docs/20-github-actions.md:39:## branch protection
+docs/20-github-actions.md:43:## معايير القبول
+docs/20-github-actions.md:47:## References / المراجع
+docs/21-open-to-integration.md:1:# تكامل OpenTo
+docs/21-open-to-integration.md:3:## نتيجة البحث
+docs/21-open-to-integration.md:7:## ما يلزم من مالك المشروع
+docs/21-open-to-integration.md:11:## adapter contract المؤقت
+docs/21-open-to-integration.md:25:## مقارنة desktop shell
+docs/21-open-to-integration.md:34:## استراتيجية التوافق
+docs/21-open-to-integration.md:38:## بوابات القرار
+docs/21-open-to-integration.md:42:## المراجع العامة للمقارنة
+docs/22-second-brain.md:1:# Second Brain
+docs/22-second-brain.md:3:## الوظيفة
+docs/22-second-brain.md:7:## المجالات
+docs/22-second-brain.md:11:## دورة المعرفة
+docs/22-second-brain.md:24:## المعرفة المرتبطة بالفعل
+docs/22-second-brain.md:28:## الرسوم والروابط
+docs/22-second-brain.md:32:## الخصوصية
+docs/22-second-brain.md:36:## مراجع البدائل
+docs/22-second-brain.md:40:## مراجع
+docs/23-production-studio.md:1:# Production Studio
+docs/23-production-studio.md:3:## المبدأ
+docs/23-production-studio.md:7:## العروض
+docs/23-production-studio.md:11:## المستندات
+docs/23-production-studio.md:15:## الصور والفيديو
+docs/23-production-studio.md:19:## البحث الأكاديمي
+docs/23-production-studio.md:23:## الجودة
+docs/23-production-studio.md:27:## References / المراجع
+docs/24-smart-development-environment.md:1:# بيئة التطوير الذكية
+docs/24-smart-development-environment.md:3:## الوظائف
+docs/24-smart-development-environment.md:7:## دورة تغيير الكود
+docs/24-smart-development-environment.md:15:## Git/GitHub
+docs/24-smart-development-environment.md:19:## terminal
+docs/24-smart-development-environment.md:23:## agent skills
+docs/24-smart-development-environment.md:27:## debugging
+docs/24-smart-development-environment.md:31:## OpenTo
+docs/24-smart-development-environment.md:35:## References / المراجع
+docs/25-project-roadmap.md:1:# خارطة الطريق
+docs/25-project-roadmap.md:3:## Phase 0 — Discovery
+docs/25-project-roadmap.md:7:## Phase 1 — Foundation
+docs/25-project-roadmap.md:11:## Phase 2 — Core AI Runtime
+docs/25-project-roadmap.md:15:## Phase 3 — Agent Organization
+docs/25-project-roadmap.md:19:## Phase 4 — Development Environment
+docs/25-project-roadmap.md:23:## Phase 5 — Production Studio
+docs/25-project-roadmap.md:27:## Phase 6 — Second Brain
+docs/25-project-roadmap.md:31:## Phase 7 — Voice
+docs/25-project-roadmap.md:35:## Phase 8 — Automation
+docs/25-project-roadmap.md:39:## Phase 9 — Optimization
+docs/25-project-roadmap.md:43:## Phase 10 — Security Hardening
+docs/25-project-roadmap.md:47:## Phase 11 — CI/CD
+docs/25-project-roadmap.md:51:## Phase 12 — Release
+docs/25-project-roadmap.md:55:## تقدير نسبي
+docs/26-risk-register.md:1:# سجل المخاطر
+docs/26-risk-register.md:24:## أعلى خمس مخاطر
+docs/27-technology-decision-records.md:1:# سجلات القرارات التقنية
+docs/27-technology-decision-records.md:3:## ADR-001: Modular Desktop Monolith
+docs/27-technology-decision-records.md:7:## ADR-002: Electron في MVP
+docs/27-technology-decision-records.md:11:## ADR-003: SQLite + FTS5
+docs/27-technology-decision-records.md:15:## ADR-004: provider-neutral contracts
+docs/27-technology-decision-records.md:19:## ADR-005: لا اعتماد runtime كامل من مشروع مرجعي
+docs/27-technology-decision-records.md:23:## ADR-006: OpenTo خلف adapter
+docs/27-technology-decision-records.md:27:## ADR-007: Voice optional
+docs/27-technology-decision-records.md:31:## ADR-008: 70 definitions لا 70 concurrent processes
+docs/27-technology-decision-records.md:35:## تقييم Electron/Tauri
+docs/27-technology-decision-records.md:50:## References / المراجع
+docs/28-open-source-license-audit.md:1:# تدقيق التراخيص
+docs/28-open-source-license-audit.md:3:## قاعدة التدقيق
+docs/28-open-source-license-audit.md:7:## المكونات ذات المخاطر الأقل نسبيًا
+docs/28-open-source-license-audit.md:22:## مكونات copyleft أو تحتاج مراجعة
+docs/28-open-source-license-audit.md:36:## التبعية العميقة
+docs/28-open-source-license-audit.md:40:## سياسة release
+docs/28-open-source-license-audit.md:44:## References / المراجع
+docs/29-research-sources.md:1:# مصادر البحث
+docs/29-research-sources.md:3:## ملاحظة زمنية
+docs/29-research-sources.md:7:## المشاريع المرجعية
+docs/29-research-sources.md:22:## المنصة والسطح المكتبي
+docs/29-research-sources.md:32:## المكوّنات المفتوحة
+docs/29-research-sources.md:36:## مصدر غير محسوم
+docs/29-research-sources.md:40:## سياسة الاستشهاد
+docs/30-ai-agent-handoff.md:1:# تسليم العمل لوكيل أو مهندس لاحق
+docs/30-ai-agent-handoff.md:3:## ما نبنيه
+docs/30-ai-agent-handoff.md:7:## لماذا
+docs/30-ai-agent-handoff.md:11:## ما ثبت
+docs/30-ai-agent-handoff.md:15:## ما تقرر
+docs/30-ai-agent-handoff.md:19:## ما لم يُنفذ
+docs/30-ai-agent-handoff.md:23:## أسئلة مفتوحة
+docs/30-ai-agent-handoff.md:27:## أوامر الاستمرار
+docs/30-ai-agent-handoff.md:39:## NEXT AI AGENT CONTINUATION PROTOCOL
+=== SOURCE/CONFIG EXTENSIONS ===
+     52 md
+     14 json
+      2 txt
+      1 toml
+      1 ndjson
+      1 errors
+=== IMPLEMENTATION FILES ===
+./research/sources/deepseek-harness/package.json
+./research/sources/hermes/package.json
+./research/sources/hermes/pyproject.toml
+./research/sources/omniroute/package.json
+./research/sources/opencode/package.json
+=== WORKTREE ===
+## [32mmain[m...[31morigin/main[m
+[31m??[m research/latest-repo-inspection.txt
+[31m??[m research/repo-structure-inventory.txt

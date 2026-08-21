@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Osamah Studio Agent — Mobile Preview Prototype</title>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1020; --panel: #121a2f; --panel2: #18233e; --line: #283653; --text: #e7edf7; --muted: #91a1bd; --accent: #63e6be; --accent2: #74c0fc; --danger: #ff8787; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: radial-gradient(circle at top right, #1a3150, var(--bg) 42%); color: var(--text); }
+    button, select { color: inherit; border: 1px solid var(--line); background: var(--panel2); border-radius: 9px; padding: 8px 10px; cursor: pointer; }
+    button:hover { border-color: var(--accent2); }
+    .shell { display: grid; grid-template-columns: 260px minmax(390px, 1fr) 320px; min-height: 100vh; gap: 1px; background: var(--line); }
+    aside, main, section { background: rgba(11,16,32,.96); }
+    aside { padding: 20px; }
+    .brand { font-weight: 750; letter-spacing: .02em; margin-bottom: 4px; }
+    .sub { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    h2 { font-size: 14px; margin: 25px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
+    .device-list { display: grid; gap: 8px; }
+    .device-list button { text-align: left; display: grid; gap: 2px; }
+    .device-list button.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(99,230,190,.25); }
+    .device-meta { color: var(--muted); font-size: 11px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .controls button.wide { grid-column: 1 / -1; }
+    main { padding: 22px; display: grid; grid-template-rows: auto 1fr auto; gap: 16px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .title { font-size: 18px; font-weight: 700; }
+    .status { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); font-size: 12px; }
+    .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+    .stage { display: grid; place-items: center; min-height: 560px; background: linear-gradient(135deg, rgba(116,192,252,.08), rgba(99,230,190,.05)); border: 1px dashed var(--line); border-radius: 18px; overflow: auto; }
+    .device { width: 318px; height: 650px; border: 10px solid #262c3a; border-radius: 38px; background: #05070c; box-shadow: 0 25px 70px rgba(0,0,0,.55), inset 0 0 0 1px #586174; padding: 7px; transition: transform .25s ease, width .25s ease, height .25s ease; }
+    .device.landscape { width: 650px; height: 318px; }
+    .screen { height: 100%; border-radius: 27px; overflow: hidden; background: #f4f7fb; color: #152033; display: grid; grid-template-rows: 28px 1fr 54px; position: relative; }
+    .dark .screen { background: #101522; color: #eff4fb; }
+    .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-size: 10px; background: rgba(0,0,0,.07); }
+    .app { padding: 28px 20px 18px; overflow: auto; }
+    .app h1 { margin: 0; font-size: 26px; letter-spacing: -.04em; }
+    .app p { color: #71809b; line-height: 1.5; font-size: 13px; }
+    .dark .app p { color: #aab7cb; }
+    .card { border-radius: 16px; padding: 14px; margin-top: 18px; background: linear-gradient(135deg, #d9f7ef, #dceeff); color: #14312c; }
+    .dark .card { background: linear-gradient(135deg, #183d42, #203453); color: #e7fff7; }
+    .card strong { display: block; margin-bottom: 5px; }
+    .pill { display: inline-block; padding: 5px 8px; background: rgba(255,255,255,.55); border-radius: 99px; font-size: 11px; }
+    .dark .pill { background: rgba(0,0,0,.22); }
+    .tabbar { display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(0,0,0,.1); font-size: 10px; }
+    .tabbar b { color: #168f74; }
+    .console { background: #070b13; border: 1px solid var(--line); border-radius: 12px; padding: 12px; font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; color: #c6d4ea; min-height: 90px; }
+    .console span { color: var(--accent); }
+    .right { padding: 20px; }
+    .inspector { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(40,54,83,.65); padding: 9px 0; font-size: 12px; }
+    .row:last-child { border-bottom: 0; }
+    .value { color: var(--muted); text-align: right; }
+    .notice { border-left: 3px solid var(--accent2); padding: 8px 10px; color: var(--muted); font-size: 12px; line-height: 1.45; background: rgba(116,192,252,.06); }
+    @media (max-width: 1050px) { .shell { grid-template-columns: 220px 1fr; } .right { display: none; } }
+    @media (max-width: 700px) { .shell { display: block; } aside { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } aside h2 { margin-top: 4px; } main { min-height: 780px; } .device { transform: scale(.82); transform-origin: center; } }
+  </style>
+</head>
+<body>
+  <div class="shell" id="app">
+    <aside>
+      <div><div class="brand">Osamah Studio Agent</div><div class="sub">Mobile Preview · compatibility mode</div></div>
+      <div>
+        <h2>Devices</h2>
+        <div class="device-list" id="devices"></div>
+      </div>
+      <div>
+        <h2>Controls</h2>
+        <div class="controls">
+          <button id="rotate">Rotate</button><button id="theme">Dark theme</button>
+          <button id="refresh" class="wide">Fast Refresh</button>
+          <button id="screenshot" class="wide">Capture screenshot</button>
+        </div>
+      </div>
+      <div class="notice">This is a lightweight preview. Native modules, Android Emulator and iOS Simulator are delegated to platform adapters.</div>
+    </aside>
+    <main>
+      <div class="topbar"><div><div class="title" id="title">Pixel 9 Preview</div><div class="sub" id="subtitle">Android · 1080×2424 · 420 dpi</div></div><div class="status" id="status">READY</div></div>
+      <div class="stage"><div class="device" id="device"><div class="screen"><div class="statusbar"><span id="clock">9:41</span><span>▮▮▮ 5G　▰</span></div><div class="app"><span class="pill" id="platformPill">android / preview</span><h1>Build with clarity.</h1><p>Make a change in the editor, refresh the preview, inspect the result, and keep native validation explicit.</p><div class="card"><strong>Preview session</strong><span id="cardText">Fast Refresh ready · no native rebuild required</span></div><div class="card"><strong>Safe area</strong><span id="safeArea">top 0 · bottom 0 · left 0 · right 0</span></div></div><div class="tabbar"><b>Home</b><span>Code</span><span>Logs</span><span>Settings</span></div></div></div></div>
+      <div class="console"><span>$</span> preview.inspect() → <span id="consoleText">device ready, lightweight_web transport</span></div>
+    </main>
+    <section class="right">
+      <h2>Inspector</h2>
+      <div class="inspector" id="inspector"></div>
+      <div class="inspector"><div class="sub">Interaction model</div><div class="row"><span>Tap / swipe / scroll</span><span class="value">DOM pointer bridge</span></div><div class="row"><span>Refresh</span><span class="value">Metro / Fast Refresh adapter</span></div><div class="row"><span>Native verification</span><span class="value">Android/iOS adapter</span></div></div>
+    </section>
+  </div>
+  <script>
+    const profiles = [
+      { id: 'pixel', name: 'Pixel 9 Preview', platform: 'android', os: '15', width: 1080, height: 2424, dpi: 420, top: 0, bottom: 0 },
+      { id: 'iphone', name: 'iPhone 16 Preview', platform: 'ios', os: '18', width: 393, height: 852, dpi: 3, top: 59, bottom: 34 },
+      { id: 'tablet', name: 'Android Tablet', platform: 'android', os: '15', width: 1600, height: 2560, dpi: 320, top: 0, bottom: 0 }
+    ];
+    let selected = profiles[0]; let orientation = 'portrait'; let dark = false;
+    const $ = (id) => document.getElementById(id);
+    function render() {
+      $('title').textContent = selected.name;
+      $('subtitle').textContent = `${selected.platform} · ${selected.width}×${selected.height} · ${selected.dpi} dpi`;
+      $('platformPill').textContent = `${selected.platform} / lightweight preview`;
+      $('safeArea').textContent = `top ${selected.top} · bottom ${selected.bottom} · left 0 · right 0`;
+      $('device').classList.toggle('landscape', orientation === 'landscape');
+      $('app').classList.toggle('dark', dark);
+      $('theme').textContent = dark ? 'Light theme' : 'Dark theme';
+      $('inspector').innerHTML = `<div class="row"><span>Platform</span><span class="value">${selected.platform}</span></div><div class="row"><span>OS</span><span class="value">${selected.os}</span></div><div class="row"><span>Orientation</span><span class="value">${orientation}</span></div><div class="row"><span>Theme</span><span class="value">${dark ? 'dark' : 'light'}</span></div><div class="row"><span>Capability</span><span class="value">compatibility</span></div>`;
+      document.querySelectorAll('[data-profile]').forEach((el) => el.classList.toggle('active', el.dataset.profile === selected.id));
+    }
+    profiles.forEach((p) => { const b = document.createElement('button'); b.dataset.profile = p.id; b.innerHTML = `<strong>${p.name}</strong><span class="device-meta">${p.platform} · ${p.width}×${p.height}</span>`; b.onclick = () => { selected = p; $('consoleText').textContent = `${p.id} profile selected`; render(); }; $('devices').appendChild(b); });
+    $('rotate').onclick = () => { orientation = orientation === 'portrait' ? 'landscape' : 'portrait'; $('status').textContent = 'ROTATED'; $('consoleText').textContent = `orientation=${orientation}`; render(); };
+    $('theme').onclick = () => { dark = !dark; $('consoleText').textContent = `theme=${dark ? 'dark' : 'light'}`; render(); };
+    $('refresh').onclick = () => { $('status').textContent = 'REFRESHING'; $('cardText').textContent = 'Fast Refresh applied · state preserved where safe'; $('consoleText').textContent = 'refresh event received'; setTimeout(() => $('status').textContent = 'READY', 450); };
+    $('screenshot').onclick = () => { $('status').textContent = 'CAPTURED'; $('consoleText').textContent = 'screenshot artifact created'; setTimeout(() => $('status').textContent = 'READY', 650); };
+    render();
+  </script>
+</body>
+</html>

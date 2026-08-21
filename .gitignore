@@ -1,0 +1,24 @@
+node_modules/
+dist/
+coverage/
+.tmp/
+.cache/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Local native/mobile artifacts
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+*.xcarchive
+*.apk
+*.aab
+*.ipa
+
+# Local previews and screenshots
+prototypes/**/artifacts/
+research/local-*.png

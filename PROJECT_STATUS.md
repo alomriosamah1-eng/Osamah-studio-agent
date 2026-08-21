@@ -2,45 +2,45 @@
 
 ## ملخص الحالة
 
-المستودع `alomriosamah1-eng/Osamah-studio-agent` عام، وكان فارغًا وقت بدء المهمة بلا commits أو ملفات تطبيق أو ترخيص أو بنية تشغيلية. تم الآن إنشاء منظومة Discovery وArchitecture قابلة للتتبع، مع حفظ الأدلة الخام والوثائق في Git، بينما لا يزال التطبيق نفسه غير منفذ حسب طلب البرومبت.
-
-> **المبدأ التشغيلي:** البحث والتحقق أولًا، ثم تثبيت القرارات، ثم تنفيذ MVP صغير قابل للاختبار. لا يبدأ بناء التطبيق الكامل قبل توثيق المعمارية والحدود.
+المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture. في هذه المرحلة أضيف Gap Analysis شامل، وبحث Mobile موثق، وClean Architecture Foundation slice قابل للاختبار، وMobile Preview prototype بصري. ما يزال المنتج الكامل غير منفذ، ولا توجد native toolchains مدمجة بعد.
 
 | البند | الحالة |
 |---|---|
-| المستودع الهدف | تم التحقق منه عبر GitHub API |
-| حالة الكود | فارغ من التطبيق؛ وثائق وبيانات Discovery موجودة |
-| المصادر الأربعة المطلوبة | تم تحديدها وفحص صفحاتها وملفاتها الأساسية |
-| البحث البيئي | تم جمع metadata رسمي لـ 44 مشروعًا مفتوح المصدر |
-| الوثائق المطلوبة | مكتملة من `docs/00` إلى `docs/30`، مع `docs/32` لمصفوفة التتبع و`FINAL_REPORT.md` |
-| البيانات الآلية | مكتملة في `project/` |
-| المعمارية المؤقتة | modular desktop monolith مع process isolation وElectron لـ MVP |
-| OpenTo Desktop | UNKNOWN / REQUIRES VALIDATION؛ لا يوجد رابط رسمي مثبت |
-| MVP | محدد في `docs/01` و`project/project-state.json` |
-| خط أساس البحث | `0f57e1280cd0e29b160a5fb4bb671bca6d9d830d` |
-| حزمة الوثائق | `95e7060cf96051269329e97d811efd0fbd9e501d` |
-| التقرير النهائي المدفوع | `59c05d02f45adc606467ddaa0d33bf21060c768e` |
-| آخر push تم التحقق منه | نعم؛ `origin/main` يطابق `59c05d02f45adc606467ddaa0d33bf21060c768e` وقت الفحص |
+| المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
+| أحدث baseline قبل المرحلة | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
+| حالة الشجرة | تغييرات Foundation/Docs/Prototype محلية قيد commit |
+| الإصدار المحلي | `0.1.0-foundation` |
+| آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
+| آخر اختبار ناجح | `pnpm check`: 8 tests passed |
+| Gap Analysis | مكتمل في `docs/31-gap-analysis.md`، 60 فجوة |
+| Mobile architecture | مكتملة في `docs/33-mobile-development-architecture.md` |
+| Clean Architecture | contracts وdomain/application/in-memory منفذة جزئيًا |
+| Mobile Preview | lifecycle/adapter contract منفذ، وHTML prototype متحقق بصريًا وتفاعليًا |
+| Android native | adapter مخطط، يحتاج SDK/JDK/AVD/acceleration |
+| iOS native | adapter مخطط، macOS/Xcode فقط؛ غير متاح أصليًا على Windows/Linux |
+| OpenTo | UNKNOWN / REQUIRES VALIDATION |
+| آخر push مؤكد | `79026c4368d978506ed5dad06a5f48b8f34e4036` قبل تغييرات هذه المرحلة |
 
-## مكتمل
+## المكتمل في هذه المرحلة
 
-تم فحص المستودع الهدف وتوثيق أنه فارغ، وفحص OpenCode وHermes Agent وOmniRoute وDeepSeek Harness من صفحات GitHub والـ manifests والوثائق المعمارية الرسمية. تم إنشاء دراسة جدوى، متطلبات وظيفية وغير وظيفية، مصفوفة تتبع، معمارية عليا ووكلاء وبيانات وواجهة وصوت وrouting وذاكرة وأتمتة وأمن وأداء وDevOps وGitHub Actions وتكامل OpenTo وSecond Brain وProduction Studio وبيئة التطوير. أضيفت roadmap وrisk register وtechnology decision records وlicense audit وsources وAI handoff، إضافة إلى الملفات الآلية والتقرير النهائي.
+تمت قراءة baseline والوثائق السابقة، ثم إنشاء gap analysis يغطي المتطلبات والبنية التحتية والواجهات والأمن والأداء والاختبارات والذاكرة والموبايل والمحاكيات والـ CI/CD والتوثيق. جرى بحث رسمي ومقارن عن React Native وExpo وMetro وFast Refresh وReact Native Web وExpo Snack وAndroid Emulator وApple Simulator وHermes وReact Native Debugging، مع حفظ الأدلة في `research/mobile-research-findings-01.md`.
 
-## القرارات الرئيسية
+أضيفت وثائق `docs/33` إلى `docs/36`، وست عشرة خريطة حيّة تحت `docs/reference/`. أضيفت `PROJECT_STATE.md` و`AI_CONTINUATION.md` و`docs/WORK_LOG.md`. أضيف Foundation code مستقلًا عن UI في `src/`: domain primitives/errors/entities/events/mobile، application ports/use cases/mobile-services، in-memory adapters، composition root، وLightweightPreviewAdapter. نجحت ثمانية اختبارات deterministic. كما أضيف `prototypes/mobile-preview/index.html` وتم التحقق من التدوير والثيم واللقطة.
 
-القرار الحالي هو استخدام Modular Desktop Monolith مع Process Isolation، وElectron في MVP، وSQLite/FTS5 مع filesystem object store، وprovider-neutral routing محلي/مجاني أولًا، وMCP خلف consent/policy، وعدم نسخ runtimes المرجعية كاملة. يبقى OpenTo خلف adapter contract فقط، وتؤجل Voice وVideo وAutonomous Automation و70 concurrent agents.
+## المعمارية الحالية
 
-## المراجعة والجودة
+الطبقات هي Domain → Application → Interface Adapters → Infrastructure → Presentation. Domain لا يعتمد على Electron أو React أو databases أو providers أو OS APIs. Mobile subsystem يستخدم LightweightPreview compatibility mode، ثم adapters مستقلة لـ Metro وAndroid وiOS وphysical devices وEAS. لا يحاول المشروع إعادة بناء Android Emulator أو Apple Simulator داخل التطبيق.
 
-نجح فحص اكتمال الملفات المطلوبة، وصحة ملفات JSON وNDJSON، و`git diff --check`، وفحص الروابط المحلية. جرت جولة مراجعة ثانية من عشرة أدوار هندسية، وسجلت في `research/review-round-2.md`. بقيت العناصر الموسومة UNKNOWN وLEGAL_REVIEW_REQUIRED عمدًا ولم تُخفَ.
+## العمل النشط
 
-## المخاطر والبلوكَر
+تثبيت lockfile، تشغيل clean/security/license checks، تحديث CHANGELOG وWORK_LOG والحالة، ثم commit/push/verify. بعد الدفع يبدأ adapter مستقل واحد، والأولوية المقترحة هي SQLite/IPC أو Metro بحسب موافقة المالك.
 
-أكبر blocker حالي هو أن اسم `OpenTo Desktop` غير قابل للتحقق من نتائج البحث العامة؛ ويؤثر ذلك مباشرة في قرار التكامل، وليس في صلاحية بناء نواة مستقلة. كما أن نطاق «70 وكيلًا» و«إنتاج وسائط بلا حدود» أوسع من MVP واقعي، ويجب تحويله إلى حدود قدرة قابلة للقياس. وتشكل تراخيص AGPL/GPL وحق استخدام أوزان الصوت والوسائط مسألة مراجعة قانونية قبل إعادة التوزيع.
+## المخاطر والقرارات المفتوحة
+
+لا يوجد Electron shell أو SQLite migrations أو agent runtime أو provider implementation أو native mobile integration. Android يعتمد على toolchain وتسريع الأجهزة. iOS Simulator يحتاج macOS/Xcode. browser preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا.
 
 ## الإجراء التالي
 
-لا يبدأ الكود إلا ببوابة موافقة المالك على هوية OpenTo ونطاق MVP. بعد الموافقة، يبدأ أصغر slice: workspace + session + read-only agent + approval card + SQLite migration، مع اختبارات contracts وأمن وrecovery.
+شغل `pnpm install --frozen-lockfile`, `pnpm check`, `git diff --check`, وفحوص secret/license، ثم commit معنوي ودفعه والتحقق من تطابق `git rev-parse HEAD` مع `git ls-remote origin refs/heads/main`. سجل hash النهائي في كل ملفات الحالة وWORK_LOG وCHANGELOG.
 
-تاريخ التحديث: 2026-08-21.
-إعداد: Manus AI.
+آخر تحديث: 2026-08-22. إعداد: Manus AI.

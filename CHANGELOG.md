@@ -4,6 +4,12 @@
 
 ### Added
 
+- Gap analysis شامل من GAP-001 إلى GAP-060.
+- بحث موثق عن React Native وExpo وMetro وFast Refresh وReact Native Web وExpo Snack وAndroid Emulator وiOS Simulator وHermes وReact Native Debugging.
+- Clean Architecture contracts وDomain entities/events وApplication use cases وin-memory adapters.
+- Foundation tests deterministic وpackage/TypeScript foundation.
+- Mobile development architecture و16 living reference maps تحت `docs/reference/`.
+- `PROJECT_STATE.md` و`AI_CONTINUATION.md` و`docs/WORK_LOG.md`.
 - خط أساس للمستودع يثبت أنه كان فارغًا وقت البدء.
 - مصادر خام وتحليل أولي لـ OpenCode وHermes Agent وOmniRoute وDeepSeek Harness.
 - metadata لـ 44 مشروعًا مفتوح المصدر مرشحًا.

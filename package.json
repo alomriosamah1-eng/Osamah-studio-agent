@@ -1,0 +1,17 @@
+{
+  "name": "osamah-studio-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clean Architecture foundation for Osamah Studio Agent",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test src/**/*.test.ts",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
