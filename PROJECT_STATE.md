@@ -6,16 +6,17 @@
 |---|---|
 | الإصدار | `0.2.0-embedded-simulator` |
 | المرحلة | Embedded Simulator Foundation + typed IPC + SQLite schema contract |
-| الحالة | تنفيذ محلي ناجح؛ controller/IPC/migration/docs قيد commit جديد |
+| الحالة | Embedded Simulator Foundation مندفعة ومتحقق منها على GitHub |
 | أحدث commit معروف قبل التغيير | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
 | commit المرحلة التنفيذية | `3e81421a03713dc433d61d4957ec013226e5008f` |
 | commit المراجعة والتسليم | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
 | commit التقرير النهائي | `befabc8863d929b55d8cca590d2b8f9cfafe2e3f` |
 | commit إغلاق الحالة | `8104e77d66dffee1544e45035846956893b855f7` |
-| أحدث push مؤكد | `origin/main` عند commit `8104e77d66dffee1544e45035846956893b855f7` |
+| commit Embedded Simulator | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
+| أحدث push مؤكد | `origin/main` عند commit `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
 | آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
 | آخر اختبار ناجح | 11 اختبار Node/tsx، 11 passed؛ SQLite migration valid في 2026-08-22 |
-| commit الحالي لهذه المرحلة | `8104e77d66dffee1544e45035846956893b855f7`؛ local وremote متطابقان |
+| commit الحالي لهذه المرحلة | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8`؛ local وremote متطابقان |
 
 ## مكتمل
 
@@ -27,7 +28,7 @@
 
 ## العمل النشط
 
-اكتملت محليًا شريحة Embedded Simulator Foundation: Workspace prototype، controller، typed IPC، SQLite migration contract، SQLite validation، و11/11 tests. العمل النشط هو تحديث الحالة والوثائق ثم commit/push/verify لهذه الشريحة.
+اكتملت شريحة Embedded Simulator Foundation: Workspace prototype، controller، typed IPC، SQLite migration contract، SQLite validation، و11/11 tests. commit `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` مدفوع ومتحقق، والشجرة نظيفة.
 
 ## العمل المتبقي
 
@@ -45,4 +46,4 @@
 
 بعد هذه الشريحة، يبدأ commit مستقل واحد فقط: actual SQLite adapter أو React Native Web/Metro renderer. يجب أن يسبقه contract tests وadapter in-memory وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `8104e77d66dffee1544e45035846956893b855f7`. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8`. إعداد: Manus AI.

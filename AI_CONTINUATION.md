@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر baseline مدفوع هو `8104e77d66dffee1544e45035846956893b855f7`، والتغييرات الجديدة قيد commit. نجح `pnpm check`: typecheck و11 tests، ونجحت SQLite migration validation. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. commit الشريحة هو `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` ومدفوع ومتحقق. نجح `pnpm check`: typecheck و11 tests، ونجحت SQLite migration validation. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md`، وإضافة embedded Workspace/controller/IPC/migration tests. نجحت `pnpm check` بـ11/11 وSQLite migration validation. هذه التغييرات قيد commit/push؛ بعدها يبدأ actual renderer أو SQLite adapter، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
+تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md`، وإضافة embedded Workspace/controller/IPC/migration tests. نجحت `pnpm check` بـ11/11 وSQLite migration validation. commit `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` مدفوع ومتحقق. بعدها يبدأ actual renderer أو SQLite adapter، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.
