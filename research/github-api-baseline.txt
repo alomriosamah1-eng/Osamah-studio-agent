@@ -1,0 +1,850 @@
+=== TARGET REPOSITORY ===
+[1;38m{[m
+[1;34m"archived"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"created_at"[m[1;38m:[m [32m"2026-08-21T22:29:47Z"[m[1;38m,[m
+[1;34m"default_branch"[m[1;38m:[m [32m"main"[m[1;38m,[m
+[1;34m"description"[m[1;38m:[m [36mnull[m[1;38m,[m
+[1;34m"forks_count"[m[1;38m:[m 0[1;38m,[m
+[1;34m"full_name"[m[1;38m:[m [32m"alomriosamah1-eng/Osamah-studio-agent"[m[1;38m,[m
+[1;34m"is_template"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"license"[m[1;38m:[m [36mnull[m[1;38m,[m
+[1;34m"open_issues_count"[m[1;38m:[m 0[1;38m,[m
+[1;34m"pushed_at"[m[1;38m:[m [32m"2026-08-21T22:29:48Z"[m[1;38m,[m
+[1;34m"size"[m[1;38m:[m 0[1;38m,[m
+[1;34m"stargazers_count"[m[1;38m:[m 0[1;38m,[m
+[1;34m"updated_at"[m[1;38m:[m [32m"2026-08-21T22:29:48Z"[m[1;38m,[m
+[1;34m"visibility"[m[1;38m:[m [32m"public"[m
+[1;38m}[m
+=== TARGET COMMITS ===
+[1;37m{[m
+  [1;34m"message"[m[1;37m:[m [32m"Git Repository is empty."[m[1;37m,[m
+  [1;34m"documentation_url"[m[1;37m:[m [32m"https://docs.github.com/rest/commits/commits#list-commits"[m[1;37m,[m
+  [1;34m"status"[m[1;37m:[m [32m"409"[m
+[1;37m}[m
+
+=== REPO anomalyco/opencode ===
+[1;38m{[m
+[1;34m"archived"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"created_at"[m[1;38m:[m [32m"2025-04-30T20:08:00Z"[m[1;38m,[m
+[1;34m"default_branch"[m[1;38m:[m [32m"dev"[m[1;38m,[m
+[1;34m"description"[m[1;38m:[m [32m"The open source coding agent."[m[1;38m,[m
+[1;34m"forks_count"[m[1;38m:[m 25824[1;38m,[m
+[1;34m"full_name"[m[1;38m:[m [32m"anomalyco/opencode"[m[1;38m,[m
+[1;34m"language"[m[1;38m:[m [32m"TypeScript"[m[1;38m,[m
+[1;34m"license"[m[1;38m:[m [1;38m{[m
+[1;34m"key"[m[1;38m:[m [32m"mit"[m[1;38m,[m
+[1;34m"name"[m[1;38m:[m [32m"MIT License"[m[1;38m,[m
+[1;34m"node_id"[m[1;38m:[m [32m"MDc6TGljZW5zZTEz"[m[1;38m,[m
+[1;34m"spdx_id"[m[1;38m:[m [32m"MIT"[m[1;38m,[m
+[1;34m"url"[m[1;38m:[m [32m"https://api.github.com/licenses/mit"[m
+[1;38m}[m[1;38m,[m
+[1;34m"open_issues_count"[m[1;38m:[m 5286[1;38m,[m
+[1;34m"pushed_at"[m[1;38m:[m [32m"2026-08-21T22:38:53Z"[m[1;38m,[m
+[1;34m"size"[m[1;38m:[m 472301[1;38m,[m
+[1;34m"stargazers_count"[m[1;38m:[m 199964[1;38m,[m
+[1;34m"updated_at"[m[1;38m:[m [32m"2026-08-21T22:20:17Z"[m
+[1;38m}[m
+branch=dev sha=3a4c253969870e42d166fe6754133e848acbd81b
+-- root files --
+dir	.github	.github	0
+dir	.husky	.husky	0
+dir	.opencode	.opencode	0
+dir	.vscode	.vscode	0
+dir	.zed	.zed	0
+dir	artifacts	artifacts	0
+dir	github	github	0
+dir	infra	infra	0
+dir	nix	nix	0
+dir	packages	packages	0
+dir	patches	patches	0
+dir	perf	perf	0
+dir	script	script	0
+dir	sdks	sdks	0
+dir	specs	specs	0
+file	.dockerignore	.dockerignore	116
+file	.editorconfig	.editorconfig	136
+file	.gitattributes	.gitattributes	123
+file	.gitignore	.gitignore	312
+file	.gitleaksignore	.gitleaksignore	506
+file	.oxlintrc.json	.oxlintrc.json	2068
+file	.prettierignore	.prettierignore	115
+file	AGENTS.md	AGENTS.md	8748
+file	CONTEXT.md	CONTEXT.md	32094
+file	CONTRIBUTING.md	CONTRIBUTING.md	10367
+file	LICENSE	LICENSE	1065
+file	README.ar.md	README.ar.md	6072
+file	README.bn.md	README.bn.md	8083
+file	README.br.md	README.br.md	5626
+file	README.bs.md	README.bs.md	5461
+file	README.da.md	README.da.md	5395
+file	README.de.md	README.de.md	5592
+file	README.es.md	README.es.md	5635
+file	README.fr.md	README.fr.md	5717
+file	README.gr.md	README.gr.md	7438
+file	README.it.md	README.it.md	5689
+file	README.ja.md	README.ja.md	5954
+file	README.ko.md	README.ko.md	5670
+file	README.md	README.md	5402
+file	README.no.md	README.no.md	5355
+file	README.pl.md	README.pl.md	5571
+file	README.ru.md	README.ru.md	6682
+file	README.th.md	README.th.md	7819
+file	README.tr.md	README.tr.md	5828
+file	README.uk.md	README.uk.md	7024
+file	README.vi.md	README.vi.md	6112
+file	README.zh.md	README.zh.md	5293
+file	README.zht.md	README.zht.md	5589
+file	SECURITY.md	SECURITY.md	2661
+file	STATS.md	STATS.md	18293
+file	bun.lock	bun.lock	878262
+file	bunfig.toml	bunfig.toml	1024
+file	flake.lock	flake.lock	569
+file	flake.nix	flake.nix	1833
+file	install	install	13690
+file	package.json	package.json	5851
+file	screenshot-uk.png	screenshot-uk.png	83462
+file	sst-env.d.ts	sst-env.d.ts	7063
+file	sst.config.ts	sst.config.ts	1561
+file	tsconfig.json	tsconfig.json	126
+file	turbo.json	turbo.json	757
+-- candidate manifest paths --
+.opencode/glossary/README.md
+AGENTS.md
+LICENSE
+README.ar.md
+README.bn.md
+README.br.md
+README.bs.md
+README.da.md
+README.de.md
+README.es.md
+README.fr.md
+README.gr.md
+README.it.md
+README.ja.md
+README.ko.md
+README.md
+README.no.md
+README.pl.md
+README.ru.md
+README.th.md
+README.tr.md
+README.uk.md
+README.vi.md
+README.zh.md
+README.zht.md
+SECURITY.md
+artifacts/glm52-rise-video/package.json
+github/README.md
+github/package.json
+package.json
+packages/app/AGENTS.md
+packages/app/README.md
+packages/app/e2e/AGENTS.md
+packages/app/e2e/performance/AGENTS.md
+packages/app/e2e/performance/README.md
+packages/app/e2e/performance/timeline-stability/README.md
+packages/app/package.json
+packages/cli/package.json
+packages/client/README.md
+packages/client/package.json
+packages/codemode/AGENTS.md
+packages/codemode/README.md
+packages/codemode/package.json
+packages/console/app/README.md
+packages/console/app/package.json
+packages/console/core/package.json
+packages/console/function/package.json
+packages/console/mail/package.json
+packages/console/resource/package.json
+packages/console/support/package.json
+packages/containers/README.md
+packages/containers/base/Dockerfile
+packages/containers/bun-node/Dockerfile
+packages/containers/publish/Dockerfile
+packages/containers/rust/Dockerfile
+packages/containers/tauri-linux/Dockerfile
+packages/core/package.json
+packages/core/src/github-copilot/README.md
+packages/core/src/tool/AGENTS.md
+packages/desktop/AGENTS.md
+packages/desktop/README.md
+packages/desktop/icons/README.md
+packages/desktop/package.json
+packages/docs/LICENSE
+packages/docs/README.md
+packages/effect-drizzle-sqlite/AGENTS.md
+packages/effect-drizzle-sqlite/package.json
+packages/effect-sqlite-node/package.json
+packages/enterprise/README.md
+packages/enterprise/package.json
+packages/function/package.json
+packages/http-recorder/LICENSE
+packages/http-recorder/README.md
+packages/http-recorder/package.json
+packages/httpapi-codegen/README.md
+packages/httpapi-codegen/package.json
+packages/llm/AGENTS.md
+packages/llm/README.md
+packages/llm/package.json
+packages/opencode/AGENTS.md
+packages/opencode/Dockerfile
+packages/opencode/README.md
+packages/opencode/package.json
+packages/opencode/src/control-plane/dev/README.md
+packages/opencode/src/plugin/openai/README.md
+packages/opencode/src/server/routes/instance/httpapi/AGENTS.md
+packages/opencode/src/session/llm/AGENTS.md
+packages/opencode/src/sync/README.md
+packages/opencode/test/AGENTS.md
+packages/opencode/test/server/AGENTS.md
+packages/plugin/package.json
+packages/plugin/src/v2/effect/README.md
+packages/plugin/src/v2/promise/README.md
+packages/protocol/package.json
+packages/schema/AGENTS.md
+packages/schema/package.json
+packages/script/package.json
+packages/sdk-next/README.md
+packages/sdk-next/package.json
+packages/sdk/js/package.json
+packages/server/package.json
+packages/session-ui/AGENTS.md
+packages/session-ui/package.json
+packages/slack/README.md
+packages/slack/package.json
+packages/stats/AGENTS.md
+packages/stats/README.md
+packages/stats/app/package.json
+packages/stats/core/package.json
+packages/stats/server/Dockerfile
+packages/stats/server/package.json
+packages/storybook/package.json
+packages/tui/package.json
+packages/ui/AGENTS.md
+packages/ui/LICENSE
+packages/ui/package.json
+packages/web/README.md
+packages/web/package.json
+sdks/vscode/README.md
+sdks/vscode/package.json
+
+=== REPO NousResearch/hermes-agent ===
+[1;38m{[m
+[1;34m"archived"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"created_at"[m[1;38m:[m [32m"2025-07-22T22:22:28Z"[m[1;38m,[m
+[1;34m"default_branch"[m[1;38m:[m [32m"main"[m[1;38m,[m
+[1;34m"description"[m[1;38m:[m [32m"The agent that grows with you"[m[1;38m,[m
+[1;34m"forks_count"[m[1;38m:[m 46976[1;38m,[m
+[1;34m"full_name"[m[1;38m:[m [32m"NousResearch/hermes-agent"[m[1;38m,[m
+[1;34m"language"[m[1;38m:[m [32m"Python"[m[1;38m,[m
+[1;34m"license"[m[1;38m:[m [1;38m{[m
+[1;34m"key"[m[1;38m:[m [32m"mit"[m[1;38m,[m
+[1;34m"name"[m[1;38m:[m [32m"MIT License"[m[1;38m,[m
+[1;34m"node_id"[m[1;38m:[m [32m"MDc6TGljZW5zZTEz"[m[1;38m,[m
+[1;34m"spdx_id"[m[1;38m:[m [32m"MIT"[m[1;38m,[m
+[1;34m"url"[m[1;38m:[m [32m"https://api.github.com/licenses/mit"[m
+[1;38m}[m[1;38m,[m
+[1;34m"open_issues_count"[m[1;38m:[m 34318[1;38m,[m
+[1;34m"pushed_at"[m[1;38m:[m [32m"2026-08-21T22:37:18Z"[m[1;38m,[m
+[1;34m"size"[m[1;38m:[m 761850[1;38m,[m
+[1;34m"stargazers_count"[m[1;38m:[m 233973[1;38m,[m
+[1;34m"updated_at"[m[1;38m:[m [32m"2026-08-21T22:36:21Z"[m
+[1;38m}[m
+branch=main sha=3bdc2165c3e82b203c43d0187ffa9bb929adf8f5
+-- root files --
+dir	.github	.github	0
+dir	acp_adapter	acp_adapter	0
+dir	agent	agent	0
+dir	apps	apps	0
+dir	assets	assets	0
+dir	contributors	contributors	0
+dir	cron	cron	0
+dir	datagen-config-examples	datagen-config-examples	0
+dir	docker	docker	0
+dir	docs	docs	0
+dir	evals	evals	0
+dir	gateway	gateway	0
+dir	hermes_cli	hermes_cli	0
+dir	locales	locales	0
+dir	mcp-research-data	mcp-research-data	0
+dir	native	native	0
+dir	nix	nix	0
+dir	optional-mcps	optional-mcps	0
+dir	optional-skills	optional-skills	0
+dir	plugins	plugins	0
+dir	providers	providers	0
+dir	scripts	scripts	0
+dir	skills	skills	0
+dir	tests	tests	0
+dir	tests-js	tests-js	0
+dir	tools	tools	0
+dir	tui_gateway	tui_gateway	0
+dir	ui-tui	ui-tui	0
+dir	web	web	0
+dir	website	website	0
+file	.coderabbit.yaml	.coderabbit.yaml	783
+file	.dockerignore	.dockerignore	2095
+file	.env.example	.env.example	24792
+file	.envrc	.envrc	372
+file	.gitattributes	.gitattributes	1220
+file	.gitignore	.gitignore	6601
+file	.hadolint.yaml	.hadolint.yaml	1683
+file	.mailmap	.mailmap	5742
+file	.npmrc	.npmrc	2604
+file	.nvmrc	.nvmrc	3
+file	.prettierignore	.prettierignore	193
+file	.prettierrc	.prettierrc	203
+file	.python-version	.python-version	5
+file	AGENTS.md	AGENTS.md	85760
+file	CONTRIBUTING.es.md	CONTRIBUTING.es.md	29600
+file	CONTRIBUTING.md	CONTRIBUTING.md	48837
+file	Dockerfile	Dockerfile	25687
+file	LICENSE	LICENSE	1070
+file	README.es.md	README.es.md	16820
+file	README.md	README.md	17688
+file	README.ur-pk.md	README.ur-pk.md	24070
+file	README.zh-CN.md	README.zh-CN.md	12153
+file	SECURITY.es.md	SECURITY.es.md	18626
+file	SECURITY.md	SECURITY.md	15752
+file	batch_runner.py	batch_runner.py	57704
+file	cli-config.yaml.example	cli-config.yaml.example	100803
+file	cli.py	cli.py	999378
+file	constraints-termux.txt	constraints-termux.txt	407
+file	default.tar.gz	default.tar.gz	1963223
+file	docker-compose.windows.yml	docker-compose.windows.yml	1073
+file	docker-compose.yml	docker-compose.yml	3454
+file	eslint.config.shared.mjs	eslint.config.shared.mjs	3276
+file	flake.lock	flake.lock	4084
+file	flake.nix	flake.nix	1705
+file	hermes	hermes	262
+file	hermes_bootstrap.py	hermes_bootstrap.py	10514
+file	hermes_constants.py	hermes_constants.py	67092
+file	hermes_logging.py	hermes_logging.py	31693
+file	hermes_state.py	hermes_state.py	605815
+file	hermes_state_common.py	hermes_state_common.py	30117
+file	hermes_state_portability.py	hermes_state_portability.py	30972
+file	hermes_state_schema.py	hermes_state_schema.py	66259
+file	hermes_state_search.py	hermes_state_search.py	114772
+file	hermes_time.py	hermes_time.py	4556
+file	log.txt	log.txt	0
+file	mcp_serve.py	mcp_serve.py	38200
+file	mini_swe_runner.py	mini_swe_runner.py	28429
+file	model_tools.py	model_tools.py	74273
+file	package-lock.json	package-lock.json	721499
+file	package.json	package.json	2297
+-- candidate manifest paths --
+AGENTS.md
+Dockerfile
+LICENSE
+README.es.md
+README.md
+README.ur-pk.md
+README.zh-CN.md
+SECURITY.md
+apps/bootstrap-installer/package.json
+apps/bootstrap-installer/src-tauri/Cargo.toml
+apps/desktop/AGENTS.md
+apps/desktop/README.md
+apps/desktop/electron/find-in-page-native-fixture/package.json
+apps/desktop/package.json
+apps/desktop/scripts/perf/README.md
+apps/desktop/src/debug/README.md
+apps/desktop/src/plugins/README.md
+apps/desktop/src/plugins/hermes-bots/LICENSE
+apps/shared/package.json
+contributors/README.md
+docs/middleware/README.md
+docs/observability/README.md
+evals/browser_use/README.md
+evals/compaction/README.md
+evals/readtool/README.md
+native/fts5_cjk/README.md
+optional-skills/finance/dcf-model/requirements.txt
+optional-skills/mlops/saelens/references/README.md
+optional-skills/security/unbroker/README.md
+optional-skills/software-development/ast-grep/LICENSE
+optional-skills/software-development/code-wiki/templates/README.md
+optional-skills/software-development/code-wiki/templates/architecture.md
+package.json
+plugins/disk-cleanup/README.md
+plugins/google_meet/README.md
+plugins/hermes-achievements/LICENSE
+plugins/hermes-achievements/README.md
+plugins/hermes-achievements/dashboard/manifest.json
+plugins/kanban/dashboard/manifest.json
+plugins/memory/byterover/README.md
+plugins/memory/hindsight/README.md
+plugins/memory/holographic/README.md
+plugins/memory/honcho/README.md
+plugins/memory/mem0/README.md
+plugins/memory/openviking/README.md
+plugins/memory/retaindb/README.md
+plugins/memory/supermemory/README.md
+plugins/model-providers/README.md
+plugins/observability/langfuse/README.md
+plugins/platforms/a2a/README.md
+plugins/platforms/photon/README.md
+plugins/platforms/photon/sidecar/README.md
+plugins/platforms/photon/sidecar/package.json
+plugins/security-guidance/LICENSE
+plugins/security-guidance/README.md
+providers/README.md
+pyproject.toml
+scripts/toolperf_abeval/README.md
+scripts/whatsapp-bridge/package.json
+skills/creative/ascii-video/README.md
+skills/creative/ascii-video/references/architecture.md
+skills/creative/comfyui/tests/README.md
+skills/creative/comfyui/workflows/README.md
+skills/creative/humanizer/LICENSE
+skills/creative/manim-video/README.md
+skills/creative/p5js/README.md
+skills/productivity/docx/LICENSE
+skills/productivity/pdf/LICENSE
+skills/productivity/powerpoint/LICENSE
+skills/productivity/xlsx/LICENSE
+skills/research/research-paper-writing/templates/README.md
+skills/research/research-paper-writing/templates/aaai2026/README.md
+skills/research/research-paper-writing/templates/acl/README.md
+skills/research/research-paper-writing/templates/colm2025/README.md
+tests-js/package.json
+tests/e2e/matrix_xsign_bootstrap/README.md
+tests/fixtures/plugins/example-dashboard/dashboard/manifest.json
+tests/stress/README.md
+tools/wakewords/README.md
+ui-tui/README.md
+ui-tui/package.json
+ui-tui/packages/hermes-ink/package.json
+web/README.md
+web/package.json
+website/README.md
+website/docs/developer-guide/architecture.md
+website/i18n/zh-Hans/docusaurus-plugin-content-docs/current/developer-guide/architecture.md
+website/package.json
+
+=== REPO diegosouzapw/OmniRoute ===
+[1;38m{[m
+[1;34m"archived"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"created_at"[m[1;38m:[m [32m"2026-02-13T12:38:31Z"[m[1;38m,[m
+[1;34m"default_branch"[m[1;38m:[m [32m"release/v3.8.50"[m[1;38m,[m
+[1;34m"description"[m[1;38m:[m [32m"Never stop coding. Free MIT AI gateway: one endpoint, 340 providers (90+ free), 1200+ models — Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 450+ contributors"[m[1;38m,[m
+[1;34m"forks_count"[m[1;38m:[m 7174[1;38m,[m
+[1;34m"full_name"[m[1;38m:[m [32m"diegosouzapw/OmniRoute"[m[1;38m,[m
+[1;34m"language"[m[1;38m:[m [32m"TypeScript"[m[1;38m,[m
+[1;34m"license"[m[1;38m:[m [1;38m{[m
+[1;34m"key"[m[1;38m:[m [32m"mit"[m[1;38m,[m
+[1;34m"name"[m[1;38m:[m [32m"MIT License"[m[1;38m,[m
+[1;34m"node_id"[m[1;38m:[m [32m"MDc6TGljZW5zZTEz"[m[1;38m,[m
+[1;34m"spdx_id"[m[1;38m:[m [32m"MIT"[m[1;38m,[m
+[1;34m"url"[m[1;38m:[m [32m"https://api.github.com/licenses/mit"[m
+[1;38m}[m[1;38m,[m
+[1;34m"open_issues_count"[m[1;38m:[m 132[1;38m,[m
+[1;34m"pushed_at"[m[1;38m:[m [32m"2026-08-21T18:07:50Z"[m[1;38m,[m
+[1;34m"size"[m[1;38m:[m 434638[1;38m,[m
+[1;34m"stargazers_count"[m[1;38m:[m 52675[1;38m,[m
+[1;34m"updated_at"[m[1;38m:[m [32m"2026-08-21T22:36:39Z"[m
+[1;38m}[m
+branch=release/v3.8.50 sha=3caa59107eb483f39b71bf750ff1e51edd3283fd
+-- root files --
+dir	.github	.github	0
+dir	.husky	.husky	0
+dir	.vale	.vale	0
+dir	.vscode	.vscode	0
+dir	@omniroute	@omniroute	0
+dir	bin	bin	0
+dir	changelog.d	changelog.d	0
+dir	config	config	0
+dir	contrib	contrib	0
+dir	docker	docker	0
+dir	docs	docs	0
+dir	electron	electron	0
+dir	examples	examples	0
+dir	images	images	0
+dir	open-sse	open-sse	0
+dir	packages	packages	0
+dir	public	public	0
+dir	scripts	scripts	0
+dir	skills	skills	0
+dir	src	src	0
+dir	tests	tests	0
+file	.cbmignore	.cbmignore	8229
+file	.dockerignore	.dockerignore	3085
+file	.editorconfig	.editorconfig	171
+file	.env.devin-bridge.example	.env.devin-bridge.example	278
+file	.env.example	.env.example	166459
+file	.env.homolog.example	.env.homolog.example	542
+file	.gitignore	.gitignore	6934
+file	.gitleaks.toml	.gitleaks.toml	4288
+file	.markdownlint.json	.markdownlint.json	464
+file	.mergify.yml	.mergify.yml	3984
+file	.node-version	.node-version	3
+file	.npmignore	.npmignore	2655
+file	.npmrc	.npmrc	720
+file	.nvmrc	.nvmrc	3
+file	.prettierignore	.prettierignore	1328
+file	.size-limit.json	.size-limit.json	475
+file	.trivyignore	.trivyignore	1240
+file	.vale.ini	.vale.ini	603
+file	.zizmor.yml	.zizmor.yml	5679
+file	AGENTS.md	AGENTS.md	58600
+file	CHANGELOG.md	CHANGELOG.md	2237815
+file	CLAUDE.md	CLAUDE.md	4360
+file	CODE_OF_CONDUCT.md	CODE_OF_CONDUCT.md	5434
+file	CONTRIBUTING.md	CONTRIBUTING.md	18897
+file	Dockerfile	Dockerfile	18608
+file	GEMINI.md	GEMINI.md	675
+file	LICENSE	LICENSE	1069
+file	Makefile	Makefile	1873
+file	README.md	README.md	114332
+file	ROADMAP.md	ROADMAP.md	5033
+file	SECURITY.md	SECURITY.md	14581
+file	THIRD_PARTY_NOTICES.md	THIRD_PARTY_NOTICES.md	1322
+file	codecov.yml	codecov.yml	698
+file	docker-compose.prod.yml	docker-compose.prod.yml	3962
+file	docker-compose.yml	docker-compose.yml	11880
+file	eslint.complexity-ratchets.config.mjs	eslint.complexity-ratchets.config.mjs	2038
+file	eslint.complexity.config.mjs	eslint.complexity.config.mjs	2561
+file	eslint.config.mjs	eslint.config.mjs	7656
+file	eslint.sonarjs.config.mjs	eslint.sonarjs.config.mjs	2063
+file	flake.lock	flake.lock	1494
+file	flake.nix	flake.nix	889
+file	fly.toml	fly.toml	881
+file	knip.json	knip.json	1918
+file	llm.txt	llm.txt	38338
+file	news.json	news.json	1405
+file	next.config.mjs	next.config.mjs	28116
+file	package-lock.json	package-lock.json	1366214
+file	package.json	package.json	32021
+file	playwright.config.ts	playwright.config.ts	2507
+file	pnpm-workspace.yaml	pnpm-workspace.yaml	568
+file	pnpm.json	pnpm.json	288
+file	postcss.config.mjs	postcss.config.mjs	108
+file	prettier.config.mjs	prettier.config.mjs	154
+file	promptfooconfig.yaml	promptfooconfig.yaml	1108
+file	socket.yml	socket.yml	872
+file	sonar-project.properties	sonar-project.properties	4521
+file	source.config.ts	source.config.ts	410
+file	stryker.conf.json	stryker.conf.json	29255
+file	stryker.disablebail.json	stryker.disablebail.json	937
+-- candidate manifest paths --
+@omniroute/opencode-plugin/LICENSE
+@omniroute/opencode-plugin/README.md
+@omniroute/opencode-plugin/package.json
+@omniroute/opencode-provider/LICENSE
+@omniroute/opencode-provider/README.md
+@omniroute/opencode-provider/package.json
+AGENTS.md
+Dockerfile
+LICENSE
+README.md
+SECURITY.md
+THIRD_PARTY_NOTICES.md
+bin/cli/README.md
+changelog.d/README.md
+contrib/podman/README.md
+contrib/vps/README.md
+docker/chatgpt-web-codex-browser/Dockerfile
+docker/devin-bridge/Dockerfile
+docker/vnc-browser/README.md
+docker/vnc-browser/chromium/Dockerfile
+docs/README.md
+docs/assets/flags/README.md
+docs/diagrams/README.md
+docs/i18n/README.md
+docs/i18n/ar/README.md
+docs/i18n/ar/SECURITY.md
+docs/i18n/az/README.md
+docs/i18n/az/SECURITY.md
+docs/i18n/bg/README.md
+docs/i18n/bg/SECURITY.md
+docs/i18n/bn/README.md
+docs/i18n/bn/SECURITY.md
+docs/i18n/cs/README.md
+docs/i18n/cs/SECURITY.md
+docs/i18n/da/README.md
+docs/i18n/da/SECURITY.md
+docs/i18n/de/README.md
+docs/i18n/de/SECURITY.md
+docs/i18n/es/README.md
+docs/i18n/es/SECURITY.md
+docs/i18n/fa/README.md
+docs/i18n/fa/SECURITY.md
+docs/i18n/fi/README.md
+docs/i18n/fi/SECURITY.md
+docs/i18n/fr/README.md
+docs/i18n/fr/SECURITY.md
+docs/i18n/gu/README.md
+docs/i18n/gu/SECURITY.md
+docs/i18n/he/README.md
+docs/i18n/he/SECURITY.md
+docs/i18n/hi/README.md
+docs/i18n/hi/SECURITY.md
+docs/i18n/hu/README.md
+docs/i18n/hu/SECURITY.md
+docs/i18n/id/README.md
+docs/i18n/id/SECURITY.md
+docs/i18n/in/README.md
+docs/i18n/in/SECURITY.md
+docs/i18n/it/README.md
+docs/i18n/it/SECURITY.md
+docs/i18n/ja/README.md
+docs/i18n/ja/SECURITY.md
+docs/i18n/ko/README.md
+docs/i18n/ko/SECURITY.md
+docs/i18n/mr/README.md
+docs/i18n/mr/SECURITY.md
+docs/i18n/ms/README.md
+docs/i18n/ms/SECURITY.md
+docs/i18n/nl/README.md
+docs/i18n/nl/SECURITY.md
+docs/i18n/no/README.md
+docs/i18n/no/SECURITY.md
+docs/i18n/phi/README.md
+docs/i18n/phi/SECURITY.md
+docs/i18n/pl/README.md
+docs/i18n/pl/SECURITY.md
+docs/i18n/pl/docs/README.md
+docs/i18n/pt-BR/README.md
+docs/i18n/pt-BR/SECURITY.md
+docs/i18n/pt/README.md
+docs/i18n/pt/SECURITY.md
+docs/i18n/ro/README.md
+docs/i18n/ro/SECURITY.md
+docs/i18n/ru/README.md
+docs/i18n/ru/SECURITY.md
+docs/i18n/sk/README.md
+docs/i18n/sk/SECURITY.md
+docs/i18n/sv/README.md
+docs/i18n/sv/SECURITY.md
+docs/i18n/sw/README.md
+docs/i18n/sw/SECURITY.md
+docs/i18n/ta/README.md
+docs/i18n/ta/SECURITY.md
+docs/i18n/te/README.md
+docs/i18n/te/SECURITY.md
+docs/i18n/th/README.md
+docs/i18n/th/SECURITY.md
+docs/i18n/tr/README.md
+docs/i18n/tr/SECURITY.md
+docs/i18n/uk-UA/README.md
+docs/i18n/uk-UA/SECURITY.md
+docs/i18n/ur/README.md
+docs/i18n/ur/SECURITY.md
+docs/i18n/vi/README.md
+docs/i18n/vi/SECURITY.md
+docs/i18n/zh-CN/README.md
+docs/i18n/zh-CN/SECURITY.md
+docs/i18n/zh-TW/README.md
+docs/i18n/zh-TW/SECURITY.md
+electron/README.md
+electron/package.json
+examples/plugins/langfuse/README.md
+examples/quickstart/README.md
+open-sse/mcp-server/README.md
+open-sse/package.json
+open-sse/services/AGENTS.md
+package.json
+packages/browser-pool/package.json
+skills/README.md
+src/lib/a2a/README.md
+
+=== REPO deepseek-ai/deepseek-harness ===
+[1;38m{[m
+[1;34m"archived"[m[1;38m:[m [33mfalse[m[1;38m,[m
+[1;34m"created_at"[m[1;38m:[m [32m"2026-08-13T11:56:32Z"[m[1;38m,[m
+[1;34m"default_branch"[m[1;38m:[m [32m"master"[m[1;38m,[m
+[1;34m"description"[m[1;38m:[m [32m"DeepSeek Harness: Everything is a Plugin."[m[1;38m,[m
+[1;34m"forks_count"[m[1;38m:[m 19796[1;38m,[m
+[1;34m"full_name"[m[1;38m:[m [32m"deepseek-ai/deepseek-harness"[m[1;38m,[m
+[1;34m"language"[m[1;38m:[m [32m"TypeScript"[m[1;38m,[m
+[1;34m"license"[m[1;38m:[m [1;38m{[m
+[1;34m"key"[m[1;38m:[m [32m"mit"[m[1;38m,[m
+[1;34m"name"[m[1;38m:[m [32m"MIT License"[m[1;38m,[m
+[1;34m"node_id"[m[1;38m:[m [32m"MDc6TGljZW5zZTEz"[m[1;38m,[m
+[1;34m"spdx_id"[m[1;38m:[m [32m"MIT"[m[1;38m,[m
+[1;34m"url"[m[1;38m:[m [32m"https://api.github.com/licenses/mit"[m
+[1;38m}[m[1;38m,[m
+[1;34m"open_issues_count"[m[1;38m:[m 0[1;38m,[m
+[1;34m"pushed_at"[m[1;38m:[m [32m"2026-08-21T12:35:08Z"[m[1;38m,[m
+[1;34m"size"[m[1;38m:[m 108918[1;38m,[m
+[1;34m"stargazers_count"[m[1;38m:[m 181078[1;38m,[m
+[1;34m"updated_at"[m[1;38m:[m [32m"2026-08-21T22:38:39Z"[m
+[1;38m}[m
+branch=master sha=b150a551b8d465e31e418e1b2eaf5e79bbb7d28e
+-- root files --
+dir	.agents	.agents	0
+dir	.claude	.claude	0
+dir	.github	.github	0
+dir	apps	apps	0
+dir	docs	docs	0
+dir	examples	examples	0
+dir	native	native	0
+dir	packages	packages	0
+dir	patches	patches	0
+dir	python	python	0
+dir	scripts	scripts	0
+dir	vendor	vendor	0
+dir	website	website	0
+file	.editorconfig	.editorconfig	286
+file	.gitattributes	.gitattributes	670
+file	.gitignore	.gitignore	690
+file	.gitlab-ci.yml	.gitlab-ci.yml	5618
+file	.jscpd.json	.jscpd.json	351
+file	.oxlintrc.json	.oxlintrc.json	11040
+file	.oxlintrc.staged.json	.oxlintrc.staged.json	473
+file	.rgignore	.rgignore	102
+file	AGENTS.md	AGENTS.md	16070
+file	BENCHMARK.md	BENCHMARK.md	231
+file	BRAND_GUIDELINES.i18n.yaml	BRAND_GUIDELINES.i18n.yaml	439
+file	BRAND_GUIDELINES.md	BRAND_GUIDELINES.md	1986
+file	BRAND_GUIDELINES.zh.md	BRAND_GUIDELINES.zh.md	1609
+file	CLAUDE.md	CLAUDE.md	9
+file	CONTRIBUTING.i18n.yaml	CONTRIBUTING.i18n.yaml	427
+file	CONTRIBUTING.md	CONTRIBUTING.md	1574
+file	CONTRIBUTING.zh.md	CONTRIBUTING.zh.md	1416
+file	LICENSE	LICENSE	1065
+file	README.i18n.yaml	README.i18n.yaml	409
+file	README.md	README.md	2041
+file	README.zh.md	README.zh.md	2971
+file	THIRD_PARTY_NOTICES.md	THIRD_PARTY_NOTICES.md	15936
+file	knip.json	knip.json	15383
+file	lefthook.yml	lefthook.yml	2342
+file	package.json	package.json	10782
+file	pnpm-lock.yaml	pnpm-lock.yaml	698644
+file	pnpm-workspace.yaml	pnpm-workspace.yaml	3311
+file	pytest.ini	pytest.ini	219
+file	tsconfig.base.client.json	tsconfig.base.client.json	451
+file	tsconfig.base.json	tsconfig.base.json	19456
+file	tsconfig.client.json	tsconfig.client.json	5152
+file	tsconfig.host.json	tsconfig.host.json	15032
+file	tsconfig.json	tsconfig.json	684
+file	tsdown.config.ts	tsdown.config.ts	1132
+file	vitest.config.ts	vitest.config.ts	15476
+file	vitest.e2e.config.ts	vitest.e2e.config.ts	2683
+file	vitest.shared.ts	vitest.shared.ts	1482
+file	vitest.snapshot.config.ts	vitest.snapshot.config.ts	3217
+file	vitest.web-stress.config.ts	vitest.web-stress.config.ts	514
+file	vitest.web.config.ts	vitest.web.config.ts	1445
+file	vitest.web.perf.config.ts	vitest.web.perf.config.ts	461
+-- candidate manifest paths --
+.agents/notes/AGENTS.md
+.agents/notes/README.i18n.yaml
+.agents/notes/README.md
+.agents/notes/README.zh.md
+.agents/notes/archived/AGENTS.md
+.agents/notes/archived/manifest.json
+.agents/notes/implemented/AGENTS.md
+.github/AGENTS.md
+AGENTS.md
+LICENSE
+README.i18n.yaml
+README.md
+README.zh.md
+THIRD_PARTY_NOTICES.md
+apps/cli/README.i18n.yaml
+apps/cli/README.md
+apps/cli/README.zh.md
+apps/cli/package.json
+apps/cli/reference/README.i18n.yaml
+apps/cli/reference/README.md
+apps/cli/reference/README.zh.md
+apps/web/package.json
+apps/web/tests/README.i18n.yaml
+apps/web/tests/README.md
+apps/web/tests/README.zh.md
+docs/AGENTS.md
+docs/architecture.md
+docs/i18n/README.i18n.yaml
+docs/i18n/README.md
+docs/i18n/README.zh.md
+docs/postmortem/README.i18n.yaml
+docs/postmortem/README.md
+docs/postmortem/README.zh.md
+docs/subsystems/README.i18n.yaml
+docs/subsystems/README.md
+docs/subsystems/README.zh.md
+examples/AGENTS.md
+examples/README.i18n.yaml
+examples/README.md
+examples/README.zh.md
+examples/acp-agent/README.i18n.yaml
+examples/acp-agent/README.md
+examples/acp-agent/README.zh.md
+examples/acp-agent/package.json
+examples/acp-agent/tests/snapshots/agent-instructions/workspace/AGENTS.md
+examples/acp-agent/tests/snapshots/agent-instructions/workspace/nested/AGENTS.md
+examples/acp-agent/tests/snapshots/code-mode-workspace-context/workspace/AGENTS.md
+examples/acp-agent/tests/snapshots/code-mode-workspace-context/workspace/nested/AGENTS.md
+examples/headless-agent/README.i18n.yaml
+examples/headless-agent/README.md
+examples/headless-agent/README.zh.md
+examples/headless-agent/package.json
+examples/jsonrpc-agent/README.i18n.yaml
+examples/jsonrpc-agent/README.md
+examples/jsonrpc-agent/README.zh.md
+examples/jsonrpc-agent/package.json
+examples/mcp-memory/README.i18n.yaml
+examples/mcp-memory/README.md
+examples/mcp-memory/README.zh.md
+examples/package.json
+examples/web-cordis/README.i18n.yaml
+examples/web-cordis/README.md
+examples/web-cordis/README.zh.md
+examples/web-schedule/README.i18n.yaml
+examples/web-schedule/README.md
+examples/web-schedule/README.zh.md
+native/README.i18n.yaml
+native/README.md
+native/README.zh.md
+native/landlock-run/AGENTS.md
+native/landlock-run/LICENSE
+native/landlock-run/README.i18n.yaml
+native/landlock-run/README.md
+native/landlock-run/README.zh.md
+native/landlock-run/docs/architecture.md
+native/landlock-run/package.json
+native/landlock-run/packages/entry/README.i18n.yaml
+native/landlock-run/packages/entry/README.md
+native/landlock-run/packages/entry/README.zh.md
+native/landlock-run/packages/entry/package.json
+native/landlock-run/packages/linux-arm64/LICENSE
+native/landlock-run/packages/linux-arm64/README.i18n.yaml
+native/landlock-run/packages/linux-arm64/README.md
+native/landlock-run/packages/linux-arm64/README.zh.md
+native/landlock-run/packages/linux-arm64/package.json
+native/landlock-run/packages/linux-x64/LICENSE
+native/landlock-run/packages/linux-x64/README.i18n.yaml
+native/landlock-run/packages/linux-x64/README.md
+native/landlock-run/packages/linux-x64/README.zh.md
+native/landlock-run/packages/linux-x64/package.json
+package.json
+packages/AGENTS.md
+packages/README.i18n.yaml
+packages/README.md
+packages/README.zh.md
+packages/acp/README.i18n.yaml
+packages/acp/README.md
+packages/acp/README.zh.md
+packages/acp/acp/README.i18n.yaml
+packages/acp/acp/README.md
+packages/acp/acp/README.zh.md
+packages/acp/acp/package.json
+packages/api/README.i18n.yaml
+packages/api/README.md
+packages/api/README.zh.md
+packages/api/gateway/README.i18n.yaml
+packages/api/gateway/README.md
+packages/api/gateway/README.zh.md
+packages/api/gateway/package.json
+packages/api/remotes/README.i18n.yaml
+packages/api/remotes/README.md
+packages/api/remotes/README.zh.md
+packages/api/remotes/package.json
+packages/attachment/README.i18n.yaml
+packages/attachment/README.md
+packages/attachment/README.zh.md
+packages/attachment/attachment-local/README.i18n.yaml
+packages/attachment/attachment-local/README.md
+packages/attachment/attachment-local/README.zh.md
+packages/attachment/attachment-local/package.json
