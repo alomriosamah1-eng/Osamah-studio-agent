@@ -11,7 +11,7 @@
 | 2026-08-22 | Implementation | Mobile detection and capability matrix | منع تشغيل scripts واختلاق iOS support | `src/domain/mobile.ts`, `src/application/mobile-services.ts`, tests | 3 tests passed | pending | pending | preview adapter |
 | 2026-08-22 | Implementation | Lightweight preview contract and prototype | إثبات device frame/orientation/theme/screenshot | `src/mobile/preview.ts`, `prototypes/mobile-preview/index.html` | 1 adapter test + browser verification passed | `3e81421` | pushed/verified | review |
 | 2026-08-22 | Review/Delivery | مراجعة Architecture/Security/Performance/Open Source/UX/Mobile/AI/Docs/GitHub | كشف الضعف وتثبيت حدود الحقيقة | `research/review-round-3.md`, `research/direct-dependency-license-review.txt`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `pnpm check`: 8/8; JSON/secret/diff checks passed; local=remote | `d9e6e0c` | verified on `origin/main` | next adapter: SQLite/IPC or Metro |
-| 2026-08-22 | Delivery | تحديث `FINAL_REPORT.md` وتثبيت آخر حالة/hash | جعل التسليم النهائي يعكس كل التنفيذ والفحوص | `FINAL_REPORT.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `git diff --check` passed; report commit pushed and verified | `befabc8` then state close pending | verified on `origin/main` | await next adapter decision |
+| 2026-08-22 | Delivery | تحديث `FINAL_REPORT.md` وتثبيت آخر حالة/hash | جعل التسليم النهائي يعكس كل التنفيذ والفحوص | `FINAL_REPORT.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `git diff --check` passed; report commit pushed and verified | `8104e77` | verified on `origin/main` | await next adapter decision |
 
 ## قاعدة السجل
 
