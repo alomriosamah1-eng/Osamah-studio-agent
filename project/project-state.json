@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "project": "Osamah Studio Agent",
+  "repository": "https://github.com/alomriosamah1-eng/Osamah-studio-agent",
+  "as_of": "2026-08-21",
+  "phase": "discovery",
+  "status": "research-baseline-complete-documentation-in-progress",
+  "repository_baseline": {
+    "is_empty_at_start": true,
+    "initial_commit": "0f57e1280cd0e29b160a5fb4bb671bca6d9d830d",
+    "remote_main_verified": true
+  },
+  "evidence": {
+    "verified": [
+      "target repository was empty before work",
+      "OpenCode, Hermes Agent, OmniRoute, and DeepSeek Harness official repositories identified",
+      "44 ecosystem candidates collected from GitHub API",
+      "first baseline commit pushed to origin/main"
+    ],
+    "unknown": [
+      "OpenTo Desktop official identity and integration contract",
+      "production Arabic/Yemeni speech quality and model rights",
+      "commercial distribution policy and target hardware baseline"
+    ]
+  },
+  "decisions": {
+    "desktop_architecture": "modular-monolith-with-process-isolation",
+    "mvp_shell": "electron-temporary-decision",
+    "local_data": "sqlite-fts5-filesystem-object-store",
+    "provider_policy": "local-first-free-first-capability-aware",
+    "opento": "adapter-contract-only-until-verified",
+    "agents": "up-to-70-definitions-with-concurrency-cap"
+  },
+  "mvp_scope": [
+    "workspace and project context",
+    "single agent session",
+    "plan and approval flow",
+    "bounded read/write tools",
+    "local provider plus optional OpenAI-compatible provider",
+    "SQLite sessions and FTS5 search",
+    "Git status/diff/local commit approval",
+    "Markdown/PDF production path",
+    "basic skill registry"
+  ],
+  "deferred": [
+    "full OpenTo integration",
+    "autonomous unbounded automation",
+    "voice and Arabic dialect guarantee",
+    "video generation",
+    "70 concurrent agents",
+    "multi-user cloud control plane"
+  ],
+  "next_actions": [
+    "finish documentation audit",
+    "add requirements traceability matrix",
+    "add CI skeleton only after documented architecture",
+    "obtain OpenTo official specification",
+    "prototype workspace/session/read-only agent slice"
+  ]
+}

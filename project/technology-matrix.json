@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-21",
+  "entries": [
+    {
+      "area": "desktop-shell",
+      "selected": "Electron",
+      "alternatives": ["Tauri", "native-Windows", "PWA"],
+      "decision": "MVP",
+      "confidence": "medium-high",
+      "reason": "OpenCode and Hermes demonstrate Electron packaging with PTY, Node, IPC, and Windows/Linux targets; Tauri remains a smaller-footprint follow-up candidate.",
+      "source": "https://v2.tauri.app/concept/architecture/"
+    },
+    {
+      "area": "frontend",
+      "selected": "React + TypeScript (provisional)",
+      "alternatives": ["SolidJS", "Svelte"],
+      "decision": "prototype-required",
+      "confidence": "medium",
+      "reason": "React has broad ecosystem; SolidJS aligns with OpenCode. Freeze after shell prototype.",
+      "source": "https://github.com/anomalyco/opencode"
+    },
+    {
+      "area": "local-data",
+      "selected": "SQLite + FTS5 + filesystem object store",
+      "alternatives": ["PostgreSQL", "DuckDB", "Qdrant", "LanceDB"],
+      "decision": "MVP",
+      "confidence": "high",
+      "reason": "Portable local-first metadata and session storage; vector layer can remain optional.",
+      "source": "https://github.com/NousResearch/hermes-agent/blob/main/website/docs/developer-guide/architecture.md"
+    },
+    {
+      "area": "agent-orchestration",
+      "selected": "internal supervisor + DAG + isolated workers",
+      "alternatives": ["LangGraph", "CrewAI", "AutoGen", "Temporal"],
+      "decision": "MVP",
+      "confidence": "medium",
+      "reason": "Keeps desktop contracts and permissions under project control; external frameworks remain reference/adapters.",
+      "source": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md"
+    },
+    {
+      "area": "provider-routing",
+      "selected": "internal registry inspired by OmniRoute",
+      "alternatives": ["full OmniRoute embed", "direct provider calls"],
+      "decision": "MVP",
+      "confidence": "high",
+      "reason": "Avoids lock-in and permits local/free-first policies without importing a large product runtime.",
+      "source": "https://github.com/diegosouzapw/OmniRoute"
+    },
+    {
+      "area": "voice",
+      "selected": "optional workers: faster-whisper + Silero VAD + Piper candidate",
+      "alternatives": ["remote STT/TTS", "Whisper + remote TTS"],
+      "decision": "post-MVP",
+      "confidence": "medium",
+      "reason": "Quality, Arabic dialect support, model rights, and resource costs require benchmark.",
+      "source": "https://github.com/SYSTRAN/faster-whisper"
+    },
+    {
+      "area": "documents",
+      "selected": "Markdown first, qpdf/pdfcpu workers",
+      "alternatives": ["Pandoc", "LibreOffice headless"],
+      "decision": "MVP",
+      "confidence": "medium-high",
+      "reason": "Smaller permissive path; copyleft converters remain optional pending legal review.",
+      "source": "https://github.com/qpdf/qpdf"
+    },
+    {
+      "area": "protocol",
+      "selected": "MCP client behind consent and policy",
+      "alternatives": ["custom plugin API only"],
+      "decision": "MVP contract; implementation gated",
+      "confidence": "medium-high",
+      "reason": "MCP standardizes host/client/server and tools/resources/prompts, but tool safety stays local responsibility.",
+      "source": "https://modelcontextprotocol.io/specification/2026-07-28"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+=== REQUIRED DOCUMENT CHECK ===
+OK docs/README.md
+OK docs/00-project-overview.md
+OK docs/01-executive-summary.md
+OK docs/02-feasibility-study.md
+OK docs/03-product-requirements.md
+OK docs/04-functional-requirements.md
+OK docs/05-non-functional-requirements.md
+OK docs/06-system-architecture.md
+OK docs/07-ai-agent-architecture.md
+OK docs/08-open-source-landscape.md
+OK docs/09-frontend-architecture.md
+OK docs/10-backend-architecture.md
+OK docs/11-data-architecture.md
+OK docs/12-ux-ui-analysis.md
+OK docs/13-voice-system.md
+OK docs/14-provider-routing.md
+OK docs/15-memory-system.md
+OK docs/16-automation-system.md
+OK docs/17-security-model.md
+OK docs/18-performance-engineering.md
+OK docs/19-devops-and-ci-cd.md
+OK docs/20-github-actions.md
+OK docs/21-open-to-integration.md
+OK docs/22-second-brain.md
+OK docs/23-production-studio.md
+OK docs/24-smart-development-environment.md
+OK docs/25-project-roadmap.md
+OK docs/26-risk-register.md
+OK docs/27-technology-decision-records.md
+OK docs/28-open-source-license-audit.md
+OK docs/29-research-sources.md
+OK docs/30-ai-agent-handoff.md
+OK PROJECT_STATUS.md
+OK PROJECT_CONTEXT.md
+OK ARCHITECTURE_DECISIONS.md
+OK CONTRIBUTING.md
+OK CHANGELOG.md
+OK project/project-state.json
+OK project/technology-matrix.json
+OK project/open-source-components.json
+OK project/requirements.json
+OK project/risks.json
+missing_count=0
+=== JSON VALIDATION ===
+OK project/open-source-components.json
+OK project/project-state.json
+OK project/requirements.json
+OK project/risks.json
+OK project/technology-matrix.json
+OK NDJSON research/ecosystem-github-metadata.ndjson
+json_failed=0
+=== GIT DIFF CHECK ===
+diff_check_exit=0
+=== LOCAL LINK TARGET CHECK ===
+link_failed=0
+=== STATUS ===
+## [32mmain[m...[31morigin/main[m
+ [31mM[m PROJECT_STATUS.md
+ [31mM[m docs/README.md
+[31m??[m ARCHITECTURE_DECISIONS.md
+[31m??[m CHANGELOG.md
+[31m??[m CONTRIBUTING.md
+[31m??[m PROJECT_CONTEXT.md
+[31m??[m docs/00-project-overview.md
+[31m??[m docs/01-executive-summary.md
+[31m??[m docs/02-feasibility-study.md
+[31m??[m docs/03-product-requirements.md
+[31m??[m docs/04-functional-requirements.md
+[31m??[m docs/05-non-functional-requirements.md
+[31m??[m docs/06-system-architecture.md
+[31m??[m docs/07-ai-agent-architecture.md
+[31m??[m docs/08-open-source-landscape.md
+[31m??[m docs/09-frontend-architecture.md
+[31m??[m docs/10-backend-architecture.md
+[31m??[m docs/11-data-architecture.md
+[31m??[m docs/12-ux-ui-analysis.md
+[31m??[m docs/13-voice-system.md
+[31m??[m docs/14-provider-routing.md
+[31m??[m docs/15-memory-system.md
+[31m??[m docs/16-automation-system.md
+[31m??[m docs/17-security-model.md
+[31m??[m docs/18-performance-engineering.md
+[31m??[m docs/19-devops-and-ci-cd.md
+[31m??[m docs/20-github-actions.md
+[31m??[m docs/21-open-to-integration.md
+[31m??[m docs/22-second-brain.md
+[31m??[m docs/23-production-studio.md
+[31m??[m docs/24-smart-development-environment.md
+[31m??[m docs/25-project-roadmap.md
+[31m??[m docs/26-risk-register.md
+[31m??[m docs/27-technology-decision-records.md
+[31m??[m docs/28-open-source-license-audit.md
+[31m??[m docs/29-research-sources.md
+[31m??[m docs/30-ai-agent-handoff.md
+[31m??[m docs/32-traceability-matrix.md
+[31m??[m project/
+[31m??[m research/qa-report.txt

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-21",
+  "requirements": [
+    {"id":"FR-001","summary":"Create and open local workspace","priority":"P0","stage":"MVP","feature":"workspace","architecture":"core/workspace","component":"WorkspaceService","technology":"filesystem + SQLite","test":"workspace-open-smoke","acceptance":"Reopens same workspace without losing state"},
+    {"id":"FR-005","summary":"Editable plan before execution","priority":"P0","stage":"MVP","feature":"planning","architecture":"orchestrator","component":"PlanService","technology":"DAG + JSON schema","test":"plan-contract","acceptance":"Shows steps, files, dependencies, and risk"},
+    {"id":"FR-006","summary":"Approval for sensitive actions","priority":"P0","stage":"MVP","feature":"policy","architecture":"policy-engine","component":"ApprovalService","technology":"typed IPC + audit","test":"approval-gate","acceptance":"High-risk tool cannot execute without approval event"},
+    {"id":"FR-009","summary":"Bounded terminal execution","priority":"P0","stage":"MVP","feature":"terminal","architecture":"isolated-worker","component":"TerminalRunner","technology":"PTY + process supervisor","test":"terminal-policy","acceptance":"Timeout, cwd, env, and deny rules enforced"},
+    {"id":"FR-013","summary":"Provider registry","priority":"P0","stage":"MVP","feature":"providers","architecture":"provider-router","component":"ProviderRegistry","technology":"capability manifests","test":"provider-contract","acceptance":"Provider can be registered without UI rewrite"},
+    {"id":"FR-020","summary":"Arabic/English text search","priority":"P0","stage":"MVP","feature":"search","architecture":"data-layer","component":"SearchService","technology":"SQLite FTS5","test":"fts-bilingual","acceptance":"Returns scoped results in both languages"},
+    {"id":"FR-023","summary":"Markdown output with citations","priority":"P0","stage":"MVP","feature":"production","architecture":"artifact-pipeline","component":"MarkdownAssembler","technology":"Markdown + source registry","test":"citation-integrity","acceptance":"No citation without source record"},
+    {"id":"FR-030","summary":"Approved Git operations","priority":"P0","stage":"MVP","feature":"git","architecture":"integration-adapter","component":"GitAdapter","technology":"git/gh","test":"git-approval","acceptance":"Commit displays diff and requires approval"},
+    {"id":"FR-035","summary":"Dynamic RTL/LTR and localization","priority":"P1","stage":"MVP","feature":"i18n","architecture":"frontend","component":"LocaleProvider","technology":"i18n + CSS logical props","test":"rtl-ltr-smoke","acceptance":"Direction changes without restart"},
+    {"id":"FR-038","summary":"OpenTo adapter placeholder","priority":"P1","stage":"Discovery","feature":"opento","architecture":"adapter-contract","component":"OpenToAdapter","technology":"unknown until verified","test":"not-configured-contract","acceptance":"Fails closed when official spec is absent"},
+    {"id":"NFR-001","summary":"Warm startup under three seconds","priority":"P0","stage":"Foundation","feature":"performance","architecture":"desktop-shell","component":"StartupTrace","technology":"Electron profiling","test":"startup-benchmark","acceptance":"p95 warm start <3s on Tier 1"},
+    {"id":"NFR-011","summary":"Prompt injection resistance","priority":"P0","stage":"Core","feature":"security","architecture":"policy/data-separation","component":"InstructionBoundary","technology":"content labeling + approval","test":"injection-fixtures","acceptance":"Untrusted file text cannot change policy"},
+    {"id":"NFR-029","summary":"Pinned dependencies and SBOM","priority":"P1","stage":"CI","feature":"supply-chain","architecture":"devops","component":"SecurityWorkflow","technology":"lockfiles + SBOM","test":"license-and-sbom","acceptance":"Build publishes machine-readable report"}
+  ],
+  "full_catalog": "docs/04-functional-requirements.md and docs/05-non-functional-requirements.md",
+  "traceability_policy": "Every P0 requirement must have an executable or contract test before beta."
+}

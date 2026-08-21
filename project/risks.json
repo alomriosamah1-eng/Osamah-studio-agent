@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-21",
+  "risks": [
+    {"id":"R-001","description":"OpenTo identity and API are not verified","probability":"high","impact":"high","severity":"critical","trigger":"No official URL or read-only POC","mitigation":"Adapter contract and mock only","contingency":"File/project import without native integration","owner":"product-owner","status":"open"},
+    {"id":"R-002","description":"Scope attempts all three environments and 70 agents at once","probability":"high","impact":"high","severity":"critical","trigger":"No frozen MVP acceptance","mitigation":"Phase roadmap and concurrency cap","contingency":"Remove Studio/Voice/Automation from beta","owner":"project-manager","status":"open"},
+    {"id":"R-003","description":"Prompt injection through files, web, or MCP","probability":"high","impact":"high","severity":"critical","trigger":"Untrusted content reaches tool planner","mitigation":"Data/instruction boundary, risk policy, approval","contingency":"Cancel job, isolate source, incident review","owner":"security-architect","status":"open"},
+    {"id":"R-004","description":"License incompatibility from copyleft or unknown dependencies","probability":"medium","impact":"high","severity":"high","trigger":"AGPL/GPL/NOASSERTION component in distribution","mitigation":"SBOM and license gates","contingency":"Replace with permissive adapter or keep external","owner":"compliance","status":"open"},
+    {"id":"R-005","description":"Native dependencies fail on Windows","probability":"medium","impact":"high","severity":"high","trigger":"CI matrix build or packaged smoke failure","mitigation":"Optional deps, Windows CI, fallback mode","contingency":"Disable optional worker for target","owner":"devops","status":"open"},
+    {"id":"R-006","description":"Provider quota or outage","probability":"high","impact":"medium","severity":"high","trigger":"429, timeout, auth, or degraded quality","mitigation":"health registry, circuit breaker, fallback","contingency":"local provider or queued manual mode","owner":"provider-owner","status":"open"},
+    {"id":"R-007","description":"Arabic/Yemeni voice quality does not meet product bar","probability":"high","impact":"medium","severity":"high","trigger":"WER/MOS/latency benchmark failure","mitigation":"voice optional, text fallback","contingency":"defer voice or use disclosed provider","owner":"voice-owner","status":"open"},
+    {"id":"R-008","description":"Unbounded agents/jobs exhaust resources","probability":"high","impact":"high","severity":"critical","trigger":"RSS/CPU saturation or queue starvation","mitigation":"worker caps and resource governor","contingency":"stop lower-priority jobs and resume later","owner":"orchestration","status":"open"}
+  ]
+}

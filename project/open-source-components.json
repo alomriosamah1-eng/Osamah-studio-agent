@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-21",
+  "source_snapshot": "research/ecosystem-github-metadata.ndjson",
+  "components": [
+    {"project":"anomalyco/opencode","url":"https://github.com/anomalyco/opencode","license":"MIT","classification":"ADAPT/WRAP","role":"coding-agent and desktop patterns","status":"research"},
+    {"project":"NousResearch/hermes-agent","url":"https://github.com/NousResearch/hermes-agent","license":"MIT","classification":"ADAPT/WRAP","role":"memory, skills, gateway, cron, subagents","status":"research"},
+    {"project":"diegosouzapw/OmniRoute","url":"https://github.com/diegosouzapw/OmniRoute","license":"MIT","version":"3.8.50 snapshot","classification":"REFERENCE/ADAPT","role":"provider routing and fallback","status":"research"},
+    {"project":"deepseek-ai/deepseek-harness","url":"https://github.com/deepseek-ai/deepseek-harness","license":"MIT","classification":"REFERENCE/ADAPT","role":"plugin seams and event composition","status":"research"},
+    {"project":"electron/electron","url":"https://github.com/electron/electron","license":"MIT","classification":"USE","role":"MVP desktop shell","status":"provisional"},
+    {"project":"tauri-apps/tauri","url":"https://github.com/tauri-apps/tauri","license":"MIT/Apache-2.0","classification":"REFERENCE/FUTURE","role":"smaller shell alternative","status":"benchmark-later"},
+    {"project":"microsoft/monaco-editor","url":"https://github.com/microsoft/monaco-editor","license":"MIT","classification":"USE","role":"code editor","status":"candidate"},
+    {"project":"xtermjs/xterm.js","url":"https://github.com/xtermjs/xterm.js","license":"MIT","classification":"USE","role":"terminal renderer","status":"candidate"},
+    {"project":"modelcontextprotocol/typescript-sdk","url":"https://github.com/modelcontextprotocol/typescript-sdk","license":"NOASSERTION snapshot","classification":"WRAP after audit","role":"MCP client","status":"license-check-required"},
+    {"project":"qdrant/qdrant","url":"https://github.com/qdrant/qdrant","license":"Apache-2.0","classification":"OPTIONAL WRAP","role":"vector service","status":"defer"},
+    {"project":"lancedb/lancedb","url":"https://github.com/lancedb/lancedb","license":"Apache-2.0","classification":"OPTIONAL ADAPT","role":"embedded vector store","status":"benchmark-later"},
+    {"project":"openai/whisper","url":"https://github.com/openai/whisper","license":"MIT","classification":"OPTIONAL WRAP","role":"multilingual STT","status":"post-MVP"},
+    {"project":"SYSTRAN/faster-whisper","url":"https://github.com/SYSTRAN/faster-whisper","license":"MIT","classification":"OPTIONAL USE","role":"efficient STT","status":"post-MVP"},
+    {"project":"rhasspy/piper","url":"https://github.com/rhasspy/piper","license":"MIT","classification":"OPTIONAL WRAP","role":"local TTS","status":"Arabic-model-check-required"},
+    {"project":"snakers4/silero-vad","url":"https://github.com/snakers4/silero-vad","license":"MIT","classification":"OPTIONAL USE","role":"VAD","status":"post-MVP"},
+    {"project":"FFmpeg/FFmpeg","url":"https://github.com/FFmpeg/FFmpeg","license":"configuration-dependent","classification":"WRAP with notices","role":"media conversion","status":"legal-build-profile-required"},
+    {"project":"qpdf/qpdf","url":"https://github.com/qpdf/qpdf","license":"Apache-2.0","classification":"USE","role":"PDF operations","status":"candidate"},
+    {"project":"pdfcpu/pdfcpu","url":"https://github.com/pdfcpu/pdfcpu","license":"Apache-2.0","classification":"USE/WRAP","role":"PDF worker","status":"candidate"},
+    {"project":"cli/cli","url":"https://github.com/cli/cli","license":"MIT","classification":"USE","role":"GitHub operations","status":"candidate"},
+    {"project":"gitleaks/gitleaks","url":"https://github.com/gitleaks/gitleaks","license":"MIT","classification":"USE in CI","role":"secret scanning","status":"candidate"},
+    {"project":"aquasecurity/trivy","url":"https://github.com/aquasecurity/trivy","license":"Apache-2.0","classification":"USE in CI","role":"dependency/container scanning","status":"candidate"},
+    {"project":"ollama/ollama","url":"https://github.com/ollama/ollama","license":"MIT","classification":"WRAP optional","role":"local model management","status":"candidate"},
+    {"project":"ggml-org/llama.cpp","url":"https://github.com/ggml-org/llama.cpp","license":"MIT","classification":"WRAP optional","role":"local inference","status":"candidate"}
+  ],
+  "legal_review_required": ["AGPL/GPL components", "NOASSERTION licenses", "model weights and voice assets", "FFmpeg build configuration", "third-party transitive dependencies"]
+}
