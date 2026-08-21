@@ -1,6 +1,10 @@
 import { FoundationUseCases } from "./application/use-cases.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import { FixedClock, InMemoryEventBus, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
+import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
+import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
+import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
+import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
 
 export const createFoundation = (): { useCases: FoundationUseCases; dependencies: ApplicationDependencies } => {
   const repositories = new InMemoryRepositories();
@@ -15,4 +19,12 @@ export const createFoundation = (): { useCases: FoundationUseCases; dependencies
     ids: new IncrementingIds(),
   };
   return { useCases: new FoundationUseCases(dependencies), dependencies };
+};
+
+export const createEmbeddedApplication = () => {
+  const foundation = createFoundation();
+  const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter());
+  const ipc = new InMemoryIpcTransport();
+  registerEmbeddedSimulatorHandlers(ipc, controller);
+  return { ...foundation, controller, ipc };
 };

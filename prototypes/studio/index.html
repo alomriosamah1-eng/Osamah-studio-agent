@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Osamah Studio Agent — Embedded Simulator Workspace</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0a0e18; --panel:#111827; --panel2:#172235; --line:#273650; --text:#e8eef8; --muted:#91a1bb; --cyan:#7dd3fc; --green:#7ef2c5; --yellow:#f7d774; --red:#ff9090; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; background:#090d16; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,sans-serif; font-size:13px; overflow:hidden; }
+    button,select { color:inherit; background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:7px 9px; cursor:pointer; font:inherit; }
+    button:hover,select:hover { border-color:var(--cyan); }
+    .app { display:grid; grid-template-rows:48px 1fr 24px; height:100vh; }
+    .top { display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line); background:#0d1422; padding:0 14px; }
+    .logo { font-weight:750; letter-spacing:.01em; white-space:nowrap; }
+    .crumb { color:var(--muted); white-space:nowrap; }
+    .top-spacer { flex:1; }
+    .chip { padding:4px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:11px; }
+    .chip.live { color:var(--green); border-color:rgba(126,242,197,.4); }
+    .toolbar { display:flex; gap:6px; }
+    .toolbar button { padding:6px 8px; font-size:12px; }
+    .layout { display:grid; grid-template-columns:220px minmax(650px,1fr) 300px; min-height:0; }
+    .panel { background:var(--panel); min-width:0; min-height:0; }
+    .left { border-right:1px solid var(--line); padding:13px 10px; overflow:auto; }
+    .right { border-left:1px solid var(--line); padding:13px 12px; overflow:auto; }
+    .section-title { color:var(--muted); font-size:10px; letter-spacing:.13em; text-transform:uppercase; margin:12px 6px 8px; }
+    .project { padding:10px; background:linear-gradient(135deg,rgba(125,211,252,.09),rgba(126,242,197,.04)); border:1px solid var(--line); border-radius:9px; }
+    .project strong { display:block; font-size:13px; }
+    .project span { display:block; color:var(--muted); margin-top:3px; font-size:11px; }
+    .tree { display:grid; gap:2px; }
+    .tree button { border:0; background:transparent; text-align:left; padding:6px 8px; color:#bbc8dc; }
+    .tree button:hover,.tree button.active { background:rgba(125,211,252,.11); color:var(--text); }
+    .tree .folder { color:var(--cyan); }
+    .tree .indent { padding-left:25px; }
+    .hint { color:var(--muted); font-size:11px; line-height:1.5; padding:8px; border-left:2px solid var(--cyan); background:rgba(125,211,252,.05); }
+    .center { padding:12px; min-width:0; min-height:0; display:grid; grid-template-rows:38px minmax(270px, .85fr) minmax(330px, 1.15fr); gap:10px; background:#0c1220; }
+    .tabs { display:flex; align-items:center; gap:2px; min-width:0; overflow:hidden; }
+    .tab { border-radius:6px 6px 0 0; border-bottom-color:var(--cyan); white-space:nowrap; }
+    .tab small { color:var(--muted); margin-left:5px; }
+    .editor { min-height:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0b111e; display:grid; grid-template-rows:30px 1fr; }
+    .editor-head { display:flex; align-items:center; justify-content:space-between; padding:0 10px; background:#121c2d; border-bottom:1px solid var(--line); color:var(--muted); font-size:11px; }
+    pre { margin:0; padding:12px 15px; overflow:auto; font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; color:#d9e7f8; counter-reset:line; }
+    .code-line { display:block; }
+    .ln { display:inline-block; width:28px; color:#52627c; user-select:none; }
+    .kw { color:#c792ea; }.fn { color:#82aaff; }.str { color:#c3e88d; }.com { color:#637895; }.prop { color:#ffcb6b; }
+    .preview-wrap { min-height:0; border:1px solid var(--line); border-radius:10px; background:radial-gradient(circle at 50% 0,rgba(125,211,252,.11),transparent 55%),#0b111e; display:grid; grid-template-columns:1fr 285px; overflow:hidden; }
+    .preview-main { padding:12px; min-width:0; display:grid; grid-template-rows:33px 1fr; gap:8px; }
+    .preview-header { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .preview-title { font-weight:700; }.preview-sub { color:var(--muted); font-size:11px; margin-top:2px; }
+    .preview-actions { display:flex; gap:5px; }
+    .preview-stage { min-height:0; display:grid; place-items:center; overflow:auto; border:1px dashed var(--line); border-radius:9px; }
+    .phone { width:180px; height:356px; padding:6px; border:7px solid #252b3a; border-radius:28px; background:#04070c; box-shadow:0 15px 45px rgba(0,0,0,.55), inset 0 0 0 1px #536078; transition:.22s ease; }
+    .phone.landscape { width:356px; height:180px; }
+    .screen { height:100%; border-radius:19px; overflow:hidden; background:#f5f8fb; color:#18253b; display:grid; grid-template-rows:19px 1fr 31px; }
+    .dark .screen { background:#101623; color:#edf4fc; }
+    .phone-status { display:flex; justify-content:space-between; align-items:center; padding:0 9px; font-size:7px; background:rgba(0,0,0,.07); }
+    .phone-app { padding:17px 13px 10px; overflow:auto; }.phone-app h1 { font-size:18px; margin:7px 0 7px; letter-spacing:-.04em; }.phone-app p { font-size:9px; line-height:1.4; color:#71809b; }.dark .phone-app p { color:#aab8ca; }
+    .mini-card { border-radius:11px; margin-top:11px; padding:9px; font-size:9px; background:linear-gradient(135deg,#d9f7ef,#dceeff); color:#14312c; }.dark .mini-card { background:linear-gradient(135deg,#183d42,#203453); color:#e9fff7; }.mini-card b { display:block; margin-bottom:4px; }
+    .phone-tabs { display:flex; justify-content:space-around; align-items:center; font-size:7px; border-top:1px solid rgba(0,0,0,.1); }.phone-tabs b { color:#138b70; }
+    .preview-inspector { border-left:1px solid var(--line); padding:11px; background:rgba(9,14,24,.68); overflow:auto; }
+    .small-title { font-size:10px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; margin:4px 0 8px; }
+    .kv { display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid rgba(39,54,80,.6); padding:7px 0; font-size:11px; }.kv:last-child { border-bottom:0; }.kv span:last-child { color:var(--muted); text-align:right; }
+    .log { background:#080c14; border:1px solid var(--line); border-radius:8px; padding:9px; margin-top:12px; font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; color:#b8cae4; }.log .ok { color:var(--green); }.log .warn { color:var(--yellow); }
+    .statusbar { border-top:1px solid var(--line); background:#0b111c; display:flex; align-items:center; padding:0 10px; color:var(--muted); font-size:10px; gap:15px; }.statusbar b { color:var(--green); }
+    @media(max-width:1180px) { .layout { grid-template-columns:185px minmax(520px,1fr); }.right { display:none; } }
+    @media(max-width:800px) { body { overflow:auto; }.app { height:auto; min-height:100vh; }.layout { display:block; }.left { border-right:0; border-bottom:1px solid var(--line); }.center { min-height:950px; }.toolbar { display:none; } }
+  </style>
+</head>
+<body>
+  <div class="app" id="root">
+    <header class="top">
+      <div class="logo">Osamah Studio Agent</div><div class="crumb">/ Workspace / Mobile App</div><span class="chip live">EMBEDDED SIMULATOR</span><div class="top-spacer"></div>
+      <div class="toolbar"><button id="run">Run</button><button id="stop">Stop</button><button id="refresh">Fast Refresh</button><button id="capture">Capture</button><button id="approve">Approve Change</button></div>
+    </header>
+    <div class="layout">
+      <aside class="panel left">
+        <div class="project"><strong>Mobile App</strong><span>Expo · compatibility preview</span><span id="projectState">session ready</span></div>
+        <div class="section-title">Project files</div>
+        <div class="tree">
+          <button class="folder">▾ app/</button><button class="indent file active" data-file="index.tsx">◻ index.tsx</button><button class="indent file" data-file="settings.tsx">◻ settings.tsx</button><button class="indent file" data-file="_layout.tsx">◻ _layout.tsx</button>
+          <button class="folder">▾ components/</button><button class="indent file" data-file="HomeCard.tsx">◻ HomeCard.tsx</button><button class="indent file" data-file="DeviceStatus.tsx">◻ DeviceStatus.tsx</button>
+          <button class="folder">▾ assets/</button><button class="indent file" data-file="icon.png">◉ icon.png</button><button>◻ package.json</button><button>◻ app.json</button><button>◻ metro.config.js</button>
+        </div>
+        <div class="section-title">Tools</div>
+        <div class="tree"><button>▣ Agent Tasks</button><button>⌁ Git Changes</button><button>◉ Artifacts</button><button>⚙ Project Doctor</button></div>
+        <div class="section-title">Boundary</div><div class="hint">المحاكي مدمج في Workspace. Native modules غير المدعومة تظهر كتحذير ولا تُعامل كنجاح زائف.</div>
+      </aside>
+      <main class="center">
+        <div class="tabs"><button class="tab" id="tabName">index.tsx <small>●</small></button><button>+ New</button><div class="top-spacer"></div><span class="chip">TypeScript</span></div>
+        <section class="editor"><div class="editor-head"><span id="path">app/index.tsx</span><span>Ln 18, Col 3 · UTF-8 · TSX</span></div><pre id="code"></pre></section>
+        <section class="preview-wrap">
+          <div class="preview-main">
+            <div class="preview-header"><div><div class="preview-title">Embedded Mobile Simulator</div><div class="preview-sub" id="previewSub">Pixel 9 · Android 15 · lightweight_web</div></div><div class="preview-actions"><select id="deviceSelect"><option value="pixel">Pixel 9</option><option value="iphone">iPhone 16</option><option value="tablet">Android Tablet</option></select><button id="rotate">Rotate</button><button id="theme">Dark</button></div></div>
+            <div class="preview-stage"><div class="phone" id="phone"><div class="screen"><div class="phone-status"><span>9:41</span><span>▮▮▮ 5G　▰</span></div><div class="phone-app"><span id="pill">android / embedded</span><h1 id="phoneTitle">Build with clarity.</h1><p id="phoneText">Edit the project on the left, run the preview here, inspect events on the right, and keep native validation explicit.</p><div class="mini-card"><b>Preview session</b><span id="phoneCard">Fast Refresh ready · state preserved</span></div><div class="mini-card"><b>Current file</b><span id="phoneFile">app/index.tsx</span></div></div><div class="phone-tabs"><b>Home</b><span>Code</span><span>Logs</span><span>Settings</span></div></div></div></div>
+          </div>
+          <aside class="preview-inspector"><div class="small-title">Device inspector</div><div id="deviceKv"></div><div class="small-title" style="margin-top:14px">Session console</div><div class="log" id="log"><div><span class="ok">[ready]</span> embedded session connected</div><div>[profile] Pixel 9 · 1080×2424</div><div>[transport] lightweight_web</div></div></aside>
+        </section>
+      </main>
+      <aside class="panel right"><div class="small-title">Workspace inspector</div><div class="project"><strong id="rightStatus">Preview ready</strong><span>correlation: preview-001</span></div><div class="small-title">Runtime</div><div class="kv"><span>Transport</span><span>embedded_web</span></div><div class="kv"><span>Native fidelity</span><span>compatibility</span></div><div class="kv"><span>Fast Refresh</span><span>available</span></div><div class="kv"><span>AI access</span><span>approval-gated</span></div><div class="small-title" style="margin-top:18px">Event timeline</div><div class="log" id="timeline"><div><span class="ok">✓</span> PreviewCreated</div><div><span class="ok">✓</span> PreviewStatusChanged: ready</div><div>○ waiting for input</div></div><div class="small-title" style="margin-top:18px">Capabilities</div><div class="hint">Lightweight preview active. Android Emulator, iOS Simulator, and physical device are optional native transports that can feed this same embedded panel later.</div></aside>
+    </div>
+    <footer class="statusbar"><b>● READY</b><span id="footerText">Embedded simulator active</span><span>Branch: main</span><span>Memory: local-only</span><div class="top-spacer"></div><span>Osamah Studio Agent · Foundation</span></footer>
+  </div>
+  <script>
+    const profiles = { pixel:{name:'Pixel 9',platform:'Android',os:'15',width:1080,height:2424,dpi:420,top:0,bottom:0}, iphone:{name:'iPhone 16',platform:'iOS',os:'18',width:393,height:852,dpi:3,top:59,bottom:34}, tablet:{name:'Android Tablet',platform:'Android',os:'15',width:1600,height:2560,dpi:320,top:0,bottom:0} };
+    const codeByFile = { 'index.tsx':['import { View, Text } from \'react-native\';','import { DeviceStatus } from \'../components/DeviceStatus\';','','export default function Home() {','  return (','    <View style={styles.screen}>','      <Text style={styles.title}>Build with clarity.</Text>','      <Text style={styles.body}>','        Edit, refresh, inspect, and validate.','      </Text>','      <DeviceStatus mode="embedded" />','    </View>','  );','}','','const styles = StyleSheet.create({','  screen: { flex: 1, padding: 24 },','  title: { fontSize: 28, fontWeight: \'700\' },','  body: { marginTop: 12, lineHeight: 20 },','});'], 'settings.tsx':['export default function Settings() {','  return <Text>Settings</Text>;','}'], '_layout.tsx':['import { Stack } from \'expo-router\';','','export default function Layout() {','  return <Stack />;','}'], 'HomeCard.tsx':['export function HomeCard() {','  return <Card title="Preview session" />;','}'], 'DeviceStatus.tsx':['export function DeviceStatus({ mode }) {','  return <Text>{mode} / ready</Text>;','}'] };
+    let selected = profiles.pixel, orientation='portrait', dark=false, currentFile='index.tsx';
+    const $ = id => document.getElementById(id);
+    function renderCode(){ $('code').innerHTML=(codeByFile[currentFile]||['// file preview unavailable']).map((line,i)=>`<span class="code-line"><span class="ln">${String(i+1).padStart(2,' ')}</span>${line.replace(/(import|export|return|default|function|const)/g,'<span class="kw">$1</span>').replace(/(View|Text|StyleSheet|DeviceStatus|Card|Stack)/g,'<span class="fn">$1</span>').replace(/('.*?')/g,'<span class="str">$1</span>')}</span>`).join(''); $('path').textContent=`app/${currentFile}`; $('tabName').innerHTML=`${currentFile} <small>●</small>`; $('phoneFile').textContent=`app/${currentFile}`; }
+    function renderProfile(){ const p=selected; $('previewSub').textContent=`${p.name} · ${p.platform} ${p.os} · embedded_web`; $('phone').classList.toggle('landscape',orientation==='landscape'); $('root').classList.toggle('dark',dark); $('theme').textContent=dark?'Light':'Dark'; $('pill').textContent=`${p.platform.toLowerCase()} / embedded`; $('deviceKv').innerHTML=`<div class="kv"><span>Platform</span><span>${p.platform}</span></div><div class="kv"><span>OS</span><span>${p.os}</span></div><div class="kv"><span>Frame</span><span>${orientation==='portrait'?p.width+'×'+p.height:p.height+'×'+p.width}</span></div><div class="kv"><span>DPI</span><span>${p.dpi}</span></div><div class="kv"><span>Safe area</span><span>${p.top}/${p.bottom}</span></div><div class="kv"><span>Mode</span><span>embedded_web</span></div>`; }
+    function log(msg,kind=''){ const el=$('log'); const line=document.createElement('div'); line.innerHTML=`<span class="${kind}">[event]</span> ${msg}`; el.appendChild(line); el.scrollTop=el.scrollHeight; $('footerText').textContent=msg; }
+    document.querySelectorAll('.file').forEach(btn=>btn.onclick=()=>{ document.querySelectorAll('.file').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); currentFile=btn.dataset.file; renderCode(); log(`file.opened ${currentFile}`); });
+    $('deviceSelect').onchange=e=>{ selected=profiles[e.target.value]; renderProfile(); log(`device.selected ${selected.name}`); };
+    $('rotate').onclick=()=>{ orientation=orientation==='portrait'?'landscape':'portrait'; renderProfile(); log(`orientation.changed ${orientation}`); };
+    $('theme').onclick=()=>{ dark=!dark; renderProfile(); log(`theme.changed ${dark?'dark':'light'}`); };
+    $('run').onclick=()=>{ $('rightStatus').textContent='Preview running'; $('projectState').textContent='embedded session running'; log('PreviewStatusChanged: ready','ok'); };
+    $('stop').onclick=()=>{ $('rightStatus').textContent='Preview stopped'; $('projectState').textContent='session stopped'; log('PreviewStatusChanged: stopped','warn'); };
+    $('refresh').onclick=()=>{ $('rightStatus').textContent='Fast Refresh applied'; $('phoneCard').textContent='Fast Refresh applied · state preserved'; log('FastRefresh: state preserved','ok'); setTimeout(()=>{ $('rightStatus').textContent='Preview ready'; },700); };
+    $('capture').onclick=()=>{ log('ScreenshotCaptured: artifact created','ok'); };
+    $('approve').onclick=()=>{ log('ApprovalRequested: change scope=workspace','warn'); $('footerText').textContent='Approval required before agent edit'; };
+    renderCode(); renderProfile();
+  </script>
+</body>
+</html>

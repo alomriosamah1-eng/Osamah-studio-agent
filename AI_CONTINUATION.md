@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف Foundation slice TypeScript في `src/` وmobile preview prototype في `prototypes/mobile-preview/index.html`. commit التنفيذ `3e81421a03713dc433d61d4957ec013226e5008f` وcommit المراجعة `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` مدفوعان ومتحققان. نجح `pnpm check`: typecheck و8 tests. لا يوجد Electron/SQLite/Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أحدث baseline موثق هو `79026c4368d978506ed5dad06a5f48b8f34e4036`. أُضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر baseline مدفوع هو `8104e77d66dffee1544e45035846956893b855f7`، والتغييرات الجديدة قيد commit. نجح `pnpm check`: typecheck و11 tests، ونجحت SQLite migration validation. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -14,7 +14,7 @@ Clean Architecture: Domain مستقل، Application use cases/ports، Interface 
 
 ## الملفات المهمة
 
-`docs/31-gap-analysis.md` سجل الفجوات. `docs/33-mobile-development-architecture.md` قرار mobile. `docs/34-clean-architecture.md` قواعد الطبقات والـ ports. `docs/35-domain-and-events.md` state/event model. `docs/36-foundation-implementation-plan.md` acceptance sequence. `src/domain/entities.ts` القواعد الحالية. `src/domain/mobile.ts` detector/capability model. `src/application/use-cases.ts` use cases. `src/application/mobile-services.ts` detector services. `src/application/ports.ts` ports. `src/infrastructure/in-memory.ts` test adapters. `src/mobile/preview.ts` preview contract/adapter. `src/*test.ts` الاختبارات. `prototypes/mobile-preview/index.html` prototype بصري تفاعلي. `docs/reference/` خرائط المعرفة الحية.
+`docs/31-gap-analysis.md` سجل الفجوات. `docs/33-mobile-development-architecture.md` قرار mobile. `docs/34-clean-architecture.md` قواعد الطبقات والـ ports. `docs/35-domain-and-events.md` state/event model. `docs/36-foundation-implementation-plan.md` acceptance sequence. `docs/39-embedded-simulator-architecture.md` قرار المحاكي داخل Workspace. `docs/40-embedded-simulator-implementation.md` mapping التنفيذ. `src/domain/entities.ts` القواعد الحالية. `src/domain/mobile.ts` detector/capability model. `src/application/use-cases.ts` use cases. `src/mobile/preview.ts` preview contract/adapter. `src/mobile/embedded-controller.ts` controller. `src/ipc/` protocol/transport/handlers. `src/*test.ts` الاختبارات. `db/migrations/001_initial.sql` schema contract. `prototypes/studio/index.html` Workspace prototype. `docs/reference/` خرائط المعرفة الحية.
 
 ## القواعد
 
@@ -36,7 +36,7 @@ git diff --check
 
 ## التسلسل التالي
 
-ابدأ بـ SQLite schema/migration وtyped IPC contracts أو LightweightPreview adapter، لكن لا تنفذهما معًا في commit واحد. أضف أولًا contract tests، ثم adapter in-memory، ثم implementation خارجي bounded. بعد استقرار Foundation، أضف project detector/generator، ثم Metro adapter، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
+تم تنفيذ SQLite schema contract وtyped IPC in-memory وEmbeddedSimulatorController في الشريحة الحالية. الخطوة التالية هي Project/File session persistence وactual SQLite adapter أو React Native Web/Metro renderer؛ اختر مسارًا واحدًا فقط في commit مستقل. بعد استقرار embedded renderer، أضف Metro الحقيقي، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
 
 ## أسئلة مفتوحة
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md`، والتحقق من lockfile وclean checks، ثم دفع Foundation + gap/mobile architecture + reference maps + preview prototype. آخر hash متحقق هو `d9e6e0c06cab9aee63e337d85db8469b9cc35a41`. بعدها ينتقل العمل إلى أول adapter منفصل: SQLite/IPC أو Metro، وليس Android/iOS native قبل doctor contracts.
+تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md`، وإضافة embedded Workspace/controller/IPC/migration tests. نجحت `pnpm check` بـ11/11 وSQLite migration validation. هذه التغييرات قيد commit/push؛ بعدها يبدأ actual renderer أو SQLite adapter، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

@@ -12,6 +12,7 @@
 | 2026-08-22 | Implementation | Lightweight preview contract and prototype | إثبات device frame/orientation/theme/screenshot | `src/mobile/preview.ts`, `prototypes/mobile-preview/index.html` | 1 adapter test + browser verification passed | `3e81421` | pushed/verified | review |
 | 2026-08-22 | Review/Delivery | مراجعة Architecture/Security/Performance/Open Source/UX/Mobile/AI/Docs/GitHub | كشف الضعف وتثبيت حدود الحقيقة | `research/review-round-3.md`, `research/direct-dependency-license-review.txt`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `pnpm check`: 8/8; JSON/secret/diff checks passed; local=remote | `d9e6e0c` | verified on `origin/main` | next adapter: SQLite/IPC or Metro |
 | 2026-08-22 | Delivery | تحديث `FINAL_REPORT.md` وتثبيت آخر حالة/hash | جعل التسليم النهائي يعكس كل التنفيذ والفحوص | `FINAL_REPORT.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md` | `git diff --check` passed; report commit pushed and verified | `8104e77` | verified on `origin/main` | await next adapter decision |
+| 2026-08-22 | Embedded Simulator | دمج المحاكي داخل Workspace وتنفيذ controller وtyped IPC وSQLite schema contract | جعل المحاكي جزءًا أساسيًا من بيئة التطوير | `docs/39`, `docs/40`, `src/mobile/embedded-controller.ts`, `src/ipc/**`, `db/**`, `prototypes/studio/index.html` | `pnpm check`: 11/11؛ SQLite migration valid؛ browser device switch/rotate verified | pending | pending | commit/push after final audit |
 
 ## قاعدة السجل
 

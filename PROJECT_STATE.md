@@ -4,9 +4,9 @@
 
 | الحقل | القيمة |
 |---|---|
-| الإصدار | `0.1.0-foundation` |
-| المرحلة | Foundation slice بعد Gap Analysis وتصميم Mobile Preview |
-| الحالة | Foundation + Mobile Preview + review مندفعة ومتحقق منها على GitHub |
+| الإصدار | `0.2.0-embedded-simulator` |
+| المرحلة | Embedded Simulator Foundation + typed IPC + SQLite schema contract |
+| الحالة | تنفيذ محلي ناجح؛ controller/IPC/migration/docs قيد commit جديد |
 | أحدث commit معروف قبل التغيير | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
 | commit المرحلة التنفيذية | `3e81421a03713dc433d61d4957ec013226e5008f` |
 | commit المراجعة والتسليم | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
@@ -14,24 +14,24 @@
 | commit إغلاق الحالة | `8104e77d66dffee1544e45035846956893b855f7` |
 | أحدث push مؤكد | `origin/main` عند commit `8104e77d66dffee1544e45035846956893b855f7` |
 | آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
-| آخر اختبار ناجح | 8 اختبارات Node/tsx، 8 passed في 2026-08-22 |
+| آخر اختبار ناجح | 11 اختبار Node/tsx، 11 passed؛ SQLite migration valid في 2026-08-22 |
 | commit الحالي لهذه المرحلة | `8104e77d66dffee1544e45035846956893b855f7`؛ local وremote متطابقان |
 
 ## مكتمل
 
-تمت مراجعة المستودع والوثائق السابقة، وإنشاء `docs/31-gap-analysis.md`، وإجراء بحث موثق عن React Native/Expo/Metro/Fast Refresh/React Native Web/Expo Snack/Android Emulator/iOS Simulator/Hermes/Debugging. أضيفت `docs/33` إلى `docs/36`، و16 reference maps تحت `docs/reference/`. أضيف Foundation code مستقل عن UI: domain primitives/errors/entities/events، application ports/use cases، in-memory adapters، MobileProjectDetector، PlatformCapabilityService، LightweightPreviewAdapter، composition root، و8 اختبارات deterministic. أضيف prototype بصري تفاعلي في `prototypes/mobile-preview/index.html` وتم التحقق من rotate/theme/screenshot محليًا.
+تمت مراجعة المستودع والوثائق السابقة، وإنشاء `docs/31-gap-analysis.md`، وإجراء بحث موثق عن React Native/Expo/Metro/Fast Refresh/React Native Web/Expo Snack/Android Emulator/iOS Simulator/Hermes/Debugging. أضيفت `docs/33` إلى `docs/40`، و16 reference maps تحت `docs/reference/`. أضيف Foundation code مستقل عن UI: domain primitives/errors/entities/events، application ports/use cases، in-memory adapters، MobileProjectDetector، PlatformCapabilityService، LightweightPreviewAdapter، EmbeddedSimulatorController، typed IPC transport/handlers، SQLite migration contract، composition root، و11 اختبارًا deterministic. أضيفت `prototypes/mobile-preview/index.html` و`prototypes/studio/index.html` وتم التحقق من المحاكي المدمج بصريًا وتفاعليًا.
 
 ## النواة الحالية
 
-الطبقات الحالية هي Domain وApplication وIn-memory Infrastructure. تدعم النواة فتح Workspace، إنشاء Session، بدء Session، طلب وحسم Approval، تسجيل DeviceProfile، إنشاء Lightweight PreviewSession، وانتقالات الحالة والأحداث. لا يوجد Electron أو SQLite أو Metro أو Android/iOS runtime بعد.
+الطبقات الحالية هي Domain وApplication وIn-memory Infrastructure، مع EmbeddedSimulatorController وtyped IPC in-memory وSQLite schema contract. تدعم النواة فتح Workspace، إنشاء Session، Approval، DeviceProfile، تشغيل المحاكي المدمج، input/refresh/capture/inspect/stop، وانتقالات الحالة والأحداث. لا يوجد Electron shell أو SQLite native driver أو Metro أو Android/iOS runtime بعد.
 
 ## العمل النشط
 
-اكتملت مرحلة Foundation + Mobile Preview + review: lockfile، clean-check، JSON validation، secret scan، license review، commit، push، وremote hash verification. الخطوة التالية هي SQLite/IPC أو Metro adapter في commit مستقل.
+اكتملت محليًا شريحة Embedded Simulator Foundation: Workspace prototype، controller، typed IPC، SQLite migration contract، SQLite validation، و11/11 tests. العمل النشط هو تحديث الحالة والوثائق ثم commit/push/verify لهذه الشريحة.
 
 ## العمل المتبقي
 
-المراحل التالية هي SQLite/migrations/backup، typed IPC وElectron shell، provider/agent runtime، terminal sandbox، mobile generator، LightweightPreview renderer الحقيقي، Metro adapter، Android doctor/ADB، iOS macOS adapter، CI، visual tests، resource manager، security hardening، وrelease. detector وpreview lifecycle والـ HTML prototype أصبحت foundation أولية وليست native runtime.
+المراحل التالية هي actual SQLite adapter/migrations/backup، typed Electron preload IPC، Project/File session integration، React/React Native Web renderer حقيقي داخل embedded panel، Metro/Fast Refresh، provider/agent runtime، terminal sandbox، mobile generator، Android doctor/ADB، iOS macOS adapter، visual tests، resource manager، security hardening، وrelease. controller والـ prototype هما foundation؛ لا يزال renderer الحقيقي وnative runtime غير منفذين.
 
 ## المشكلات والمخاطر
 
@@ -43,6 +43,6 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد اكتمال Foundation + Mobile Preview، يبدأ commit مستقل واحد فقط: typed IPC وSQLite migration أو Metro adapter وفق قرار المالك. يجب أن يسبقه architecture، contract tests، adapter in-memory، ثم implementation bounded. لا يبدأ Android/iOS native قبل doctor/resource contracts.
+بعد هذه الشريحة، يبدأ commit مستقل واحد فقط: actual SQLite adapter أو React Native Web/Metro renderer. يجب أن يسبقه contract tests وadapter in-memory وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. آخر push مؤكد: `8104e77d66dffee1544e45035846956893b855f7`. إعداد: Manus AI.

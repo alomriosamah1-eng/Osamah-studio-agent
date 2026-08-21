@@ -14,4 +14,4 @@ AIProvider، ModelProvider، VoiceProvider، StorageProvider، GitProvider، Git
 
 ## API status
 
-لا توجد واجهة HTTP أو IPC فعلية بعد. كل ما عدا Foundation use cases هو contract/documentation وليس implementation.
+يوجد الآن typed IPC in-memory transport فعلي في `src/ipc/` مع protocol v1 وhandlers للمحاكي: `health.get`, `device.get`, `preview.start`, `preview.input`, `preview.capture`, `preview.inspect`, و`preview.stop`. لا توجد واجهة HTTP أو Electron preload بعد، ولا يزال transport production boundary مخططًا. `createEmbeddedApplication` هو composition root الحالي.
