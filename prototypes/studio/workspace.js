@@ -826,6 +826,58 @@
     }
   };
 
+  const renderArtifact = (draft) => {
+    $('artifactStatus').textContent = `Draft ${draft.artifactId} · assembly review only · no render/export/file write`;
+    $('artifactReviewState').textContent = draft.reviewState;
+    $('artifactClaimCount').textContent = String(draft.manifest.claims.length);
+    $('artifactAssetCount').textContent = String(draft.manifest.assets.length);
+    $('artifactSourceCount').textContent = String(draft.manifest.sources.length);
+    $('artifactToolCount').textContent = String(draft.manifest.tools.length);
+    const list = $('artifactManifestList');
+    list.replaceChildren();
+    const item = document.createElement('div');
+    item.className = `artifact-item ${draft.reviewState === 'ready_for_render' ? 'ready' : draft.reviewState === 'blocked' ? 'blocked' : 'review'}`;
+    item.textContent = `State: ${draft.reviewState}\nClaims: ${draft.manifest.claims.join(', ') || 'none'}\nAssets: ${draft.manifest.assets.join(', ') || 'none'}\nSources: ${draft.manifest.sources.join(', ') || 'none'}\nTools invoked: ${draft.manifest.tools.length ? draft.manifest.tools.join(', ') : 'none'}\nWarnings: ${draft.warnings.length ? draft.warnings.join(', ') : 'none'}`;
+    list.append(item);
+  };
+  const createArtifactDraft = async () => {
+    if (!activeContentPlan) {
+      $('artifactStatus').textContent = 'Create a content plan preview first; no assembly was attempted.';
+      log('production.artifact.missing_plan', 'warn');
+      return;
+    }
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('artifactStatus').textContent = 'Desktop IPC unavailable; no artifact draft was created.';
+      log('production.artifact.create_unavailable', 'warn');
+      return;
+    }
+    const button = $('createArtifactDraft');
+    button.disabled = true;
+    $('artifactStatus').textContent = 'Building bounded manifest preview…';
+    try {
+      const response = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-artifact-draft'),
+        correlationId: nextRequest('production-artifact-correlation'),
+        method: 'production.artifact.draft.create',
+        payload: { kind: 'document', title: $('artifactTitle').value.trim(), contentPlanId: activeContentPlan.planId, ...(activeBrief ? { briefId: activeBrief.briefId } : {}) },
+      });
+      if (!response.ok) {
+        $('artifactStatus').textContent = `Artifact draft rejected: ${response.error.message}`;
+        log(`production.artifact.draft_rejected ${response.error.message}`, 'warn');
+        return;
+      }
+      renderArtifact(response.result);
+      $('rightStatus').textContent = `Artifact ${response.result.reviewState}`;
+      log(`production.artifact.draft_ready ${response.result.reviewState} · tools=0`, response.result.reviewState === 'blocked' ? 'warn' : 'ok');
+    } catch (error) {
+      $('artifactStatus').textContent = `Artifact draft failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('production.artifact.failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   let activeContentPlan;
   const renderContentPlan = (plan) => {
     activeContentPlan = plan;
@@ -1023,6 +1075,7 @@
   $('registerDemoAsset').onclick = () => { void registerDemoAsset(); };
   $('refreshAssets').onclick = () => { void loadAssets(); };
   $('createCreativeBrief').onclick = () => { void createCreativeBrief(); };
+  $('createArtifactDraft').onclick = () => { void createArtifactDraft(); };
   $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
@@ -1202,6 +1255,20 @@
       method: 'production.brief.get',
       payload: { briefId: briefCreateResponse.result.briefId },
     }) : { ok: false };
+    const artifactDraftResponse = contentPlanCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-artifact-draft',
+      correlationId: 'desktop-smoke-artifact',
+      method: 'production.artifact.draft.create',
+      payload: { kind: 'document', title: 'Desktop smoke artifact', contentPlanId: contentPlanCreateResponse.result.planId },
+    }) : { ok: false };
+    const artifactGetResponse = artifactDraftResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-artifact-get',
+      correlationId: 'desktop-smoke-artifact',
+      method: 'production.artifact.draft.get',
+      payload: { artifactId: artifactDraftResponse.result.artifactId },
+    }) : { ok: false };
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -1335,7 +1402,9 @@
     const contentPlanNoMutationPassed = contentPlanPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const assetBriefPassed = assetRegisterResponse.ok && assetListResponse.ok && assetListResponse.result.length === 1 && assetRegisterResponse.result.license.state === 'unverified' && briefCreateResponse.ok && briefAttachResponse.ok && briefGetResponse.ok && briefAttachResponse.result.assetIds.length === 1 && briefAttachResponse.result.warnings.includes('asset_license_unverified');
     const assetBriefNoMutationPassed = assetBriefPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const artifactPassed = artifactDraftResponse.ok && artifactDraftResponse.result.reviewState === 'blocked' && artifactDraftResponse.result.manifest.tools.length === 0 && artifactDraftResponse.result.warnings.some((warning) => warning.includes('no_citation')) && artifactGetResponse.ok && artifactGetResponse.result?.artifactId === artifactDraftResponse.result.artifactId;
+    const artifactNoMutationPassed = artifactPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

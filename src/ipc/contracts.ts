@@ -15,6 +15,7 @@ import type { AgentTaskPreviewRequest, AgentTaskPreviewResult } from "../applica
 import type { AddCitationRequest, CitationRecord, RegisterSourceRequest, SourceRecord, SourceRegistryPort, ProvenanceLink } from "../application/source-registry.js";
 import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequest, ContentPlan, CreateContentPlanRequest } from "../application/content-plan.js";
 import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
+import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactDraftRequest } from "../application/artifact-assembly.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -70,6 +71,8 @@ export interface IpcMethodMap {
   "production.brief.create": { payload: CreateCreativeBriefRequest; result: CreativeBrief };
   "production.brief.get": { payload: { briefId: string }; result: CreativeBrief | undefined };
   "production.brief.asset.attach": { payload: AttachAssetRequest; result: CreativeBrief };
+  "production.artifact.draft.create": { payload: CreateArtifactDraftRequest; result: ArtifactDraft };
+  "production.artifact.draft.get": { payload: { artifactId: string }; result: ArtifactDraft | undefined };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -299,6 +302,16 @@ const isBriefCreatePayload = (value: unknown): boolean => isRecord(value)
   && (value.assetSlots === undefined || isBoundedStringList(value.assetSlots, 16, 256));
 const isBriefGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.briefId, 256);
 const isBriefAssetAttachPayload = (value: unknown): boolean => isRecord(value) && isString(value.briefId, 256) && isString(value.assetId, 256);
+const isArtifactKindPayload = (value: unknown): value is ArtifactKind => value === "document" || value === "presentation" || value === "media_bundle" || value === "markdown";
+const isUniqueBoundedStringList = (value: unknown, maxItems: number, maxLength: number): value is readonly string[] => isBoundedStringList(value, maxItems, maxLength) && new Set(value).size === value.length;
+const isArtifactDraftCreatePayload = (value: unknown): boolean => isRecord(value)
+  && isArtifactKindPayload(value.kind)
+  && isString(value.title, 512)
+  && isString(value.contentPlanId, 256)
+  && (value.briefId === undefined || isString(value.briefId, 256))
+  && (value.claimIds === undefined || isUniqueBoundedStringList(value.claimIds, 128, 256))
+  && (value.assetIds === undefined || isUniqueBoundedStringList(value.assetIds, 64, 256));
+const isArtifactDraftGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.artifactId, 256);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -338,6 +351,8 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.brief.create") return isBriefCreatePayload(payload);
   if (method === "production.brief.get") return isBriefGetPayload(payload);
   if (method === "production.brief.asset.attach") return isBriefAssetAttachPayload(payload);
+  if (method === "production.artifact.draft.create") return isArtifactDraftCreatePayload(payload);
+  if (method === "production.artifact.draft.get") return isArtifactDraftGetPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

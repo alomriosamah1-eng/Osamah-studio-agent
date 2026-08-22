@@ -21,6 +21,7 @@ import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { GitDiffResult, GitStatusSnapshot } from "./application/git-read-only.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js";
+import type { ArtifactDraft } from "./application/artifact-assembly.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -541,6 +542,38 @@ test("typed IPC rejects malformed task.preview paths before application access",
     } as const);
     assert.equal(malformed.ok, false);
     if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC assembles a review-only artifact manifest without render or approval", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const source = app.sourceRegistry.registerSource({ kind: "user_url", locator: "https://example.test/manifest", bytes: 256, sha256: "d".repeat(64), verificationState: "content_validated" });
+    const citation = app.sourceRegistry.addCitation({ sourceId: source.sourceId, label: "Manifest evidence", span: { start: 0, end: 10 }, verificationState: "content_validated" });
+    const plan = app.contentPlan.createPlan({ brief: "Assemble a report" });
+    const sectioned = app.contentPlan.addSection({ planId: plan.planId, title: "Evidence" });
+    const claim = app.contentPlan.addClaim({ planId: plan.planId, sectionId: sectioned.sections[0]!.sectionId, text: "Evidence can be reviewed." });
+    const cited = app.contentPlan.attachCitation({ planId: plan.planId, claimId: claim.claims[0]!.claimId, citationId: citation.citationId });
+    const asset = app.assetCatalog.registerAsset({ kind: "image", title: "Manifest chart", locator: "studio://assets/manifest.png", sha256: "e".repeat(64), bytes: 128, license: { name: "Internal", state: "verified", warnings: [] }, sourceIds: [source.sourceId] });
+    const brief = app.assetCatalog.createBrief({ title: "Manifest visual brief", intent: "Review chart" });
+    app.assetCatalog.attachAsset({ briefId: brief.briefId, assetId: asset.assetId });
+    const draft = await app.ipc.dispatch({ protocolVersion: 1, requestId: "artifact-draft-1", correlationId: "artifact-review", method: "production.artifact.draft.create", payload: { kind: "document", title: "Reviewable report", contentPlanId: cited.planId, briefId: brief.briefId } } as const) as IpcResponse<ArtifactDraft>;
+    assert.equal(draft.ok, true);
+    if (!draft.ok) return;
+    assert.equal(draft.result.reviewState, "ready_for_render");
+    assert.deepEqual(draft.result.manifest.claims, [claim.claims[0]!.claimId]);
+    assert.deepEqual(draft.result.manifest.assets, [asset.assetId]);
+    assert.deepEqual(draft.result.manifest.sources, [source.sourceId]);
+    assert.deepEqual(draft.result.manifest.tools, []);
+    const fetched = await app.ipc.dispatch({ protocolVersion: 1, requestId: "artifact-draft-get-1", correlationId: "artifact-review", method: "production.artifact.draft.get", payload: { artifactId: draft.result.artifactId } } as const) as IpcResponse<ArtifactDraft | undefined>;
+    assert.equal(fetched.ok, true);
+    if (fetched.ok) assert.equal(fetched.result?.artifactId, draft.result.artifactId);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "artifact-draft-invalid", correlationId: "artifact-review", method: "production.artifact.draft.create", payload: { kind: "document", title: "Invalid", contentPlanId: cited.planId, claimIds: [claim.claims[0]!.claimId, claim.claims[0]!.claimId] } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
   } finally {
     app.close();
   }
