@@ -200,9 +200,10 @@ src/
 4. إكمال دورة: request → constraints → plan → targeted read → patch → approval → checkpoint → apply → typecheck/test → diff → optional commit.
 5. إضافة Git adapter وGitHub CLI adapter لعرض branch/status/diff وطلبات commit/push التي تحتاج approval [9].
 6. جعل `preview.openProject` و`preview.refresh` واجهة فعلية للمعاينة المدمجة.
-7. إضافة React Native Web/Metro adapter خلف `PreviewRuntime` بعد قياسه؛ لا يستبدل FixtureRuntime قبل contract parity.
-8. إبقاء Android Emulator وiOS Simulator transports اختيارية تغذي نفس Embedded Simulator Panel؛ native adapters لا تدخل قبل doctor/resource contracts.
-9. إضافة rollback إلى checkpoint، وtest command discovery دون تشغيل hooks أو postinstall تلقائيًا.
+7. إبقاء `Lightweight Web Preview` هو adapter الأساسي لمشاريع React وReact Native، مع `ProjectKind` وcapability warnings وبدون تشغيل project scripts.
+8. دراسة React Native Web/Metro adapter خلف `PreviewRuntime` فقط بعد benchmark وcontract parity؛ لا يستبدل lightweight fixture renderer تلقائيًا.
+9. إبقاء Android Emulator وiOS Simulator transports اختيارية تغذي نفس Embedded Simulator Panel؛ native adapters لا تدخل قبل doctor/resource contracts ولا تكون dependency للإقلاع.
+10. إضافة rollback إلى checkpoint، وtest command discovery دون تشغيل hooks أو postinstall تلقائيًا.
 
 **معيار القبول:** US-001 وUS-002 وUS-003 تتحقق: فتح مشروع وحالته خلال الهدف المحدد، خطة قبل الكتابة، approval للأمر الحساس، diff واختبار وتراجع مرئي.
 
@@ -325,15 +326,15 @@ src/
 
 **المهام:**
 
-1. إضافة benchmark harness لـ startup وnavigation وfirst token وRSS وCPU/GPU وqueue latency.
-2. تطبيق lazy loading للـ workers/providers وbounded caches وstreaming للملفات الكبيرة.
-3. تحديد concurrency budgets للـ agents/jobs/media/document parsers.
+1. إضافة benchmark harness لـ startup وnavigation وfirst token وRSS وCPU/GPU وqueue latency، مع profile مخصص لـUbuntu RAM 8GB.
+2. تطبيق lazy loading للـ workers/providers وbounded caches وstreaming للملفات الكبيرة، ومنع تحميل local models عند الإقلاع.
+3. تحديد concurrency budgets للـ agents/jobs/media/document parsers، مع default واحد في low-memory profile.
 4. جعل worker crash قابلًا للاستعادة دون إغلاق renderer أو فقدان session.
-5. إضافة cancellation propagation وtimeouts وbackpressure وoutput caps.
+5. إضافة cancellation propagation وtimeouts وbackpressure وoutput caps، مع latest-only refresh للـ preview.
 6. تشغيل benchmark لملف 50MB ومعالجة مستند طويل بالمقاطع والـ progress/checkpoint.
 7. تسجيل regression history في CI وعدم قبول تراجع صامت.
 
-**بوابات القياس المبدئية:** warm start أقل من 3 ثوانٍ على Tier 1، p95 للتنقل المحلي أقل من 100ms، first token p95 أقل من 2.5 ثانية في benchmark محدد، RSS أقل من 500MB دون نموذج محلي، وفهرسة 50MB دون تجميد UI.
+**بوابات القياس المبدئية:** warm start أقل من 3 ثوانٍ على Tier 1، p95 للتنقل المحلي أقل من 100ms، first token p95 أقل من 2.5 ثانية في benchmark محدد، RSS أقل من 500MB دون نموذج محلي، وفهرسة 50MB دون تجميد UI. يضاف low-memory gate: preview source ≤24MB، modules ≤256، assets ≤128، agent concurrency =1، و`performance:smoke` يمر تحت V8 heap 768MB.
 
 ### المرحلة 15 — Security Hardening وLicense/Supply Chain
 

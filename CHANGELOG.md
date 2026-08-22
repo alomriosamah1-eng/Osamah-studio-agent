@@ -1,5 +1,28 @@
 # سجل التغييرات
 
+## [Unreleased] — Lightweight Web Preview وResource Governance
+
+### Added
+
+- `ProjectKind` و`PreviewCapability` و`GeneralProjectDetector` لدعم React Native وReact والويب والمشاريع العامة دون تشغيل project scripts تلقائيًا.
+- low-memory `ResourcePolicy` لأجهزة Ubuntu ذات RAM 8GB: جلسة preview واحدة، agent job واحد، source/modules/assets/warnings budgets، وagent history bounded.
+- hard limits داخل Web preview، وlatest-only refresh queue، و`BoundedAgentRuntime` مع cancellation وcooperative timeout وqueue/history limits.
+- embedded controller يرفض native transports غير المتاحة ويعلن `nativeFidelity: compatibility` بدل native fidelity زائفة.
+- `scripts/performance-smoke.mjs` و`pnpm performance:smoke` لقياس preview وheap/RSS تحت V8 heap 768MB.
+- `docs/48-lightweight-preview-and-resource-policy.md` و`research/lightweight-preview-sources.txt` لتوثيق القرار والمراجع الرسمية.
+
+### Verified
+
+- `pnpm check`: `44/44` اختبارًا ناجحًا.
+- `pnpm performance:smoke`: `PERF_SMOKE=PASS`؛ low-memory، React Native → lightweight_web، preview حوالي 10–13ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.4MB.
+- `python3 -m json.tool project/master-implementation-plan.json`: `JSON_VALID=true`.
+
+### Boundaries
+
+- Web Preview يعرض React وReact Native compatibility فقط؛ لا يشغل Metro/Expo/native modules ولا يدعي native fidelity.
+- Android Emulator وiOS Simulator transports اختيارية وليست dependency للإقلاع، ولا يبدأ native toolchain قبل doctor/resource contracts.
+- performance smoke دليل مسار صغير bounded وليس ضمانًا مطلقًا لكل جهاز أو لكل مشروع؛ يجب استمرار benchmark على ملفات ومشاريع أكبر.
+
 ## [Unreleased] — SQLite Adapter وObservability وBackup/Restore
 
 ### Added

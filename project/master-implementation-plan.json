@@ -17,10 +17,14 @@
       "ipc-preview-open-project",
       "electron-main-browser-window",
       "typed-preload-bridge",
-      "desktop-csp-sender-validation-and-smoke"
+      "desktop-csp-sender-validation-and-smoke",
+      "lightweight-web-preview",
+      "general-project-classification",
+      "low-memory-resource-policy",
+      "bounded-agent-runtime-slice"
     ],
-    "tests": "23/23",
-    "next_phase": "sqlite-data-and-observability",
+    "tests": "44/44",
+    "next_phase": "production-root-picker-and-optional-sqlite-wiring",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [
@@ -83,7 +87,7 @@
       "name": "sqlite-data-and-observability",
       "depends_on": [1],
       "primary_owner": "data",
-      "deliverables": ["SQLite adapter", "migration runner", "FTS5", "object store", "structured logs", "backup and restore dry-run"],
+      "deliverables": ["SQLite adapter", "migration runner", "FTS5", "object store", "structured logs", "backup and restore dry-run", "bounded observability"],
       "exit_gate": "restart, migration failure, backup checksum, and large-file indexing tests pass"
     },
     {
@@ -99,7 +103,7 @@
       "name": "bounded-agent-runtime",
       "depends_on": [2, 3],
       "primary_owner": "ai-runtime",
-      "deliverables": ["session state machine", "supervisor", "DAG", "isolated workers", "context packets", "critic", "judge", "checkpoints", "conflicts", "idempotency"],
+      "deliverables": ["session state machine", "supervisor", "DAG", "isolated workers", "context packets", "critic", "judge", "checkpoints", "conflicts", "idempotency", "low-memory concurrency and cancellation slice"],
       "exit_gate": "three-step workflow can fail, retry once, resume, pause, and preserve evidence without freezing UI"
     },
     {
@@ -115,7 +119,7 @@
       "name": "development-environment",
       "depends_on": [1, 2, 3, 4, 5],
       "primary_owner": "development",
-      "deliverables": ["Monaco", "xterm.js", "file explorer", "Git diff", "test runner", "project context", "embedded preview", "rollback"],
+      "deliverables": ["Monaco", "xterm.js", "file explorer", "Git diff", "test runner", "project context", "general project classification", "lightweight Web preview", "embedded preview", "rollback"],
       "exit_gate": "US-001, US-002, and US-003 pass end-to-end"
     },
     {
@@ -179,7 +183,7 @@
       "name": "performance-and-resource-governance",
       "depends_on": [4, 5, 6, 7, 8, 9, 12],
       "primary_owner": "performance",
-      "deliverables": ["startup benchmark", "p95 benchmark", "RSS/CPU/GPU caps", "backpressure", "worker recovery", "regression history"],
+      "deliverables": ["startup benchmark", "p95 benchmark", "RSS/CPU/GPU caps", "backpressure", "worker recovery", "regression history", "Ubuntu 8GB low-memory gate"],
       "exit_gate": "NFR targets are measured and no critical regression remains"
     },
     {
@@ -238,12 +242,14 @@
     "SQLite/FTS5 and backup",
     "bounded Agent Runtime and local provider mode",
     "embedded simulator compatibility preview",
+    "lightweight Web preview for React and React Native",
+    "low-memory resource policy and bounded agent runtime",
     "Markdown/PDF production",
     "Second Brain notes/search/scopes",
     "audit, logs, security gates, Windows/Linux packaging"
   ],
   "deferred_scope": [
-    "React Native Web/Metro parity runtime",
+    "React Native Web/Metro parity runtime beyond the lightweight compatibility preview",
     "Android Emulator and iOS Simulator native transports",
     "PPTX/media expansion",
     "semantic embeddings and optional vector services",

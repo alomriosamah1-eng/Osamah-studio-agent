@@ -1,17 +1,26 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import type { ProjectScanner } from "../application/ports.js";
+import { LOW_MEMORY_RESOURCE_LIMITS, type ResourceLimits } from "../application/resource-policy.js";
 
-const MAX_FILES = 2_000;
-const MAX_TEXT_BYTES = 1_500_000;
 const IGNORED = new Set([".git", "node_modules", ".expo", "dist", "build", "coverage"]);
 
+export interface FilesystemProjectScannerOptions {
+  readonly limits?: ResourceLimits;
+}
+
 export class FilesystemProjectScanner implements ProjectScanner {
+  private readonly limits: ResourceLimits;
+
+  public constructor(options: FilesystemProjectScannerOptions = {}) {
+    this.limits = options.limits ?? LOW_MEMORY_RESOURCE_LIMITS;
+  }
+
   public async listRelativeFiles(rootPath: string): Promise<readonly string[]> {
     const root = await this.assertRoot(rootPath);
     const files: string[] = [];
     const walk = async (directory: string): Promise<void> => {
-      if (files.length > MAX_FILES) throw new Error(`Project exceeds the preview file limit of ${MAX_FILES}.`);
+      if (files.length >= this.limits.maxPreviewModules) throw new Error(`Project exceeds the preview file limit of ${this.limits.maxPreviewModules}.`);
       for (const entry of await readdir(directory, { withFileTypes: true })) {
         if (IGNORED.has(entry.name)) continue;
         const absolute = join(directory, entry.name);
@@ -28,7 +37,7 @@ export class FilesystemProjectScanner implements ProjectScanner {
     const absolute = await this.safePath(rootPath, relativePath);
     try {
       const info = await stat(absolute);
-      if (!info.isFile() || info.size > MAX_TEXT_BYTES) return undefined;
+      if (!info.isFile() || info.size > this.limits.maxTextFileBytes) return undefined;
       return await readFile(absolute, "utf8");
     } catch (error) {
       if (isMissing(error)) return undefined;

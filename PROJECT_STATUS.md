@@ -2,16 +2,16 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **محاكي هاتف مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت الآن شريحة SQLite adapter وobservability وbackup/restore bounded خلف Clean Architecture ports، مع إبقاء composition runtime الحالي على in-memory adapters إلى أن تُنفذ wiring اختيارية ومراجعة.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit تنفيذي للشريحة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
-| commits توثيق التسليم | `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362` |
-| حالة الشجرة | نظيفة؛ code وdocumentation commits مدفوعان ومتحققان على `origin/main` |
+| آخر commit تنفيذي مدفوع | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| حالة شريحة الأداء الحالية | Lightweight Web Preview وResource Governance منفذة واجتازت بوابة الإغلاق المحلية |
+| حالة الشجرة | تغييرات شريحة الأداء والتوثيق الحالية قيد الدفع بعد الفحوص |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `31/31` اختبارًا في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `44/44` اختبارًا، و`pnpm performance:smoke` ناجح في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -30,6 +30,8 @@
 
 أضيف SQLite adapter كامل في `src/infrastructure/sqlite.ts`، وmigration `002_observability.sql`، وعقود `SqlExecutor` و`ObservabilitySink` و`BackupProvider`. تحفظ repositories الحالية entities في SQLite، ويكتب event bus الأحداث إلى `domain_events`، ويسجل observability payloads بعد redaction recursive.
 
+أضيفت شريحة الأداء الخفيف: `ProjectKind` و`PreviewCapability` و`GeneralProjectDetector` للمشاريع العامة، low-memory `ResourcePolicy`، hard limits للـ preview، latest-only refresh، و`BoundedAgentRuntime` بconcurrency واحد وqueue/history bounded وtimeout/cancellation تعاونيين. لا تشغل هذه الشريحة project scripts أو native toolchains عند الإقلاع.
+
 أضيف `LocalSqliteBackupProvider` الذي ينشئ snapshot atomic عبر `VACUUM INTO`، ويكتب manifest مع SHA-256، ويتحقق من schema وforeign keys وmigration dry-run على نسخة مؤقتة، ويستعيد إلى profile منفصل دون overwrite للقاعدة الحية.
 
 ## المعمارية الحالية
@@ -43,19 +45,20 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `31/31` ناجحة |
+| `pnpm test` | `44/44` ناجحة |
 | `pnpm check` | ناجح |
+| `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
 | SQLite repositories | round-trip وrestart persistence ناجحان |
 | event bus وobservability | persistence وredaction وbounded listing ناجحة |
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
-| desktop smoke | ناجح؛ `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
+| desktop smoke | `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وAgent Runtime وProvider Gateway وterminal sandbox وresource manager وproduction packaging الموقّع غير منفذة. كذلك لم يُربط SQLite بعد بـ`createEmbeddedApplication`؛ سيتم ذلك بعد تثبيت boundary الخاصة بالـ lifecycle والـ profile path وfallback policy.
+ما زال FTS5 وobject store وcontent hashing وProvider Gateway وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy موجودان كـapplication slice، لكن agent/provider integrations الكاملة ما زالت لاحقة. كذلك لم يُربط SQLite بعد lifecycle production داخل `createEmbeddedApplication`؛ wiring الكاملة تتطلب profile path وfallback policy.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 

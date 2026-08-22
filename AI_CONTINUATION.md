@@ -8,7 +8,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore ثم دُفعت إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، مع تطابق local وremote SHA. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`31/31` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت الشريحة `pnpm build` و`pnpm desktop:smoke` و`git diff --check` وJSON validation وsecret scan؛ سجل `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`44/44` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت slice الأداء `pnpm build` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret heuristic وdesktop smoke؛ سجل الأداء low_memory وReact Native → lightweight_web وpreview حوالي 11ms وheap delta حوالي 0.3MB وRSS delta حوالي 3.1MB، مع `PERFORMANCE_FINAL_GATE=PASS`.
 
 ## المعمارية
 
@@ -26,7 +26,7 @@ Mobile subsystem له LightweightPreview وFixturePreview في compatibility mod
 
 `src/infrastructure/sqlite-backup.ts` يحتوي `LocalSqliteBackupProvider` مع atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run على نسخة مؤقتة وrestore إلى profile منفصل.
 
-`src/sqlite.test.ts` يغطي migration order وchecksum mismatch وrestart persistence وrepositories وevent bus وredaction وtransactions وbackup/restore والتلاعب بالنسخة. `scripts/validate_sqlite_migration.py` يطبق migrations 001 و002 في memory ويتحقق من schema والجداول والفهارس وforeign keys. التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md`.
+`src/sqlite.test.ts` يغطي migration order وchecksum mismatch وrestart persistence وrepositories وevent bus وredaction وtransactions وbackup/restore والتلاعب بالنسخة. `scripts/validate_sqlite_migration.py` يطبق migrations 001 و002 في memory ويتحقق من schema والجداول والفهارس وforeign keys. أضيفت `src/application/resource-policy.ts` و`src/application/agent-runtime.ts` و`src/domain/project.ts` و`scripts/performance-smoke.mjs` واختباراتها، والتوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md`.
 
 ## القواعد
 
@@ -45,15 +45,15 @@ python3 scripts/validate_sqlite_migration.py
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق ناجح هو `GITHUB_PUSH_VERIFIED=true` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق سابق هو `GITHUB_FINAL_SHA_MATCH=true` عند `123c9359300b4b357043f19cd9e110a3a1961cf4`؛ slice الأداء اجتازت الفحوص المحلية وتنتظر final push.
 
 ## ما يزال مؤجلًا
 
-SQLite adapter لم يُربط بعد بـ`createEmbeddedApplication`؛ wiring composition وprofile picker الإنتاجي يأتيان بعد هذه الشريحة. لم يُنفذ FTS5 أو object store أو Agent Runtime أو Provider Gateway أو terminal sandbox أو resource manager أو production packaging الموقّع. لم تُنفذ React Native Web/Metro الحقيقية أو Android doctor/ADB أو macOS-only iOS adapter.
+SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter.
 
 ## التسلسل التالي
 
-بعد دفع SQLite وobservability، نفّذ production root picker عبر typed preload وmain-process dialog، ثم wiring اختيارية لـSQLite خلف composition مع lifecycle وfallback policy. بعدها bounded Agent Runtime، ثم Provider Gateway، ثم React Native Web/Metro، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم visual loop بحدود iteration وapproval.
+بعد دفع slice الأداء والـ preview، نفّذ production root picker عبر typed preload وmain-process dialog، ثم wiring اختيارية لـSQLite خلف composition مع lifecycle وfallback policy. بعدها تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم visual loop بحدود iteration وapproval.
 
 ## أسئلة مفتوحة
 

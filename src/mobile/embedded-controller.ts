@@ -4,6 +4,7 @@ import type { FoundationUseCases } from "../application/use-cases.js";
 import type { PreviewInput, PreviewFrame, PreviewScreenshot, LightweightPreviewAdapter } from "./preview.js";
 import type { PreviewInspection } from "../ipc/contracts.js";
 import { FixturePreviewRuntime, type ProjectPreviewBundle } from "./preview-runtime.js";
+import { LatestOnlyAsyncQueue, ResourcePolicy } from "../application/resource-policy.js";
 
 export interface EmbeddedSimulatorController {
   start(input: { deviceProfileId: DeviceProfileId; mode?: PreviewSession["mode"]; bundle?: ProjectPreviewBundle }): Promise<PreviewSession>;
@@ -21,10 +22,12 @@ export class InMemoryEmbeddedSimulatorController implements EmbeddedSimulatorCon
   private readonly profileIds = new Map<PreviewSessionId, DeviceProfileId>();
   private readonly runtimes = new Map<PreviewSessionId, FixturePreviewRuntime>();
   private readonly bundles = new Map<PreviewSessionId, ProjectPreviewBundle>();
+  private readonly refreshQueues = new Map<PreviewSessionId, LatestOnlyAsyncQueue<PreviewFrame>>();
 
   public constructor(
     private readonly useCases: FoundationUseCases,
     private readonly adapter: LightweightPreviewAdapter,
+    private readonly resourcePolicy: ResourcePolicy = new ResourcePolicy("low_memory"),
   ) {}
 
   public registerProfile(profile: DeviceProfile): void {
@@ -45,22 +48,31 @@ export class InMemoryEmbeddedSimulatorController implements EmbeddedSimulatorCon
   }
 
   public async start(input: { deviceProfileId: DeviceProfileId; mode?: PreviewSession["mode"]; bundle?: ProjectPreviewBundle }): Promise<PreviewSession> {
+    const requestedMode = input.mode ?? "lightweight_web";
+    if (requestedMode !== "lightweight_web") throw new Error(`Native transport ${requestedMode} is not available in the lightweight embedded controller; use lightweight_web compatibility mode.`);
     const profile = this.profiles.get(input.deviceProfileId);
     if (!profile) throw new Error(`Device profile ${input.deviceProfileId} was not registered in the embedded controller.`);
-    const session = this.useCases.createPreview(input);
-    this.useCases.transitionPreview(session.id, "starting");
-    const frame = await this.adapter.start({ ...session, status: "starting" }, profile);
-    this.frames.set(session.id, frame);
-    if (input.bundle) {
-      const runtime = new FixturePreviewRuntime();
-      runtime.load(input.bundle);
-      this.runtimes.set(session.id, runtime);
-      this.bundles.set(session.id, input.bundle);
+    const admission = this.resourcePolicy.acquirePreview();
+    if (!admission.allowed) throw new Error(`[${admission.code}] ${admission.message}`);
+    try {
+      const session = this.useCases.createPreview(input);
+      this.useCases.transitionPreview(session.id, "starting");
+      const frame = await this.adapter.start({ ...session, status: "starting" }, profile);
+      this.frames.set(session.id, frame);
+      if (input.bundle) {
+        const runtime = new FixturePreviewRuntime();
+        runtime.load(input.bundle);
+        this.runtimes.set(session.id, runtime);
+        this.bundles.set(session.id, input.bundle);
+      }
+      this.profileIds.set(session.id, profile.id);
+      const ready = this.useCases.transitionPreview(session.id, "ready");
+      this.sessions.set(ready.id, ready);
+      return ready;
+    } catch (error) {
+      this.resourcePolicy.releasePreview();
+      throw error;
     }
-    this.profileIds.set(session.id, profile.id);
-    const ready = this.useCases.transitionPreview(session.id, "ready");
-    this.sessions.set(ready.id, ready);
-    return ready;
   }
 
   public async sendInput(sessionId: PreviewSessionId, input: PreviewInput): Promise<PreviewFrame> {
@@ -73,7 +85,14 @@ export class InMemoryEmbeddedSimulatorController implements EmbeddedSimulatorCon
     return frame;
   }
 
-  public async refresh(sessionId: PreviewSessionId, kind: "fast" | "reload" = "fast", bundle?: ProjectPreviewBundle): Promise<PreviewFrame> {
+  public refresh(sessionId: PreviewSessionId, kind: "fast" | "reload" = "fast", bundle?: ProjectPreviewBundle): Promise<PreviewFrame> {
+    this.requireSession(sessionId);
+    const queue = this.refreshQueues.get(sessionId) ?? new LatestOnlyAsyncQueue<PreviewFrame>();
+    this.refreshQueues.set(sessionId, queue);
+    return queue.enqueue(() => this.refreshNow(sessionId, kind, bundle));
+  }
+
+  private async refreshNow(sessionId: PreviewSessionId, kind: "fast" | "reload", bundle?: ProjectPreviewBundle): Promise<PreviewFrame> {
     const session = this.requireSession(sessionId);
     this.useCases.transitionPreview(sessionId, kind === "fast" ? "refreshing" : "reloading");
     const profileId = this.profileIds.get(sessionId);
@@ -103,8 +122,8 @@ export class InMemoryEmbeddedSimulatorController implements EmbeddedSimulatorCon
       sessionId,
       state: session.status,
       mode: session.mode,
-      nativeFidelity: session.mode === "lightweight_web" ? "compatibility" : "native",
-      warnings: session.mode === "lightweight_web" ? ["Native modules and OS sensors are not simulated by this transport."] : [],
+      nativeFidelity: "compatibility",
+      warnings: ["Native modules, OS sensors, and native permissions are not simulated by the lightweight Web Preview."],
       diagnostics: this.runtimes.get(sessionId)?.inspect().diagnostics ?? [],
       events: this.runtimes.get(sessionId)?.inspect().events.map((event) => ({ type: event.type, message: event.message })) ?? [],
       bundle: this.bundles.get(sessionId) ? {
@@ -120,12 +139,15 @@ export class InMemoryEmbeddedSimulatorController implements EmbeddedSimulatorCon
 
   public async stop(sessionId: PreviewSessionId): Promise<void> {
     const session = this.requireSession(sessionId);
+    this.refreshQueues.get(sessionId)?.cancelPending();
+    this.refreshQueues.delete(sessionId);
     if (session.status !== "stopped") this.useCases.transitionPreview(sessionId, "stopping");
     await this.adapter.stop(sessionId);
     this.useCases.transitionPreview(sessionId, "stopped");
     this.sessions.set(sessionId, { ...session, status: "stopped" });
     this.frames.delete(sessionId);
     this.profileIds.delete(sessionId);
+    this.resourcePolicy.releasePreview();
     this.runtimes.get(sessionId)?.stop();
     this.runtimes.delete(sessionId);
     this.bundles.delete(sessionId);

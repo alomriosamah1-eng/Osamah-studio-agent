@@ -1,12 +1,15 @@
 import type { ProjectScanner } from "./ports.js";
+import { ResourcePolicy } from "./resource-policy.js";
 import { buildProjectPreviewBundle, type ProjectPreviewBundle } from "../mobile/preview-runtime.js";
+
+const utf8Encoder = new TextEncoder();
 
 export interface ProjectPreviewService {
   build(input: { projectId: string; rootPath: string; entry?: string }): Promise<ProjectPreviewBundle>;
 }
 
 export class FilesystemProjectPreviewService implements ProjectPreviewService {
-  public constructor(private readonly scanner: ProjectScanner) {}
+  public constructor(private readonly scanner: ProjectScanner, private readonly resourcePolicy: ResourcePolicy = new ResourcePolicy("low_memory")) {}
 
   public async build(input: { projectId: string; rootPath: string; entry?: string }): Promise<ProjectPreviewBundle> {
     const relativeFiles = await this.scanner.listRelativeFiles(input.rootPath);
@@ -18,7 +21,15 @@ export class FilesystemProjectPreviewService implements ProjectPreviewService {
       const source = await this.scanner.readText(input.rootPath, relativePath);
       if (source !== undefined) files[relativePath] = source;
     }
-    return buildProjectPreviewBundle({ projectId: input.projectId, rootPath: input.rootPath, entry, files });
+    const bundle = buildProjectPreviewBundle({ projectId: input.projectId, rootPath: input.rootPath, entry, files });
+    const admission = this.resourcePolicy.checkPreviewBudget({
+      sourceBytes: Object.values(files).reduce((total, source) => total + utf8Encoder.encode(source).byteLength, 0),
+      moduleCount: bundle.modules.length,
+      assetCount: bundle.assets.length,
+      warningCount: bundle.warnings.length,
+    });
+    if (!admission.allowed) throw new Error(`[${admission.code}] ${admission.message}`);
+    return bundle;
   }
 
   private selectEntry(manifest: Record<string, unknown> | undefined, files: readonly string[]): string {

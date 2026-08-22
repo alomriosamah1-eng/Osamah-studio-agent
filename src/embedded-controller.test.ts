@@ -3,6 +3,7 @@ import test from "node:test";
 import { createFoundation } from "./composition.js";
 import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
+import { ResourcePolicy } from "./application/resource-policy.js";
 import { buildProjectPreviewBundle } from "./mobile/preview-runtime.js";
 
 test("embedded simulator runs inside the application controller lifecycle", async () => {
@@ -32,4 +33,26 @@ test("embedded simulator runs inside the application controller lifecycle", asyn
   assert.equal(screenshot.sessionId, session.id);
   await controller.stop(session.id);
   assert.equal(controller.inspect(session.id).state, "stopped");
+});
+
+test("lightweight embedded controller refuses native transports and enforces one preview session", async () => {
+  const { useCases } = createFoundation();
+  const profile = useCases.registerDeviceProfile({ id: "pixel-budget", name: "Pixel Budget", platform: "android", osVersion: "15", width: 720, height: 1280, dpi: 320 });
+  const resourcePolicy = new ResourcePolicy("low_memory");
+  const controller = new InMemoryEmbeddedSimulatorController(useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
+  controller.registerProfile(profile);
+  await assert.rejects(() => controller.start({ deviceProfileId: profile.id, mode: "android_emulator" }), /Native transport android_emulator is not available/);
+  const first = await controller.start({ deviceProfileId: profile.id });
+  await assert.rejects(() => controller.start({ deviceProfileId: profile.id }), /PREVIEW_SESSION_LIMIT/);
+  assert.deepEqual(resourcePolicy.snapshot(), { activePreviewSessions: 1, activeAgentJobs: 0, profile: "low_memory" });
+  await controller.stop(first.id);
+  assert.deepEqual(resourcePolicy.snapshot(), { activePreviewSessions: 0, activeAgentJobs: 0, profile: "low_memory" });
+});
+
+test("missing lightweight preview profile does not consume the resource admission slot", async () => {
+  const { useCases } = createFoundation();
+  const resourcePolicy = new ResourcePolicy("low_memory");
+  const controller = new InMemoryEmbeddedSimulatorController(useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
+  await assert.rejects(() => controller.start({ deviceProfileId: "missing-profile" as never }), /was not registered/);
+  assert.deepEqual(resourcePolicy.snapshot(), { activePreviewSessions: 0, activeAgentJobs: 0, profile: "low_memory" });
 });

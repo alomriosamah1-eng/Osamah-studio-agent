@@ -1,0 +1,21 @@
+External source notes — 2026-08-22
+
+1. React Native for Web documentation
+URL: https://necolas.github.io/react-native-web/docs/
+Key verified points: React Native for Web is described as a compatibility layer between React DOM and React Native. It uses React DOM to render React Native-compatible JavaScript in a web browser, exposes core components such as View, Image, Text, TextInput, and ScrollView, and uses direct DOM APIs for web features. The documentation also notes that the Babel plugin can help bundle only modules in use.
+
+2. React official documentation
+URL: https://react.dev/
+Key verified points: React is presented as a library for web and native user interfaces. React components render/update UI in response to state and interactions, and React supports standard web APIs for responsive client rendering. The same page distinguishes native React Native/Expo rendering from web rendering.
+
+3. React Native official documentation
+URL: https://reactnative.dev/
+Key verified points: React Native is described as JavaScript rendered with native code, with primitives mapping to native platform UI. The site recommends Expo as a framework for new React Native apps and distinguishes native modules/tooling from web compatibility.
+
+4. Node.js SQLite documentation
+URL: https://nodejs.org/api/sqlite.html
+Key verified points: node:sqlite was added in Node v22.5.0; in Node v22.13.0 it is no longer behind the experimental flag but remains experimental. DatabaseSync exposes synchronous SQLite operations and prepared statements. This supports the project decision to keep the driver inside Infrastructure and document the experimental warning.
+
+5. SQLite VACUUM documentation
+URL: https://sqlite.org/lang_vacuum.html
+Key verified points: VACUUM INTO creates a new database containing the same logical content as a consistent snapshot while leaving the original unchanged. SQLite documents it as an alternative backup mechanism; the target must not already exist, and an interrupted operation can leave an incomplete output. The implementation therefore snapshots to a temporary path, renames atomically, and verifies hash/schema/foreign keys.

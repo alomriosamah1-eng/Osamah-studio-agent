@@ -19,6 +19,17 @@ test("builds a deterministic preview bundle from project fixture files", () => {
   assert.notEqual(changed.sourceHash, bundle.sourceHash);
 });
 
+test("preview rejects module and asset budgets before creating a render tree", () => {
+  const moduleFiles: Record<string, string> = { "src/0.tsx": `import Next from "./1"; export default Next;` };
+  for (let index = 1; index <= 256; index += 1) {
+    moduleFiles[`src/${index}.tsx`] = index === 256 ? "export default null;" : `import Next from "./${index + 1}"; export default Next;`;
+  }
+  assert.throws(() => buildProjectPreviewBundle({ projectId: "large-modules", rootPath: "/fixtures", entry: "src/0.tsx", files: moduleFiles }), /Preview module budget exceeded/);
+  const assetFiles: Record<string, string> = { "app/index.tsx": "export default null;" };
+  for (let index = 0; index <= 128; index += 1) assetFiles[`assets/${index}.png`] = "x";
+  assert.throws(() => buildProjectPreviewBundle({ projectId: "large-assets", rootPath: "/fixtures", entry: "app/index.tsx", files: assetFiles }), /Preview asset budget exceeded/);
+});
+
 test("fixture runtime loads content, receives input, and refreshes with diagnostics", () => {
   const bundle = buildProjectPreviewBundle({ projectId: "fixture", rootPath: "/fixtures/mobile-expo", entry: "app/index.tsx", files: fixtureFiles });
   const runtime = new FixturePreviewRuntime();

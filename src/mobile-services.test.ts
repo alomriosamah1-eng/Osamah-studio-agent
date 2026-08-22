@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { MobileProjectDetector, PlatformCapabilityService } from "./application/mobile-services.js";
+import { GeneralProjectDetector, MobileProjectDetector, PlatformCapabilityService } from "./application/mobile-services.js";
 
 test("detects an Expo project without executing project scripts", async () => {
   const detector = new MobileProjectDetector({
@@ -25,6 +25,17 @@ test("detects bare React Native project and native folders", async () => {
   assert.equal(descriptor.kind, "react-native");
   assert.equal(descriptor.hasAndroidFolder, true);
   assert.equal(descriptor.hasIosFolder, true);
+});
+
+test("classifies general React workspaces without starting a project process", async () => {
+  const detector = new GeneralProjectDetector({
+    async listRelativeFiles() { return ["package.json", "src/App.tsx", "index.html", "README.md"]; },
+    async readText() { return undefined; },
+    async readJson() { return { dependencies: { react: "^19.0.0", "react-dom": "^19.0.0" } }; },
+  });
+  const classification = await detector.detect("/workspace/react");
+  assert.equal(classification.kind, "react");
+  assert.equal(classification.preview, "lightweight_web");
 });
 
 test("never exposes native iOS simulator on Windows/Linux", () => {

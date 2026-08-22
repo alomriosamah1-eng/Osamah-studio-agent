@@ -11,7 +11,8 @@
     "check": "pnpm typecheck && pnpm test",
     "build": "tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs",
     "desktop:start": "pnpm build && electron dist/desktop/main.js",
-    "desktop:smoke": "pnpm build && node scripts/desktop-smoke.mjs"
+    "desktop:smoke": "pnpm build && node scripts/desktop-smoke.mjs",
+    "performance:smoke": "pnpm build && node --max-old-space-size=768 scripts/performance-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

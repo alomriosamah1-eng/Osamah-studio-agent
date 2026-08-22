@@ -73,8 +73,9 @@
 | Electron Shell + Typed Preload | `src/desktop/` و`desktop:smoke`؛ 23/23 tests؛ startup/preload/IPC smoke ناجح؛ delivery state `2a0e891b544324ff06f18ad461282527af987a13` |
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
 | SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
+| Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB |
 
-تم التحقق من `pnpm check` و`pnpm build` و`pnpm desktop:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. دُفعت شريحة SQLite والوثائق المرتبطة بها إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، وتطابق local وremote SHA.
+تم التحقق من `pnpm check` بـ44/44، و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. أضيفت slice الأداء والـ Web preview محليًا تحت low-memory policy، وما تزال قيد الدفع في هذه المرحلة.
 
 ## الخطة التنفيذية المعتمدة
 
@@ -82,11 +83,11 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ويوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. لا يوجد بعد Agent Runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ويوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition مع profile lifecycle وfallback policy، ثم bounded Agent Runtime. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition مع profile lifecycle وfallback policy، ثم توسيع bounded Agent Runtime بعقود provider/approval. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
 
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.

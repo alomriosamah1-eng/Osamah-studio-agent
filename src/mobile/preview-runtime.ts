@@ -59,12 +59,23 @@ export interface PreviewRuntimeSnapshot {
   readonly diagnostics: readonly string[];
 }
 
+const MAX_PREVIEW_FILES = 2_000;
+const MAX_PREVIEW_SOURCE_BYTES = 24 * 1024 * 1024;
+const MAX_PREVIEW_MODULES = 256;
+const MAX_PREVIEW_ASSETS = 128;
+const MAX_PREVIEW_WARNINGS = 256;
+const utf8Encoder = new TextEncoder();
+
 const blockedImports = new Set(["fs", "node:fs", "child_process", "node:child_process", "net", "node:net"]);
 const nativeOnlyImports = new Set(["react-native-mmkv", "react-native-vision-camera", "react-native-maps"]);
 const webCompatibleImports = new Set(["react", "react-native", "react-native-web", "expo", "expo-router"]);
 
 export const buildProjectPreviewBundle = (input: ProjectPreviewInput): ProjectPreviewBundle => {
   const normalizedEntry = normalizePath(input.entry);
+  const fileEntries = Object.entries(input.files);
+  if (fileEntries.length > MAX_PREVIEW_FILES) throw new Error(`Preview file budget exceeded: ${fileEntries.length} > ${MAX_PREVIEW_FILES}.`);
+  const sourceBytes = fileEntries.reduce((total, [, source]) => total + utf8Encoder.encode(source).byteLength, 0);
+  if (sourceBytes > MAX_PREVIEW_SOURCE_BYTES) throw new Error(`Preview source budget exceeded: ${sourceBytes} > ${MAX_PREVIEW_SOURCE_BYTES} bytes.`);
   const entrySource = input.files[normalizedEntry];
   if (entrySource === undefined) throw new Error(`Preview entry was not found: ${normalizedEntry}`);
   const visited = new Set<string>();
@@ -83,6 +94,7 @@ export const buildProjectPreviewBundle = (input: ProjectPreviewInput): ProjectPr
     visited.add(normalized);
     const dependencies = extractImports(source);
     modules.push({ id: normalized, source, dependencies, format: fileFormat(normalized) });
+    if (modules.length > MAX_PREVIEW_MODULES) throw new Error(`Preview module budget exceeded: ${modules.length} > ${MAX_PREVIEW_MODULES}.`);
     for (const dependency of dependencies) {
       const classification = classifyImport(dependency);
       if (classification === "blocked") {
@@ -90,13 +102,17 @@ export const buildProjectPreviewBundle = (input: ProjectPreviewInput): ProjectPr
       } else if (classification === "native_only") {
         warnings.push({ importId: dependency, classification, message: `Native-only import requires a native transport: ${dependency}` });
       }
+      if (warnings.length > MAX_PREVIEW_WARNINGS) throw new Error(`Preview warning budget exceeded: ${warnings.length} > ${MAX_PREVIEW_WARNINGS}.`);
       if (dependency.startsWith(".")) visit(resolveRelative(normalized, dependency, input.files));
     }
   };
 
   visit(normalizedEntry);
   for (const path of Object.keys(input.files)) {
-    if (/\.(png|jpe?g|gif|svg|webp)$/i.test(path)) assets.push({ id: path, relativePath: path, mimeType: mimeType(path) });
+    if (/\.(png|jpe?g|gif|svg|webp)$/i.test(path)) {
+      assets.push({ id: path, relativePath: path, mimeType: mimeType(path) });
+      if (assets.length > MAX_PREVIEW_ASSETS) throw new Error(`Preview asset budget exceeded: ${assets.length} > ${MAX_PREVIEW_ASSETS}.`);
+    }
   }
   if (warnings.some((warning) => warning.classification === "blocked")) throw new Error(warnings.find((warning) => warning.classification === "blocked")?.message ?? "Blocked preview import.");
   const sourceHash = stableHash(Object.entries(input.files).sort(([a], [b]) => a.localeCompare(b)).map(([path, source]) => `${path}\0${source}`).join("\n"));
