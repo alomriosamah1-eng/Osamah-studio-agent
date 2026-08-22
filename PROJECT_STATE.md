@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Agent Work Cycle + Project Context Index بعد Provider وApproval |
-| الحالة | Agent Work Cycle وContext Index وFilesystemPatchAdapter منفذة ومدفوعة ومتحقق منها على `origin/main`؛ الخطوة التالية typed application/IPC boundary |
+| المرحلة | Typed Agent WorkCycle IPC Boundary بعد Agent Work Cycle وContext Index |
+| الحالة | Typed WorkCycle IPC وruntime payload validation منفذة محليًا وقيد full gate/commit؛ الشرائح السابقة مدفوعة ومتحقق منها |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -14,7 +14,8 @@
 | آخر commit Profile Storage | `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` (`feat: add profile path policy and exclusive lock`) |
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
-| آخر فحص | `pnpm check` ناجح، `71/71` اختبارًا، وfull gate وGitHub verification ناجحة في 2026-08-22 |
+| آخر commit Typed WorkCycle IPC | pending؛ handlers وruntime validation و73/73 tests ناجحة، ولم يُعلن الإغلاق قبل full gate وremote SHA verification |
+| آخر فحص | `pnpm check` ناجح، `73/73` اختبارًا؛ full gate النهائي للشريحة الحالية لاحق قبل الدفع |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
@@ -24,6 +25,7 @@
 | حالة push لشريحة Profile Path Policy | `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
+| حالة push لشريحة Typed WorkCycle IPC | pending؛ implementation وcontract tests مكتملة، والـfull gate وcommit/push النهائيان لاحقان |
 
 ## المكتمل
 
@@ -54,7 +56,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `71/71` ناجحة |
+| `pnpm test` | `73/73` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 10ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.4MB، تحت V8 heap 768MB |
 | `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
@@ -62,6 +64,7 @@
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
 | agent work cycle | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety PASS؛ delivery `fb5d93ec87939125373dd8c450d1195af50fc911`، local == `origin/main` |
+| typed workcycle IPC | context index وstart/resume/inspect/cancel وmalformed payload validation وduplicate protection PASS؛ delivery pending full gate |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
 | event bus وobservability | persistence وrecursive redaction وbounded listing ناجحة |
@@ -78,7 +81,7 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إغلاق Agent Work Cycle الحالي، تأتي typed application/IPC boundary وpersistent audit وHuman Gate UI وplanner/critic وprovider adapters الفعلية.
+بعد إغلاق Typed WorkCycle IPC الحالي، تأتي persistent audit وHuman Gate UI وplanner/critic وprovider adapters الفعلية، ثم Development Environment العامة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.

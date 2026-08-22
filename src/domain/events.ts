@@ -12,6 +12,7 @@ export type DomainEvent =
   | { readonly type: "WorkCycleCheckpointed"; readonly cycleId: string; readonly checkpointId: string; readonly occurredAt: string }
   | { readonly type: "WorkCycleApplied"; readonly cycleId: string; readonly checkpointId: string; readonly occurredAt: string }
   | { readonly type: "WorkCycleDenied"; readonly cycleId: string; readonly occurredAt: string }
+  | { readonly type: "WorkCycleCancelled"; readonly cycleId: string; readonly occurredAt: string }
   | { readonly type: "WorkCycleFailed"; readonly cycleId: string; readonly occurredAt: string };
 
 export interface EventBus {

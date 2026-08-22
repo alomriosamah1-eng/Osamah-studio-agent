@@ -1,5 +1,23 @@
 # سجل التغييرات
 
+## [Unreleased] — Typed Agent WorkCycle IPC Boundary
+
+### Added
+
+- methods typed جديدة: `context.index` و`workCycle.start` و`workCycle.inspect` و`workCycle.cancel` عبر `IpcMethodMap` وقناة `osamah:dispatch` الحالية.
+- runtime payload validation للـIDs وpaths وconstraints وplan وpatch operations وexpected SHA وtimeout قبل وصول الطلب إلى Application handlers.
+- IPC handlers مربوطة بـ`FilesystemProjectContextIndex` و`AgentWorkCycleService`، مع approval resume وcheckpoint/apply وcancel قبل mutation.
+- contract tests للـcontext وWorkCycle lifecycle وmalformed payloads وduplicate/unknown requests، وتوثيق `docs/54-agent-work-cycle-ipc.md`.
+
+### Verified
+
+- `pnpm check`: `73/73` اختبارًا ناجحًا.
+- sender validation و`contextIsolation` و`sandbox` وCSP تبقى كما هي؛ لا توجد قناة raw filesystem أو terminal أو provider invocation للrenderer.
+
+### Boundaries
+
+- preload surface ما زال `dispatch` typed و`chooseProjectRoot` فقط؛ Human Gate UI وevent streaming وpersistent cycle state وplanner/critic مؤجلة.
+
 ## [Unreleased] — Agent Work Cycle وProject Context Index
 
 ### Added

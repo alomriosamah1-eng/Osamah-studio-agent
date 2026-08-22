@@ -65,7 +65,7 @@ export interface CheckpointStore {
   list(limit?: number): readonly Checkpoint[];
 }
 
-export type WorkCycleStage = "received" | "planning" | "patch_ready" | "waiting_approval" | "checkpointed" | "applied" | "denied" | "failed";
+export type WorkCycleStage = "received" | "planning" | "patch_ready" | "waiting_approval" | "checkpointed" | "applied" | "denied" | "cancelled" | "failed";
 
 export interface WorkCycleRequest {
   readonly cycleId: string;
@@ -192,15 +192,22 @@ export class AgentWorkCycleService {
     let validation: PatchValidation | undefined;
     try {
       context = await this.dependencies.context.build(input.rootPath);
+      if (this.snapshots.get(input.cycleId)?.stage === "cancelled") return { cycle: this.snapshots.get(input.cycleId)!, context, targetedFiles, plan: input.plan, validation };
       targetedFiles = await this.dependencies.context.readTargeted(input.rootPath, input.targetedPaths);
-      this.save({ ...received, stage: "planning", updatedAt: this.dependencies.now() });
+      const latestBeforePlanning = this.snapshots.get(input.cycleId);
+      if (latestBeforePlanning?.stage === "cancelled") return { cycle: latestBeforePlanning, context, targetedFiles, plan: input.plan, validation };
+      this.save({ ...(latestBeforePlanning ?? received), stage: "planning", updatedAt: this.dependencies.now() });
       validation = await this.dependencies.patches.preview(input.rootPath, input.patch);
       if (!validation.valid) return this.failResult(input, context, targetedFiles, validation, validation.reason ?? "Patch validation failed.");
-      this.save({ ...received, stage: "patch_ready", updatedAt: this.dependencies.now() });
+      const latestBeforePatchReady = this.snapshots.get(input.cycleId);
+      if (latestBeforePatchReady?.stage === "cancelled") return { cycle: latestBeforePatchReady, context, targetedFiles, plan: input.plan, validation };
+      this.save({ ...(latestBeforePatchReady ?? received), stage: "patch_ready", updatedAt: this.dependencies.now() });
 
       if (input.patch.operations.length === 0) {
+        const latestBeforeNoop = this.snapshots.get(input.cycleId);
+        if (latestBeforeNoop?.stage === "cancelled") return { cycle: latestBeforeNoop, context, targetedFiles, plan: input.plan, validation };
         const checkpoint = this.createCheckpoint(input, targetedFiles);
-        const checkpointed = this.save({ ...received, stage: "checkpointed", checkpointId: checkpoint.checkpointId, updatedAt: this.dependencies.now() });
+        const checkpointed = this.save({ ...(this.snapshots.get(input.cycleId) ?? received), stage: "checkpointed", checkpointId: checkpoint.checkpointId, updatedAt: this.dependencies.now() });
         this.dependencies.events.publish({ type: "WorkCycleCheckpointed", cycleId: input.cycleId, checkpointId: checkpoint.checkpointId, occurredAt: checkpoint.createdAt });
         return { cycle: checkpointed, context, targetedFiles, plan: input.plan, validation, checkpoint };
       }
@@ -221,16 +228,25 @@ export class AgentWorkCycleService {
           const preApplyCheckpoint = this.createCheckpoint(input, targetedFiles);
           const currentValidation = await this.dependencies.patches.preview(input.rootPath, input.patch);
           if (!currentValidation.valid) throw new WorkCycleError(currentValidation.reason ?? "Patch became invalid before application.");
-          this.save({ ...received, stage: "checkpointed", checkpointId: preApplyCheckpoint.checkpointId, updatedAt: this.dependencies.now() });
+          if (signal.aborted) throw new WorkCycleError("Work cycle was cancelled before patch application.");
+          const latestBeforeCheckpoint = this.snapshots.get(input.cycleId);
+          if (latestBeforeCheckpoint?.stage === "cancelled") throw new WorkCycleError("Work cycle was cancelled before patch application.");
+          this.save({ ...(latestBeforeCheckpoint ?? received), stage: "checkpointed", checkpointId: preApplyCheckpoint.checkpointId, updatedAt: this.dependencies.now() });
           this.dependencies.events.publish({ type: "WorkCycleCheckpointed", cycleId: input.cycleId, checkpointId: preApplyCheckpoint.checkpointId, occurredAt: preApplyCheckpoint.createdAt });
           await this.dependencies.patches.apply(input.rootPath, input.patch, currentValidation, signal);
           return preApplyCheckpoint;
         },
       }, action, input.approvalId);
+      const latest = this.snapshots.get(input.cycleId);
+      if (latest?.stage === "cancelled") return { cycle: latest, context, targetedFiles, plan: input.plan, validation, checkpoint };
       const applied = this.save({ ...received, stage: "applied", checkpointId: checkpoint.checkpointId, updatedAt: this.dependencies.now() });
       this.dependencies.events.publish({ type: "WorkCycleApplied", cycleId: input.cycleId, checkpointId: checkpoint.checkpointId, occurredAt: applied.updatedAt });
       return { cycle: applied, context, targetedFiles, plan: input.plan, validation, checkpoint };
     } catch (error) {
+      const cancelled = this.snapshots.get(input.cycleId);
+      if (cancelled?.stage === "cancelled") {
+        return { cycle: cancelled, context, targetedFiles, plan: input.plan, validation };
+      }
       if (error instanceof AgentAuthorizationError) {
         if (error.decision === "approval_required") {
           if (!error.approvalId) return this.failResult(input, context, targetedFiles, validation, "Approval was required but no approval ticket was returned.");
@@ -245,6 +261,15 @@ export class AgentWorkCycleService {
       const message = error instanceof Error ? error.message : String(error);
       return this.failResult(input, context, targetedFiles, validation, message);
     }
+  }
+
+  public cancel(cycleId: string): { cancelled: boolean; cycle?: WorkCycleSnapshot } {
+    const current = this.snapshots.get(cycleId);
+    if (!current || ["applied", "denied", "failed", "checkpointed"].includes(current.stage)) return { cancelled: false, cycle: current };
+    const cancelled = this.save({ ...current, stage: "cancelled", updatedAt: this.dependencies.now(), error: "Cancelled by caller." });
+    const runtimeCancelled = this.dependencies.runtime.cancel(cycleId);
+    this.dependencies.events.publish({ type: "WorkCycleCancelled", cycleId, occurredAt: cancelled.updatedAt });
+    return { cancelled: runtimeCancelled || current.stage === "received" || current.stage === "waiting_approval" || current.stage === "patch_ready" || current.stage === "planning", cycle: cancelled };
   }
 
   public inspect(cycleId: string): WorkCycleSnapshot | undefined {

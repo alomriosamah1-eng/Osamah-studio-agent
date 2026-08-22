@@ -1,11 +1,19 @@
+import type { AgentWorkCycleService } from "../application/agent-work-cycle.js";
+import type { FilesystemProjectContextIndex } from "../application/project-context.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
+
+export interface WorkCycleIpcDependencies {
+  readonly context: Pick<FilesystemProjectContextIndex, "build">;
+  readonly workCycle: Pick<AgentWorkCycleService, "start" | "inspect" | "cancel">;
+}
 
 export const registerEmbeddedSimulatorHandlers = (
   transport: InMemoryIpcTransport,
   controller: InMemoryEmbeddedSimulatorController,
   projectPreviewService: ProjectPreviewService,
+  workCycleDependencies?: WorkCycleIpcDependencies,
 ): void => {
   transport.register("health.get", async () => ({ status: "ok", version: "0.4.0-presentation-renderer" }));
   transport.register("device.get", async (request) => {
@@ -44,4 +52,10 @@ export const registerEmbeddedSimulatorHandlers = (
     await controller.stop(request.payload.sessionId);
     return { stopped: true as const };
   });
+  if (workCycleDependencies) {
+    transport.register("context.index", (request) => workCycleDependencies.context.build(request.payload.rootPath));
+    transport.register("workCycle.start", (request) => workCycleDependencies.workCycle.start(request.payload));
+    transport.register("workCycle.inspect", (request) => Promise.resolve(workCycleDependencies.workCycle.inspect(request.payload.cycleId)));
+    transport.register("workCycle.cancel", (request) => Promise.resolve(workCycleDependencies.workCycle.cancel(request.payload.cycleId)));
+  }
 };

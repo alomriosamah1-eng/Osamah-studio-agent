@@ -124,7 +124,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService);
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, workCycle: agentWorkCycle });
   let closed = false;
   const close = (): void => {
     if (closed) return;
