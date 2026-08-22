@@ -62,6 +62,7 @@
 | `94-memory-agent-scope-bounded.md` | agent scope filtering محلي فوق retrieval باستخدام AgentCatalog، مع حدود visibility وretention وproviderAccess ودون authorization كامل |
 | `95-production-markdown-export-preview.md` | Markdown export preview bounded لتقارير Production Studio مع evidence traceability ودون كتابة ملفات أو publish |
 | `96-semantic-memory-deferred-decision.md` | قرار تصميمي مؤجل لـsemantic memory وFTS5 وembeddings وvector services، مع شروط فتح المرحلة دون تنفيذها |
+| `97-production-markdown-destination-review.md` | destination review/ write الآمنة لـMarkdown مع relative-path/live-profile/no-overwrite/manifest guards وreport review وHuman Gate |
 
 ## ملفات الحالة خارج هذا المجلد
 

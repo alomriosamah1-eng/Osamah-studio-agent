@@ -40,10 +40,11 @@
       "second-brain-relational-memory-links-bounded",
       "second-brain-agent-scope-filtering-bounded",
       "production-markdown-export-preview-bounded",
-      "second-brain-semantic-memory-deferred-decision"
+      "second-brain-semantic-memory-deferred-decision",
+      "production-markdown-destination-review"
     ],
-    "tests": "209/209",
-    "next_phase": "production-markdown-destination-review",
+    "tests": "213/213",
+    "next_phase": "production-render-workers-format-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

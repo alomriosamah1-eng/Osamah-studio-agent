@@ -136,7 +136,27 @@
 ### Boundaries
 
 - لا runtime code changes أو migration جديدة أو native FTS dependency أو provider sharing أو automatic consolidation نتيجة هذا القرار.
-- تبقى Voice وAvatar مؤجلتين؛ المسار التنفيذي التالي destination review أو FTS adapter مشروط بعد مراجعة مستقلة.
+- تبقى Voice وAvatar مؤجلتين؛ destination review أُغلقت، والمسار التنفيذي التالي render workers وformat validators أو FTS adapter مشروط بعد مراجعة مستقلة.
+
+## [Unreleased] — Production Studio Markdown Destination Review
+
+### Added
+
+- أضيف `MarkdownDestinationService` و`MarkdownDestinationPort` و`LocalMarkdownDestinationWriter` لكتابة Markdown محلية فقط إلى root اختياري مهيأ من host-side composition.
+- أضيف `production.report.markdown.write` typed IPC مع `reportId` و`relativePath` و`approvalId`، ويُرفض أي field زائد أو مسار مطلق/traversal/غير Markdown.
+- أضيفت report review و`filesystem.write` Human Gate مستقلان، مع action scope يثبت التقرير والمسار وidempotency key.
+- أضيفت كتابة مؤقتة ثم hard-link publication وmanifest/hash وUTF-8 byte count وno-overwrite وlive-profile/symlink guards، مع cleanup عند فشل manifest.
+
+### Verified
+
+- `pnpm check`: `213/213` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `1de463fadd188373eef2bc418f6a6ab6f6d7fa2a` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- Markdown destination write mutation محلية خلف approval ولا تعني factual verification أو external citation validation أو publish.
+- لا PDF/HTML/PPTX/media render، ولا converter أو provider/network/command execution، ولا overwrite أو live-profile write.
 
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 
