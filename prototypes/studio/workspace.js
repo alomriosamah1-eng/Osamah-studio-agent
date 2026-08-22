@@ -1034,6 +1034,100 @@
     item.textContent = `State: ${draft.reviewState}\nClaims: ${draft.manifest.claims.join(', ') || 'none'}\nAssets: ${draft.manifest.assets.join(', ') || 'none'}\nSources: ${draft.manifest.sources.join(', ') || 'none'}\nTools invoked: ${draft.manifest.tools.length ? draft.manifest.tools.join(', ') : 'none'}\nWarnings: ${draft.warnings.length ? draft.warnings.join(', ') : 'none'}`;
     list.append(item);
   };
+  let activeReport;
+  const renderReport = (report) => {
+    activeReport = report;
+    $('reportStatus').textContent = `Report ${report.reportId} · provenance review only · no export/publish`;
+    $('reportReviewState').textContent = report.reviewState;
+    $('reportClaimCount').textContent = String(report.claims.length);
+    $('reportEvidenceCount').textContent = String(report.evidence.length);
+    $('reportSourceCount').textContent = String(report.sourceRefs.length);
+    $('reportRedactionState').textContent = report.redactionState;
+    const list = $('reportClaimList');
+    list.replaceChildren();
+    if (!report.claims.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No report claims.';
+      list.append(empty);
+      return;
+    }
+    report.claims.slice(0, 128).forEach((claim) => {
+      const item = document.createElement('div');
+      item.className = `artifact-item ${claim.verificationState === 'supported' ? 'ready' : claim.verificationState === 'conflicted' ? 'blocked' : 'review'}`;
+      item.textContent = `${claim.verificationState.toUpperCase()} · ${claim.text}\nEvidence: ${claim.evidenceIds.length ? claim.evidenceIds.join(', ') : 'none'}${claim.warnings.length ? `\nWarnings: ${claim.warnings.join(', ')}` : ''}`;
+      list.append(item);
+    });
+  };
+  const loadReportDocuments = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('reportStatus').textContent = 'Desktop IPC unavailable; no report list was loaded.';
+      return;
+    }
+    const response = await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('production-report-list'), correlationId: nextRequest('production-report-correlation'), method: 'production.report.list', payload: { limit: 8 } });
+    if (!response.ok) {
+      $('reportStatus').textContent = `Report list rejected: ${response.error.message}`;
+      log(`production.report.list_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    if (response.result[0]) renderReport(response.result[0]);
+    else $('reportStatus').textContent = 'No report document in this session.';
+    log(`production.report.list_loaded ${response.result.length} document(s) · no export`, 'ok');
+  };
+  const createReportDocument = async () => {
+    if (!activeContentPlan) {
+      $('reportStatus').textContent = 'Create a content plan preview first; no report was created.';
+      log('production.report.missing_plan', 'warn');
+      return;
+    }
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('reportStatus').textContent = 'Desktop IPC unavailable; no report was created.';
+      return;
+    }
+    const button = $('createReportDocument');
+    button.disabled = true;
+    $('reportStatus').textContent = 'Building bounded report provenance preview…';
+    try {
+      const response = await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('production-report-create'), correlationId: nextRequest('production-report-correlation'), method: 'production.report.create', payload: { kind: 'technical_analysis', title: $('reportTitle').value.trim(), scope: $('reportScope').value.trim(), contentPlanId: activeContentPlan.planId } });
+      if (!response.ok) {
+        $('reportStatus').textContent = `Report rejected: ${response.error.message}`;
+        log(`production.report.create_rejected ${response.error.message}`, 'warn');
+        return;
+      }
+      renderReport(response.result);
+      $('rightStatus').textContent = `Report ${response.result.reviewState}`;
+      log(`production.report.created ${response.result.reportId} · claims=${response.result.claims.length} · no export`, 'ok');
+    } catch (error) {
+      $('reportStatus').textContent = `Report failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('production.report.create_failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+  const approveReportDocument = async () => {
+    if (!activeReport) {
+      $('reportStatus').textContent = 'Build or load a report first; no review was sent.';
+      return;
+    }
+    if (activeReport.reviewState !== 'review_required') {
+      $('reportStatus').textContent = `Report is ${activeReport.reviewState}; no duplicate review was sent.`;
+      return;
+    }
+    const reason = $('reportReviewReason').value.trim();
+    if (!reason) {
+      $('reportStatus').textContent = 'Enter a review reason; no approval was sent.';
+      return;
+    }
+    const response = await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('production-report-review'), correlationId: nextRequest('production-report-review-correlation'), method: 'production.report.review', payload: { reportId: activeReport.reportId, decision: 'approve', reason } });
+    if (!response.ok) {
+      $('reportStatus').textContent = `Report review rejected: ${response.error.message}`;
+      log(`production.report.review_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderReport(response.result);
+    $('rightStatus').textContent = 'Report approved locally; not externally verified';
+    log(`production.report.review ${response.result.reportId} approved_locally`, 'ok');
+  };
   const previewRenderPolicy = async () => {
     if (!activeArtifact) {
       $('renderPolicyStatus').textContent = 'Build an artifact manifest first; no renderer was started.';
@@ -1337,6 +1431,9 @@
   $('capture').onclick = () => { log('ScreenshotCaptured: artifact created', 'ok'); };
   $('approve').onclick = () => { void loadPendingApprovals(); log('approval.queue_refreshed'); };
   $('refreshAgentCatalog').onclick = () => { void loadAgentCatalog(); };
+  $('createReportDocument').onclick = () => { void createReportDocument(); };
+  $('refreshReportDocuments').onclick = () => { void loadReportDocuments(); };
+  $('approveReportDocument').onclick = () => { void approveReportDocument(); };
 
   const runDesktopSmoke = async () => {
     if (window.location.hash !== '#osamah-smoke' || !window.osamah) return;
@@ -1530,6 +1627,34 @@
       method: 'production.render.policy.preview',
       payload: { artifactId: artifactDraftResponse.result.artifactId, format: 'pdf', relativeDestination: '/tmp/output.pdf' },
     }) : { ok: false };
+    const reportCreateResponse = contentPlanCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-report-create',
+      correlationId: 'desktop-smoke-report',
+      method: 'production.report.create',
+      payload: { kind: 'technical_analysis', title: 'Desktop smoke report', scope: 'Local review only', contentPlanId: contentPlanCreateResponse.result.planId },
+    }) : { ok: false };
+    const reportGetResponse = reportCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-report-get',
+      correlationId: 'desktop-smoke-report',
+      method: 'production.report.get',
+      payload: { reportId: reportCreateResponse.result.reportId },
+    }) : { ok: false };
+    const reportListResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-report-list',
+      correlationId: 'desktop-smoke-report',
+      method: 'production.report.list',
+      payload: { limit: 8 },
+    });
+    const reportMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-report-invalid',
+      correlationId: 'desktop-smoke-report',
+      method: 'production.report.list',
+      payload: { limit: 8, send: true },
+    });
     const memoryCaptureResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-memory-capture',
@@ -1732,9 +1857,11 @@
     const artifactNoMutationPassed = artifactPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const renderPolicyPassed = renderPolicyResponse.ok && renderPolicyResponse.result.decision === 'blocked' && renderPolicyResponse.result.executionStarted === false && renderPolicyResponse.result.adapter === 'none' && renderPolicyResponse.result.checks.includes('artifact_review_blocked');
     const renderPolicyNoMutationPassed = renderPolicyPassed && renderPolicyMalformedResponse.ok === false && approvalResponse.ok && approvalResponse.result.length === 1;
+    const reportPassed = reportCreateResponse.ok && reportCreateResponse.result.reviewState === 'review_required' && reportCreateResponse.result.claims[0]?.verificationState === 'unresolved' && reportCreateResponse.result.warnings.includes('content_plan_has_unresolved_claims') && reportGetResponse.ok && reportGetResponse.result?.reportId === reportCreateResponse.result.reportId && reportListResponse.ok && reportListResponse.result.length === 1 && reportMalformedResponse.ok === false;
+    const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -1742,6 +1869,7 @@
   subscribeToApprovalEvents();
   void loadPendingApprovals();
   void loadAgentCatalog();
+  void loadReportDocuments();
   void loadProviders();
   void loadSources();
   void loadAssets();

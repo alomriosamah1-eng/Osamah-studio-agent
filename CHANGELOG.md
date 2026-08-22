@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — ReportDocument وBounded Traceable Reporting
+
+### Added
+
+- `ReportDocument` و`ReportDocumentPort` و`InMemoryReportDocumentService` لتمثيل تقرير محلي قابل للتتبع فوق Content Plan وSource Registry وArtifact Manifest.
+- evidence وclaims بحالات `supported`/`unresolved`/`conflicted`، مع اشتقاق sourceRefs وartifactRefs، warnings، redaction state، assumptions، decisions، risks، وunresolved questions.
+- `production.report.create` و`production.report.get` و`production.report.list` و`production.report.review` عبر typed IPC exact-key validators وحدود bounded.
+- Workspace Report Document panel لإنشاء التقرير وعرض claims والأدلة والمصادر وتنفيذ `Approve locally` بسبب صريح، دون export أو publish أو provider generation.
+- اختبارات Application وIPC وdesktop smoke تغطي Content Plan provenance، evidence invalid/unresolved، local review، redaction، malformed payload، وno-provider/no-approval/no-mutation.
+- توثيق القرار في `docs/81-report-document-contract.md`.
+
+### Verified
+
+- `pnpm check`: `177/177` اختبارًا ناجحًا؛ syntax وbuild وdesktop smoke وperformance smoke وSQLite/JSON/diff/secret gates: PASS.
+- ReportDocument desktop smoke: `review_required` للتقرير ذي claim غير المدعوم، واستعادة list/get ناجحة، ولا renderer/export أو approval ticket تلقائي.
+- feature commit وdocs-close سيُثبتان بعد الدفع والتحقق المنفصل.
+
+### Boundaries
+
+- لا توجد Markdown/PDF generation، ولا converter أو renderer أو output file، ولا remote publication، ولا persistence أو FTS أو embeddings أو external connectors.
+- approve هو تنظيم ومراجعة محلية، وليس تحققًا خارجيًا من الحقائق؛ claims غير المدعومة لا يمكن اعتمادها.
+
 ## [Unreleased] — Agent Definition Contract وBounded Agent Catalog
 
 ### Added

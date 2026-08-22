@@ -19,6 +19,7 @@ import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactD
 import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyRequest } from "../application/render-policy.js";
 import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention, MemoryReviewDecision, MemoryReviewPort } from "../application/memory-capture.js";
 import type { AgentDefinition } from "../application/agent-catalog.js";
+import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -85,6 +86,10 @@ export interface IpcMethodMap {
   "brain.memory.listForReview": { payload: { limit?: number }; result: readonly MemoryEntry[] };
   "agent.catalog.list": { payload: { limit?: number }; result: readonly AgentDefinition[] };
   "agent.definition.get": { payload: { agentId: string }; result: AgentDefinition | undefined };
+  "production.report.create": { payload: CreateReportDocumentRequest; result: ReportDocument };
+  "production.report.get": { payload: { reportId: string }; result: ReportDocument | undefined };
+  "production.report.list": { payload: { limit?: number }; result: readonly ReportDocument[] };
+  "production.report.review": { payload: ReportReviewDecision; result: ReportDocument };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -363,6 +368,28 @@ const isMemoryReviewPayload = (value: unknown): boolean => isRecord(value) && ha
 const isMemoryListForReviewPayload = (value: unknown): boolean => isMemoryListPayload(value);
 const isAgentCatalogListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
 const isAgentDefinitionGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["agentId"]) && isString(value.agentId, 128) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.agentId);
+const isReportKindPayload = (value: unknown): value is ReportKind => ["project_discovery", "market_research", "feasibility", "business_model", "product_strategy", "technical_analysis", "architecture", "agent_system", "security", "dependency", "testing", "performance", "release", "maintenance", "final_handover"].includes(value as string);
+const isReportStringListPayload = (value: unknown, maxItems: number, maxLength: number): value is readonly string[] => Array.isArray(value) && value.length <= maxItems && value.every((item) => isSingleLineString(item, maxLength));
+const isReportEvidenceInputPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["label", "sourceId", "citationId", "artifactId"]) && isSingleLineString(value.label, 512) && (value.sourceId === undefined || isString(value.sourceId, 256)) && (value.citationId === undefined || isString(value.citationId, 256)) && (value.artifactId === undefined || isString(value.artifactId, 256)) && Boolean(value.sourceId || value.citationId || value.artifactId);
+const isReportClaimInputPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["text", "evidenceIds"]) && isSingleLineString(value.text, 2_000) && (value.evidenceIds === undefined || isUniqueBoundedStringList(value.evidenceIds, 16, 256));
+const isReportCreatePayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["kind", "title", "scope", "author", "inputs", "evidence", "claims", "assumptions", "decisions", "risks", "unresolvedQuestions", "contentPlanId", "artifactId"])
+  && isReportKindPayload(value.kind)
+  && isSingleLineString(value.title, 512)
+  && isSingleLineString(value.scope, 2_000)
+  && (value.author === undefined || isSingleLineString(value.author, 256))
+  && (value.inputs === undefined || isReportStringListPayload(value.inputs, 32, 512))
+  && (value.evidence === undefined || (Array.isArray(value.evidence) && value.evidence.length <= 256 && value.evidence.every(isReportEvidenceInputPayload)))
+  && (value.claims === undefined || (Array.isArray(value.claims) && value.claims.length <= 128 && value.claims.every(isReportClaimInputPayload)))
+  && (value.assumptions === undefined || isReportStringListPayload(value.assumptions, 32, 1_000))
+  && (value.decisions === undefined || isReportStringListPayload(value.decisions, 32, 1_000))
+  && (value.risks === undefined || isReportStringListPayload(value.risks, 32, 1_000))
+  && (value.unresolvedQuestions === undefined || isReportStringListPayload(value.unresolvedQuestions, 32, 1_000))
+  && (value.contentPlanId === undefined || isString(value.contentPlanId, 256))
+  && (value.artifactId === undefined || isString(value.artifactId, 256));
+const isReportGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["reportId"]) && isString(value.reportId, 256);
+const isReportListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
+const isReportReviewPayload = (value: unknown): value is ReportReviewDecision => isRecord(value) && hasOnlyKeys(value, ["reportId", "decision", "reason"]) && isString(value.reportId, 256) && (value.decision === "approve" || value.decision === "block") && isSingleLineString(value.reason, 512);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -413,6 +440,10 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "brain.memory.listForReview") return isMemoryListForReviewPayload(payload);
   if (method === "agent.catalog.list") return isAgentCatalogListPayload(payload);
   if (method === "agent.definition.get") return isAgentDefinitionGetPayload(payload);
+  if (method === "production.report.create") return isReportCreatePayload(payload);
+  if (method === "production.report.get") return isReportGetPayload(payload);
+  if (method === "production.report.list") return isReportListPayload(payload);
+  if (method === "production.report.review") return isReportReviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

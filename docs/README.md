@@ -46,6 +46,7 @@
 | `78-preview-browser-integrations-architecture.md` | Preview Sharing وPlaywright وOAuth/Google وMCP وحدود الأمان |
 | `79-documentation-traceability-reporting.md` | taxonomy التوثيق وخريطة التتبع وReportDocument وhandoff |
 | `80-agent-definition-contract-catalog.md` | عقد تعريف الوكيل والكتالوج bounded وحالات التنفيذ والحدود |
+| `81-report-document-contract.md` | عقد التقرير المحلي وprovenance وclaims والمراجعة وحدود عدم التصدير |
 
 ## ملفات الحالة خارج هذا المجلد
 

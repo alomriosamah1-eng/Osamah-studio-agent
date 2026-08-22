@@ -629,6 +629,53 @@ test("typed IPC exposes the bounded agent catalog without execution or approval"
   }
 });
 
+test("typed IPC exposes bounded report documents with provenance and explicit review", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const source = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-source", correlationId: "report-ipc", method: "production.source.register", payload: { kind: "workspace_document", locator: "workspace://report/source", bytes: 64, sha256: "d".repeat(64), verificationState: "content_validated" } } as const);
+    assert.equal(source.ok, true);
+    if (!source.ok) return;
+    const citation = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-citation", correlationId: "report-ipc", method: "production.citation.add", payload: { sourceId: source.result.sourceId, label: "Report source", verificationState: "content_validated" } } as const);
+    assert.equal(citation.ok, true);
+    if (!citation.ok) return;
+    const plan = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-plan", correlationId: "report-ipc", method: "production.plan.create", payload: { brief: "Report plan" } } as const);
+    assert.equal(plan.ok, true);
+    if (!plan.ok) return;
+    const section = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-section", correlationId: "report-ipc", method: "production.plan.section.add", payload: { planId: plan.result.planId, title: "Findings" } } as const);
+    assert.equal(section.ok, true);
+    if (!section.ok) return;
+    const claim = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-claim", correlationId: "report-ipc", method: "production.plan.claim.add", payload: { planId: plan.result.planId, sectionId: section.result.sections[0]!.sectionId, text: "The report has traceable evidence." } } as const);
+    assert.equal(claim.ok, true);
+    if (!claim.ok) return;
+    const attached = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-attach", correlationId: "report-ipc", method: "production.plan.citation.attach", payload: { planId: plan.result.planId, claimId: claim.result.claims[0]!.claimId, citationId: citation.result.citationId } } as const);
+    assert.equal(attached.ok, true);
+    const report = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-create", correlationId: "report-ipc", method: "production.report.create", payload: { kind: "technical_analysis", title: "Traceable report", scope: "Production Studio", contentPlanId: plan.result.planId } } as const);
+    assert.equal(report.ok, true);
+    if (!report.ok) return;
+    assert.equal(report.result.reviewState, "review_required");
+    assert.equal(report.result.claims[0]?.verificationState, "supported");
+    assert.deepEqual(report.result.sourceRefs, [source.result.sourceId]);
+    const fetched = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-get", correlationId: "report-ipc", method: "production.report.get", payload: { reportId: report.result.reportId } } as const);
+    assert.equal(fetched.ok, true);
+    if (fetched.ok) assert.equal(fetched.result?.reportId, report.result.reportId);
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-list", correlationId: "report-ipc", method: "production.report.list", payload: { limit: 8 } } as const);
+    assert.equal(listed.ok, true);
+    if (listed.ok) assert.equal(listed.result.length, 1);
+    const approved = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-review", correlationId: "report-ipc", method: "production.report.review", payload: { reportId: report.result.reportId, decision: "approve", reason: "Approved locally after evidence review." } } as const);
+    assert.equal(approved.ok, true);
+    if (approved.ok) {
+      assert.equal(approved.result.reviewState, "approved");
+      assert.equal(approved.result.warnings.includes("user_approved_not_externally_verified"), true);
+    }
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-invalid", correlationId: "report-ipc", method: "production.report.list", payload: { limit: 8, send: true } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC exposes render policy preview without starting a renderer", async () => {
   const app = createEmbeddedApplication();
   try {
