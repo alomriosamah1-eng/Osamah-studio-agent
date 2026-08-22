@@ -70,7 +70,7 @@
 | direct dependency license review | TypeScript Apache-2.0، tsx MIT، @types/node MIT |
 | `node --check prototypes/studio/preview-renderer.js` | ناجح |
 | browser prototype | تم التحقق من render tree وفتح settings وrotate وFast Refresh داخل embedded panel |
-| GitHub push verification | آخر push مكتمل `5c67f547ae08bbe0d5d2f9f83c3390c1d775bf93`؛ Terminal Policy Preview قيد الدفع |
+| GitHub push verification | آخر push مكتمل `18b980a4e3b76de01e919c959a5771e8a67475a9`؛ Terminal Policy Preview مدفوعة ومتحقق منها |
 
 ## GitHub والتسليم
 
@@ -126,4 +126,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `5c67f547ae08bbe0d5d2f9f83c3390c1d775bf93`؛ Terminal Policy Preview قيد commit/push.
+إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `18b980a4e3b76de01e919c959a5771e8a67475a9`؛ Terminal Policy Preview مدفوعة ومتحقق منها، local == `origin/main`.

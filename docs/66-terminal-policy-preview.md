@@ -107,7 +107,7 @@ export interface TerminalPolicyPort {
 | Workspace/Electron | Terminal Policy panel وInspect only وdesktop smoke مع no-process assertion: PASS |
 | Performance/security | low-memory profile، `PERF_SMOKE=PASS`، migration/JSON/diff/secret scans: PASS |
 
-لا توجد `terminal.exec` أو `spawn` أو PTY أو xterm.js في هذه الشريحة. commit التنفيذ والتوثيق يثبتان بعد إغلاق GitHub verification.
+لا توجد `terminal.exec` أو `spawn` أو PTY أو xterm.js في هذه الشريحة. التنفيذ مدفوع في `18b980a4e3b76de01e919c959a5771e8a67475a9`، وتوثيق الإغلاق النهائي يأتي في commit مستقل مع تحقق SHA مطابق.
 
 ## الحدود المفتوحة
 
