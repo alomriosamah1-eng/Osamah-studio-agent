@@ -34,6 +34,7 @@
 
 - `pnpm check`: `201/201` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
 - desktop smoke تحقق من confirmed source إلى candidate preview ثم consolidate وrollback، ومن عدم تعديل المصدر ورفض token-shaped payload.
+- feature commit `f30c257faafb1159f7c34344504312b3eef16119` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل لهذه التسليمة.
 
 ### Boundaries
 
