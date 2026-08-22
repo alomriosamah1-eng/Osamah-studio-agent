@@ -18,6 +18,7 @@ import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from ".
 import type { ProjectTreeResult, WorkspaceFileContent } from "./application/project-explorer.js";
 import type { DocumentSnapshot, EditProposal } from "./application/editor-document.js";
 import type { ProjectContextSnapshot } from "./application/project-context.js";
+import type { GitDiffResult, GitStatusSnapshot } from "./application/git-read-only.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -197,6 +198,34 @@ test("typed IPC inspects terminal commands without starting a process", async ()
       method: "terminal.inspect",
       payload: { requestId: "terminal-request-3", sessionId: "terminal-session-1", rootPath: "/tmp/project", cwd: "../outside", executable: "pwd", args: [] },
     } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC exposes read-only Git status and diff without mutations", async () => {
+  const root = resolve(".");
+  const app = createEmbeddedApplication();
+  try {
+    const status = await app.ipc.dispatch({ protocolVersion: 1, requestId: "git-status-1", correlationId: "git-1", method: "git.status", payload: { rootPath: root } } as const) as IpcResponse<GitStatusSnapshot>;
+    assert.equal(status.ok, true);
+    if (!status.ok) return;
+    assert.equal(status.result.isRepository, true);
+    assert.equal(typeof status.result.branch, "string");
+    assert.ok(status.result.staged.length >= 0);
+    assert.ok(status.result.unstaged.length >= 0);
+    assert.ok(status.result.untracked.length >= 0);
+    const diff = await app.ipc.dispatch({ protocolVersion: 1, requestId: "git-diff-1", correlationId: "git-1", method: "git.diff", payload: { rootPath: root, relativePath: "package.json" } } as const) as IpcResponse<GitDiffResult>;
+    assert.equal(diff.ok, true);
+    if (diff.ok) {
+      assert.equal(diff.result.relativePath, "package.json");
+      assert.equal(typeof diff.result.patch, "string");
+      assert.ok(diff.result.bytes <= 128 * 1024 + 128);
+    }
+    const traversal = await app.ipc.dispatch({ protocolVersion: 1, requestId: "git-diff-2", correlationId: "git-1", method: "git.diff", payload: { rootPath: root, relativePath: "../outside" } } as const);
+    assert.equal(traversal.ok, false);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "git-diff-3", correlationId: "git-1", method: "git.diff", payload: { rootPath: root, relativePath: "-p" } } as const);
     assert.equal(malformed.ok, false);
   } finally {
     app.close();

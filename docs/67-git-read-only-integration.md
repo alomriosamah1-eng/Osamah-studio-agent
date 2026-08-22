@@ -1,6 +1,6 @@
 # Git Read-only Integration وRepository Boundary
 
-**الحالة:** قرار معماري تمهيدي قبل التنفيذ.
+**الحالة:** منفذة محليًا، وfull gate ناجح، وقيد commit/push.
 
 ## الغرض والنطاق
 
@@ -92,6 +92,20 @@ export interface GitReadOnlyPort {
 ## معايير القبول
 
 تنجح الشريحة عندما تعرض Workspace branch/status/diff لمستودع fixture، وتتعامل مع root غير repository وGit unavailable وtimeout وdiff كبير بنتيجة bounded واضحة. يرفض النظام traversal وabsolute path وshell syntax وpath starting option، ولا توجد mutations أو hooks أو pushes. تثبت tests أن ملفات fixture لا تتغير، وأن parser يميز staged/unstaged/untracked/conflicted، وأن diff output لا يتجاوز الحد ولا يعرض truncation كاكتمال.
+
+## التنفيذ والتحقق
+
+نفذ التطبيق `GitReadOnlyPort` و`FilesystemGitReadOnlyAdapter` لقراءة branch/status/diff عبر `execFile` بوسائط منفصلة و`shell: false`، مع canonical root وrelative path guards و`--` قبل المسار ورفض الخيارات والممرات الخطرة. أضيفت قناتا `git.status` و`git.diff` إلى typed IPC وcomposition، وربطت Workspace بلوحة Git read-only تعرض الحالة وdiff باستخدام `textContent` فقط. لا توجد في هذه الشريحة قنوات commit أو push أو reset أو checkout.
+
+| الفحص | النتيجة |
+|---|---|
+| `pnpm check` | `130/130` اختبارًا ناجحًا |
+| Git adapter contracts | branch/status parsing، staged/unstaged/untracked، bounded diff، truncation، non-repository fallback، no-mutation وpath guards: PASS |
+| typed IPC | `git.status` و`git.diff` validators وhandlers وtraversal/option rejection: PASS |
+| Workspace/Electron | Git panel وrefresh/status/diff read-only وdesktop smoke دون commit أو push: PASS |
+| Performance/security | low-memory profile، `PERF_SMOKE=PASS`، migration/JSON/diff/secret scans: PASS |
+
+لا يستخدم adapter shell أو hooks أو external diff، ولا توجد network calls أو model loading أو Git mutation عند startup أو أثناء القراءة. التنفيذ والتوثيق قيد commit/push قبل تثبيت SHA النهائي.
 
 ## الحدود المفتوحة
 

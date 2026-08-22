@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Git Read-only Integration وRepository Boundary
+
+### Added
+
+- `GitReadOnlyPort` و`FilesystemGitReadOnlyAdapter` لقراءة branch/status/diff عبر `execFile` بوسائط منفصلة و`shell: false`.
+- typed IPC methods `git.status` و`git.diff` مع canonical root وrelative path وoutput guards.
+- Workspace Git panel بوضع read-only لعرض branch والحالة والتغييرات وdiff باستخدام `textContent` فقط.
+- منع commit وpush وreset وcheckout وhooks وexternal diff من هذه الشريحة.
+- توثيق الشريحة في `docs/67-git-read-only-integration.md`.
+
+### Verified
+
+- `pnpm check`: `130/130` اختبارًا ناجحًا.
+- Git parsing وbounded diff وtruncation وnon-repository fallback وno-mutation وpath guards: PASS.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+
+### Boundaries
+
+- لا توجد قنوات `git.commit` أو `github.push` في renderer. أي mutation لاحقة تحتاج AgentAction وHuman Gate مستقلًا.
+
 ## [Unreleased] — Terminal Policy Preview وCommand Boundary
 
 ### Added

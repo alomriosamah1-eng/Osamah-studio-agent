@@ -455,6 +455,92 @@
     log(`terminal.inspect ${decision.commandClass} · ${decision.decision} · no process started`, decision.decision === 'denied' ? 'warn' : 'ok');
   };
 
+  const renderGitDiff = (result) => {
+    const container = $('gitDiffPreview');
+    if (!container) return;
+    const label = result.relativePath ? `Diff · ${result.relativePath}` : 'Diff · working tree';
+    const suffix = result.rawUnavailable ? '\n[Git diff unavailable]' : result.truncated ? '\n[Git diff truncated by policy]' : '';
+    container.textContent = `${label}\n${result.patch || '(no unstaged diff)'}${suffix}`;
+  };
+
+  const loadGitDiff = async (relativePath) => {
+    if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
+      $('gitDiffPreview').textContent = 'Select a project root before reading Git diff.';
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('git-diff'),
+      correlationId: nextRequest('git-diff-correlation'),
+      method: 'git.diff',
+      payload: { rootPath: currentRoot, ...(relativePath ? { relativePath } : {}) },
+    });
+    if (!response.ok) {
+      $('gitDiffPreview').textContent = `Git diff rejected: ${response.error.message}`;
+      log(`git.diff_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderGitDiff(response.result);
+    log(`git.diff_loaded ${relativePath || 'working-tree'} · ${response.result.bytes} bytes${response.result.truncated ? ' · truncated' : ''}`, response.result.truncated ? 'warn' : 'ok');
+  };
+
+  const renderGitStatus = (status) => {
+    $('gitRepoState').textContent = status.isRepository ? (status.truncated ? 'available · bounded' : 'available') : 'not available';
+    $('gitBranch').textContent = status.branch || (status.isRepository ? '(detached)' : '—');
+    $('gitCounts').textContent = `S ${status.staged.length} · U ${status.unstaged.length} · ? ${status.untracked.length} · ! ${status.conflicted.length}`;
+    const list = $('gitChanges');
+    list.replaceChildren();
+    const entries = [
+      ...status.staged.map((change) => ({ path: change.path, label: `S ${change.status} ${change.path}` })),
+      ...status.unstaged.map((change) => ({ path: change.path, label: `U ${change.status} ${change.path}` })),
+      ...status.untracked.map((path) => ({ path, label: `? ?? ${path}` })),
+      ...status.conflicted.map((path) => ({ path, label: `! conflict ${path}` })),
+    ].slice(0, 32);
+    if (!entries.length) {
+      const empty = document.createElement('div');
+      empty.className = 'approval-empty';
+      empty.textContent = status.isRepository ? 'Working tree clean. No unstaged diff.' : 'Git status unavailable for this root.';
+      list.append(empty);
+      return;
+    }
+    entries.forEach((entry) => {
+      const button = document.createElement('button');
+      button.className = 'git-change';
+      button.textContent = entry.label;
+      button.title = entry.path;
+      button.onclick = () => { void loadGitDiff(entry.path); };
+      list.append(button);
+    });
+  };
+
+  const loadGitStatus = async () => {
+    if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
+      $('gitRepoState').textContent = 'root required';
+      $('gitBranch').textContent = '—';
+      $('gitCounts').textContent = '—';
+      $('gitChanges').replaceChildren();
+      $('gitDiffPreview').textContent = 'Select a project root before reading Git. Commit and push are unavailable in this panel.';
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('git-status'),
+      correlationId: nextRequest('git-status-correlation'),
+      method: 'git.status',
+      payload: { rootPath: currentRoot },
+    });
+    if (!response.ok) {
+      $('gitRepoState').textContent = 'request rejected';
+      $('gitChanges').replaceChildren();
+      $('gitDiffPreview').textContent = `Git status rejected: ${response.error.message}`;
+      log(`git.status_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderGitStatus(response.result);
+    $('rightStatus').textContent = response.result.isRepository ? `Git: ${response.result.branch || 'detached'}` : 'Git unavailable for root';
+    log(`git.status_loaded ${response.result.branch || 'not-a-repository'} · ${response.result.staged.length + response.result.unstaged.length + response.result.untracked.length} changes`, response.result.isRepository ? 'ok' : 'warn');
+  };
+
   const proposeEditorDiff = async () => {
     const content = $('editorBuffer').value;
     if (!currentRoot || !currentDocument) {
@@ -506,6 +592,7 @@
         $('rightStatus').textContent = 'Project root selected';
         log(`project.root_selected ${rootName}`, 'ok');
         await loadProjectTree(result.rootPath);
+        await loadGitStatus();
       } else {
         $('projectState').textContent = 'root selection failed';
         $('rightStatus').textContent = 'Root picker error';
@@ -523,6 +610,7 @@
   $('openProject').onclick = () => { void chooseProjectRoot(); };
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
   $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
+  $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
     if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
   });
@@ -556,6 +644,20 @@
       correlationId: 'desktop-smoke-explorer',
       method: 'project.tree',
       payload: { rootPath: 'fixtures/mobile-expo' },
+    });
+    const gitStatusResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-git-status',
+      correlationId: 'desktop-smoke-git',
+      method: 'git.status',
+      payload: { rootPath: 'fixtures/mobile-expo' },
+    });
+    const gitDiffResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-git-diff',
+      correlationId: 'desktop-smoke-git',
+      method: 'git.diff',
+      payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx' },
     });
     const projectFileResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -681,9 +783,10 @@
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
     const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
     const explorerPassed = projectTreeResponse.ok && projectTreeResponse.result.fileCount > 0 && projectFileResponse.ok && projectFileResponse.result?.relativePath === 'app/index.tsx' && projectFileResponse.result.content.includes('react-native');
+    const gitPassed = gitStatusResponse.ok && gitStatusResponse.result.isRepository && gitDiffResponse.ok && gitDiffResponse.result.relativePath === 'app/index.tsx' && gitDiffResponse.result.rawUnavailable !== true;
     const editorPassed = editorOpenResponse.ok && Boolean(editorOpenResponse.result?.sha256) && editorProposeResponse.ok && editorProposeResponse.result?.diffTruncated === false;
     const terminalPassed = terminalInspectResponse.ok && terminalInspectResponse.result?.decision === 'denied' && terminalInspectResponse.result?.commandClass === 'toolchain';
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && editorPassed && terminalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

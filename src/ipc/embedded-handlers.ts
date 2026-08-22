@@ -6,6 +6,7 @@ import type { FilesystemProjectContextIndex } from "../application/project-conte
 import type { ProjectExplorerPort, WorkspaceFileReaderPort } from "../application/project-explorer.js";
 import type { EditorDocumentPort } from "../application/editor-document.js";
 import type { TerminalPolicyPort } from "../application/terminal-policy.js";
+import type { GitReadOnlyPort } from "../application/git-read-only.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
@@ -16,6 +17,7 @@ export interface AgentIpcDependencies {
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
   readonly terminalPolicy: Pick<TerminalPolicyPort, "inspect">;
+  readonly gitReadOnly: Pick<GitReadOnlyPort, "status" | "diff">;
   readonly workCycle: Pick<AgentWorkCycleService, "start" | "inspect" | "cancel">;
   readonly humanGate: Pick<HumanGatePort, "listPending" | "decide">;
   readonly providers: {
@@ -75,6 +77,8 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.propose", (request) => agentDependencies.editorDocuments.propose(request.payload.rootPath, request.payload.relativePath, request.payload.content, request.payload.expectedSha256));
     transport.register("terminal.inspect", (request) => Promise.resolve(agentDependencies.terminalPolicy.inspect(request.payload)));
+    transport.register("git.status", (request) => agentDependencies.gitReadOnly.status(request.payload.rootPath));
+    transport.register("git.diff", (request) => agentDependencies.gitReadOnly.diff(request.payload.rootPath, request.payload.relativePath));
     transport.register("workCycle.start", (request) => agentDependencies.workCycle.start(request.payload));
     transport.register("workCycle.inspect", (request) => Promise.resolve(agentDependencies.workCycle.inspect(request.payload.cycleId)));
     transport.register("workCycle.cancel", (request) => Promise.resolve(agentDependencies.workCycle.cancel(request.payload.cycleId)));
