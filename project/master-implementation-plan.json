@@ -38,10 +38,11 @@
       "second-brain-local-lexical-retrieval-bounded",
       "second-brain-visibility-filtered-retrieval",
       "second-brain-relational-memory-links-bounded",
-      "second-brain-agent-scope-filtering-bounded"
+      "second-brain-agent-scope-filtering-bounded",
+      "production-markdown-export-preview-bounded"
     ],
-    "tests": "208/208",
-    "next_phase": "second-brain-fts-adapter-evaluation",
+    "tests": "209/209",
+    "next_phase": "production-markdown-destination-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [
@@ -160,7 +161,7 @@
       "name": "second-brain-capture-search-links",
       "depends_on": [2, 3, 4],
       "primary_owner": "knowledge",
-      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English bounded lexical retrieval", "visibility-filtered local retrieval", "bounded relational memory links", "agent scope filtering", "scope and retention", "optional bounded SQLite memory persistence", "optional FTS adapter only when runtime support is verified"],
+      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English bounded lexical retrieval", "visibility-filtered local retrieval", "bounded relational memory links", "agent scope filtering", "scope and retention", "optional bounded SQLite memory persistence", "optional FTS adapter only when runtime support is verified", "bounded Markdown preview with evidence traceability"],
       "exit_gate": "US-006 retrieves Arabic and English notes with correct project scope and no leakage"
     },
     {

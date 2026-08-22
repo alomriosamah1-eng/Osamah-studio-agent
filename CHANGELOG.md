@@ -104,6 +104,27 @@
 - هذه policy filter محلية وليست authentication أو authorization system كاملًا، ولا تنشئ session claims أو role management أو multi-tenant isolation.
 - لا FTS5 أو embeddings أو vector services أو provider sharing أو automatic consolidation أو Avatar runtime؛ FTS5 ما تزال مشروطة بتوفر runtime مدعوم.
 
+## [Unreleased] — Production Studio Markdown Export Preview bounded
+
+### Added
+
+- `MarkdownExportPort` و`InMemoryMarkdownExportService` لإنتاج معاينة Markdown bounded من `ReportDocument` دون إنشاء artifact أو تعديل الحالة.
+- evidence traceability داخل النص عبر report/evidence/source/citation/artifact IDs، مع إبقاء claim states وredaction state والتحذيرات ظاهرة.
+- `production.report.markdown.preview` عبر typed IPC، مع safe reportId وحد أقصى افتراضي 256 KiB ورفض الحقول الزائدة.
+- contract صريح يمنع filesystem mutation وcommand execution وprovider/network calls؛ التقرير غير approved يحمل تحذير review قبل publish.
+- `docs/95-production-markdown-export-preview.md` لتوثيق المعمارية والخصوصية ومعايير القبول.
+
+### Verified
+
+- `pnpm check`: `209/209` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `194730e0c5777f8ff50e184345fca1518492c49e` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- هذه معاينة metadata-only وليست publish أو write-to-destination أو PDF/HTML/PPTX render، ولا تعني factual verification أو external citation validation.
+- لا embeddings أو vector services أو provider sharing أو Avatar runtime؛ كتابة destination مستقبلية تحتاج port مستقلًا وdestination policy وHuman Gate وatomic write وmanifest/hash.
+
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 
 ### Added

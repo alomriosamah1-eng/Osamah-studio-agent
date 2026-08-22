@@ -60,6 +60,7 @@
 | `92-memory-local-retrieval-bounded.md` | local lexical retrieval عربي/إنجليزي bounded، مع visibility filter وتأجيل FTS5 بعد فشل توفره في runtime الحالي |
 | `93-memory-relational-links-bounded.md` | روابط MemoryEntry الموجهة وmigration 006 وحدود visibility وfail-closed hydration دون graph أو semantic service |
 | `94-memory-agent-scope-bounded.md` | agent scope filtering محلي فوق retrieval باستخدام AgentCatalog، مع حدود visibility وretention وproviderAccess ودون authorization كامل |
+| `95-production-markdown-export-preview.md` | Markdown export preview bounded لتقارير Production Studio مع evidence traceability ودون كتابة ملفات أو publish |
 
 ## ملفات الحالة خارج هذا المجلد
 
