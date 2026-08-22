@@ -9,6 +9,7 @@ import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
 import { DeterministicPlannerCritic } from "./application/planner-critic.js";
+import { BoundedProviderExecutionPolicy, type LocalProviderConfig } from "./application/provider-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { ProviderAdapter } from "./application/provider-contracts.js";
 import type { EventBus } from "./domain/events.js";
@@ -25,6 +26,7 @@ import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
 import { FilesystemProjectPreviewService } from "./application/project-preview-service.js";
 import { FilesystemProjectScanner } from "./infrastructure/filesystem-project-scanner.js";
 import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
+import { LocalProviderDoctor } from "./infrastructure/local-provider-doctor.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -46,6 +48,8 @@ export interface EmbeddedApplicationOptions {
   readonly storage?: EmbeddedApplicationStorageOptions;
   /** Providers are opt-in; construction never performs health checks or model loading. */
   readonly providers?: readonly ProviderAdapter[];
+  /** Execution policy is opt-in and applies only to explicitly configured provider IDs. */
+  readonly providerConfigs?: readonly LocalProviderConfig[];
 }
 
 type RepositoryBundle = Pick<ApplicationDependencies, "workspaces" | "sessions" | "approvals" | "devices" | "previews">;
@@ -112,7 +116,9 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
-  const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });
+  const providerExecutionPolicy = options.providerConfigs ? new BoundedProviderExecutionPolicy(options.providerConfigs) : undefined;
+  const providerDoctor = new LocalProviderDoctor(options.providers ?? [], () => Date.parse(foundation.dependencies.clock.now()));
+  const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, executionPolicy: providerExecutionPolicy, now: () => foundation.dependencies.clock.now() });
   const agentRuntime = new BoundedAgentRuntime(resourcePolicy, approvalWorkflow);
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
   const ipc = new InMemoryIpcTransport();
@@ -166,6 +172,8 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     auditRetention,
     auditExport,
     providerGateway,
+    providerDoctor,
+    providerExecutionPolicy,
     providerRouteAudit,
     defaultProfiles,
     sqlite: persistence.sqlite,

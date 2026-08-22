@@ -9,12 +9,14 @@ import type {
   ProviderRouteAudit,
   ProviderRouteDecision,
 } from "./provider-contracts.js";
+import type { ProviderExecutionPolicy } from "./provider-policy.js";
 import { ProviderGatewayError } from "./provider-contracts.js";
 
 export interface ProviderGatewayOptions {
   readonly maxProviders?: number;
   readonly maxFallbacks?: number;
   readonly audit?: ProviderRouteAudit;
+  readonly executionPolicy?: ProviderExecutionPolicy;
   readonly now?: () => string;
 }
 
@@ -56,12 +58,14 @@ export class ProviderGateway {
   private readonly maxProviders: number;
   private readonly maxFallbacks: number;
   private readonly audit: ProviderRouteAudit | undefined;
+  private readonly executionPolicy: ProviderExecutionPolicy | undefined;
   private readonly now: () => string;
 
   public constructor(adapters: readonly ProviderAdapter[] = [], options: ProviderGatewayOptions = {}) {
     this.maxProviders = Math.max(1, Math.min(Math.floor(options.maxProviders ?? 16), 16));
     this.maxFallbacks = Math.max(0, Math.min(Math.floor(options.maxFallbacks ?? 2), this.maxProviders - 1));
     this.audit = options.audit;
+    this.executionPolicy = options.executionPolicy;
     this.now = options.now ?? (() => new Date().toISOString());
     for (const adapter of adapters) this.register(adapter);
   }
@@ -99,15 +103,25 @@ export class ProviderGateway {
     let attempts = 0;
     for (const candidate of candidates) {
       if (attempts > this.maxFallbacks) break;
-      const health = await this.health(candidate.adapter.manifest.id, signal);
-      if (health.status === "unavailable") {
-        lastError = new ProviderGatewayError("UNAVAILABLE", candidate.adapter.manifest.id, true, health.reason ?? `Provider ${candidate.adapter.manifest.id} is unavailable.`);
+      const providerId = candidate.adapter.manifest.id;
+      const admission = this.executionPolicy?.acquire(providerId);
+      if (admission && !admission.allowed) {
+        const code = admission.reason === "disabled" ? "UNAVAILABLE" : "RATE_LIMITED";
+        lastError = new ProviderGatewayError(code, providerId, admission.reason !== "disabled", `Provider ${providerId} was not admitted: ${admission.reason}.`);
         attempts += 1;
         continue;
       }
       try {
+        const health = await this.health(providerId, signal);
+        if (health.status === "unavailable") {
+          this.executionPolicy?.recordFailure(providerId);
+          lastError = new ProviderGatewayError("UNAVAILABLE", providerId, true, health.reason ?? `Provider ${providerId} is unavailable.`);
+          attempts += 1;
+          continue;
+        }
         const response = await candidate.adapter.invoke(request, signal);
         this.validateResponse(response, request, candidate);
+        this.executionPolicy?.recordSuccess(providerId);
         const route: ProviderRouteDecision = {
           providerId: candidate.adapter.manifest.id,
           modelId: candidate.model.id,
@@ -129,11 +143,14 @@ export class ProviderGateway {
       } catch (error) {
         const code = errorCode(error);
         const retryable = errorRetryable(error);
+        if (retryable) this.executionPolicy?.recordFailure(providerId);
         lastError = error instanceof ProviderGatewayError
           ? error
           : new ProviderGatewayError(code, candidate.adapter.manifest.id, retryable, errorMessage(error));
         if (!retryable || (request.sideEffect === "mutation" && !request.idempotencyKey)) throw lastError;
         attempts += 1;
+      } finally {
+        this.executionPolicy?.release(providerId);
       }
     }
     if (request.sideEffect === "mutation" && !request.idempotencyKey && lastError?.retryable) {

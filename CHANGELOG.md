@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Provider Policy وDoctor وQuota
+
+### Added
+
+- `LocalProviderConfig` و`BoundedProviderConfiguration` للتحقق من loopback URLs وmodel IDs وحدود low-memory ومنع configuration duplicates.
+- `ProviderDoctorPort` و`LocalProviderDoctor` لإرجاع حالات `disabled` و`blocked` وhealth الفعلية مع latency دون probe تلقائي عند startup.
+- `ProviderExecutionPolicy` و`BoundedProviderExecutionPolicy` لتقييد concurrency إلى واحد، وrate window، وcircuit closed/open/half-open.
+- ربط admission وsuccess/failure/release داخل `ProviderGateway`، وإضافة `providerConfigs` و`providerDoctor` و`providerExecutionPolicy` إلى composition بصورة اختيارية.
+- توثيق الشريحة في `docs/61-provider-policy-doctor-quota.md`.
+
+### Verified
+
+- `pnpm check`: `97/97` اختبارًا ناجحًا.
+- configuration وdoctor وquota وcircuit وGateway admission وdisabled handling: PASS.
+- Desktop IPC وperformance smoke وSQLite migration/JSON/diff/secret checks: PASS.
+
+### Boundaries
+
+- لا توجد model discovery أو streaming أو tool execution أو circuit persistence أو cross-process quota؛ لا يبدأ provider أو model تلقائيًا عند startup.
+
 ## [Unreleased] — Local Provider Adapters
 
 ### Added
@@ -10,13 +30,13 @@
 
 ### Verified
 
-- `pnpm check`: `92/92` اختبارًا ناجحًا.
+- `pnpm check`: `97/97` اختبارًا ناجحًا.
 - Ollama/llama.cpp mapping، malformed output، HTTP auth failure، model mismatch، timeout/cancellation، وloopback security: PASS.
 - Desktop IPC وperformance smoke وSQLite migration/JSON/diff/secret checks: PASS.
 
 ### Boundaries
 
-- لا يوجد model discovery أو streaming أو tool execution أو model download أو quota/circuit breaker كامل؛ الاتصالات لا تبدأ إلا عبر health/invoke صريحين.
+- لا يوجد model discovery أو streaming أو tool execution أو model download أو circuit persistence أو cross-process quota؛ الاتصالات لا تبدأ إلا عبر health/invoke صريحين وadmission policy.
 
 ## [Unreleased] — Planner وCritic Contracts
 
@@ -29,7 +49,7 @@
 
 ### Verified
 
-- `pnpm check`: `92/92` اختبارًا ناجحًا.
+- `pnpm check`: `97/97` اختبارًا ناجحًا.
 - Desktop IPC smoke وWorkCycle approval flow بعد تحديث fixture بخطة صالحة: PASS.
 - Planner/Critic bounded validation وfail-closed filesystem guard: PASS.
 
@@ -56,7 +76,7 @@
 
 ### Verified
 
-- `pnpm check`: `92/92` اختبارًا ناجحًا.
+- `pnpm check`: `97/97` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
 - approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.
