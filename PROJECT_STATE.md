@@ -6,11 +6,11 @@
 |---|---|
 | الإصدار | `0.6.0-desktop-shell` |
 | المرحلة | Electron Shell + Typed Preload + IPC Project Open + Presentation Renderer |
-| الحالة | Electron shell وtyped preload مدفوعان ومتحققان؛ الشجرة نظيفة |
-| آخر commit مدفوع | `ddeb5edc939c107f808339c480cf7535f1150595` |
+| الحالة | Electron shell وtyped preload ووثائق الشريحة مدفوعة ومتحققة؛ الشجرة نظيفة |
+| آخر commit مدفوع | `2a0e891b544324ff06f18ad461282527af987a13` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `23/23` اختبار Node/tsx ناجح في 2026-08-22؛ desktop smoke ناجح |
-| آخر push مؤكد | `origin/main` عند `ddeb5edc939c107f808339c480cf7535f1150595`؛ local وGitHub متطابقان |
+| آخر push مؤكد | `origin/main` عند `2a0e891b544324ff06f18ad461282527af987a13`؛ local وGitHub متطابقان |
 
 ## المكتمل
 

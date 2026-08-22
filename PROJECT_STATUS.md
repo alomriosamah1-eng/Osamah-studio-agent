@@ -7,8 +7,8 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `ddeb5edc939c107f808339c480cf7535f1150595` |
-| حالة الشجرة | Electron shell/preload مدفوعان ومتحققان؛ تغييرات الحالة النهائية محلية |
+| آخر commit مدفوع | `2a0e891b544324ff06f18ad461282527af987a13` |
+| حالة الشجرة | Electron shell/preload ووثائق الشريحة مدفوعة ومتحققة؛ الشجرة نظيفة |
 | الإصدار المحلي | `0.6.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `23/23` اختبارًا ناجحًا؛ desktop smoke وIPC smoke ناجحان |
@@ -52,4 +52,4 @@
 
 الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. اكتمل prototype أولي لـ Electron shell وtyped preload، واجتاز startup/preload/IPC smoke؛ الخطوة التالية بعد إغلاق هذه الشريحة هي SQLite adapter/observability، ثم root picker production. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `ddeb5edc939c107f808339c480cf7535f1150595`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `2a0e891b544324ff06f18ad461282527af987a13`؛ local وGitHub متطابقان والشجرة نظيفة.�د: Manus AI.

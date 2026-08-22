@@ -4,11 +4,11 @@
   "repository": "https://github.com/alomriosamah1-eng/Osamah-studio-agent",
   "as_of": "2026-08-22",
   "phase": "desktop-shell-and-typed-preload",
-  "status": "electron-shell-preload-smoke-verified-docs-closure-pending",
+  "status": "electron-shell-preload-smoke-verified-delivered",
   "repository_baseline": {
     "is_empty_at_start": true,
     "initial_commit": "0f57e1280cd0e29b160a5fb4bb671bca6d9d830d",
-    "latest_verified_remote_main": "ddeb5edc939c107f808339c480cf7535f1150595",
+    "latest_verified_remote_main": "2a0e891b544324ff06f18ad461282527af987a13",
     "remote_main_verified": true
   },
   "current_evidence": {
