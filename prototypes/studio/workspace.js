@@ -16,14 +16,138 @@
   let orientation = 'portrait';
   let dark = false;
   let currentFile = 'index.tsx';
+  let currentRelativePath = 'app/index.tsx';
+  let currentRoot = '';
+  let loadedFileContent;
   const $ = (id) => document.getElementById(id);
 
   const renderCode = () => {
-    $('code').innerHTML = (codeByFile[currentFile] || ['// file preview unavailable'])
-      .map((line, index) => `<span class="code-line"><span class="ln">${String(index + 1).padStart(2, ' ')}</span>${line.replace(/(import|export|return|default|function|const)/g, '<span class="kw">$1</span>').replace(/(View|Text|StyleSheet|DeviceStatus|Card|Stack)/g, '<span class="fn">$1</span>').replace(/('.*?')/g, '<span class="str">$1</span>')}</span>`)
-      .join('');
-    $('path').textContent = `app/${currentFile}`;
-    $('tabName').innerHTML = `${currentFile} <small>●</small>`;
+    const sourceLines = loadedFileContent === undefined ? (codeByFile[currentFile] || ['// file preview unavailable']) : loadedFileContent.split('\n');
+    const code = $('code');
+    code.replaceChildren();
+    sourceLines.forEach((line, index) => {
+      const codeLine = document.createElement('span');
+      codeLine.className = 'code-line';
+      const lineNumber = document.createElement('span');
+      lineNumber.className = 'ln';
+      lineNumber.textContent = String(index + 1).padStart(2, ' ');
+      const text = document.createElement('span');
+      text.textContent = line;
+      codeLine.append(lineNumber, text);
+      code.append(codeLine);
+    });
+    $('path').textContent = currentRelativePath || `app/${currentFile}`;
+    $('tabName').replaceChildren(document.createTextNode(currentFile), Object.assign(document.createElement('small'), { textContent: loadedFileContent === undefined ? ' · fixture' : ' · loaded' }));
+  };
+
+  const renderProjectTree = (treeResult) => {
+    const container = $('projectTree');
+    if (!container) return;
+    container.replaceChildren();
+    const renderNode = (node, depth) => {
+      const button = document.createElement('button');
+      button.className = node.kind === 'directory' ? 'folder' : 'file';
+      button.style.paddingLeft = `${8 + depth * 16}px`;
+      button.textContent = `${node.kind === 'directory' ? '▾' : '◻'} ${node.name}`;
+      if (node.kind === 'file') {
+        button.dataset.file = node.relativePath;
+        button.classList.toggle('active', node.relativePath === currentRelativePath);
+        button.onclick = () => { void openWorkspaceFile(node.relativePath); };
+      }
+      container.append(button);
+      if (node.kind === 'directory') node.children.forEach((child) => renderNode(child, depth + 1));
+    };
+    treeResult.root.children?.forEach((node) => renderNode(node, 0));
+    if (treeResult.truncated) {
+      const warning = document.createElement('div');
+      warning.className = 'hint';
+      warning.textContent = treeResult.warnings[0] || 'Project tree is bounded.';
+      container.append(warning);
+    }
+  };
+
+  const renderFallbackProjectTree = () => renderProjectTree({
+    root: {
+      name: 'Project', relativePath: '', kind: 'directory', children: [
+        { name: 'app', relativePath: 'app', kind: 'directory', children: [
+          { name: 'index.tsx', relativePath: 'app/index.tsx', kind: 'file', extension: '.tsx' },
+          { name: 'settings.tsx', relativePath: 'app/settings.tsx', kind: 'file', extension: '.tsx' },
+          { name: '_layout.tsx', relativePath: 'app/_layout.tsx', kind: 'file', extension: '.tsx' },
+        ] },
+        { name: 'components', relativePath: 'components', kind: 'directory', children: [
+          { name: 'HomeCard.tsx', relativePath: 'components/HomeCard.tsx', kind: 'file', extension: '.tsx' },
+          { name: 'DeviceStatus.tsx', relativePath: 'components/DeviceStatus.tsx', kind: 'file', extension: '.tsx' },
+        ] },
+        { name: 'package.json', relativePath: 'package.json', kind: 'file', extension: '.json' },
+      ],
+    },
+    fileCount: 6,
+    truncated: false,
+    warnings: [],
+  });
+
+  const openWorkspaceFile = async (relativePath) => {
+    currentRelativePath = relativePath;
+    currentFile = relativePath.split('/').at(-1) || relativePath;
+    loadedFileContent = undefined;
+    if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
+      renderProjectTree({ root: { name: 'Project', relativePath: '', kind: 'directory', children: [] }, fileCount: 0, truncated: false, warnings: [] });
+      renderFallbackProjectTree();
+      renderCode();
+      renderPreview();
+      log(`file.opened ${relativePath} (fixture)`, 'ok');
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('file-open'),
+      correlationId: nextRequest('file-open-correlation'),
+      method: 'file.openText',
+      payload: { rootPath: currentRoot, relativePath },
+    });
+    if (!response.ok) {
+      log(`file.open_failed ${response.error.message}`, 'warn');
+      renderCode();
+      return;
+    }
+    if (response.result === undefined) {
+      log(`file.open_unavailable ${relativePath}`, 'warn');
+      renderCode();
+      return;
+    }
+    loadedFileContent = response.result.content;
+    renderCode();
+    renderPreview();
+    document.querySelectorAll('#projectTree .file').forEach((button) => button.classList.toggle('active', button.dataset.file === relativePath));
+    $('projectState').textContent = `file loaded: ${relativePath}`;
+    log(`file.opened ${relativePath} · ${response.result.bytes} bytes`, 'ok');
+  };
+
+  const loadProjectTree = async (rootPath) => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      renderFallbackProjectTree();
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('project-tree'),
+      correlationId: nextRequest('project-tree-correlation'),
+      method: 'project.tree',
+      payload: { rootPath },
+    });
+    if (!response.ok) {
+      log(`project.tree_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    currentRoot = rootPath;
+    renderProjectTree(response.result);
+    $('projectState').textContent = `project loaded: ${response.result.fileCount} files${response.result.truncated ? ' · bounded' : ''}`;
+    const firstFile = response.result.root.children?.flatMap((node) => {
+      const visit = (candidate) => candidate.kind === 'file' ? [candidate.relativePath] : candidate.children.flatMap(visit);
+      return visit(node);
+    })[0];
+    if (firstFile) await openWorkspaceFile(firstFile);
+    log(`project.tree_loaded ${response.result.fileCount} files`, 'ok');
   };
 
   const renderPreview = () => {
@@ -309,9 +433,11 @@
         log('project.root_selection_canceled', 'warn');
       } else if ('rootPath' in result) {
         const rootName = result.rootPath.split(/[\\/]/).filter(Boolean).at(-1) || result.rootPath;
+        currentRoot = result.rootPath;
         $('projectState').textContent = `root selected: ${rootName}`;
         $('rightStatus').textContent = 'Project root selected';
         log(`project.root_selected ${rootName}`, 'ok');
+        await loadProjectTree(result.rootPath);
       } else {
         $('projectState').textContent = 'root selection failed';
         $('rightStatus').textContent = 'Root picker error';
@@ -327,16 +453,7 @@
   };
 
   $('openProject').onclick = () => { void chooseProjectRoot(); };
-  document.querySelectorAll('.file').forEach((button) => {
-    button.onclick = () => {
-      document.querySelectorAll('.file').forEach((fileButton) => fileButton.classList.remove('active'));
-      button.classList.add('active');
-      currentFile = button.dataset.file;
-      renderCode();
-      renderPreview();
-      log(`file.opened ${currentFile}`);
-    };
-  });
+  renderFallbackProjectTree();
   $('deviceSelect').onchange = (event) => { selected = profiles[event.target.value]; renderProfile(); log(`device.selected ${selected.name}`); };
   $('rotate').onclick = () => { orientation = orientation === 'portrait' ? 'landscape' : 'portrait'; renderProfile(); log(`orientation.changed ${orientation}`); };
   $('theme').onclick = () => { dark = !dark; renderProfile(); log(`theme.changed ${dark ? 'dark' : 'light'}`); };
@@ -359,6 +476,20 @@
         deviceProfileId: 'pixel-9',
         mode: 'lightweight_web',
       },
+    });
+    const projectTreeResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-project-tree',
+      correlationId: 'desktop-smoke-explorer',
+      method: 'project.tree',
+      payload: { rootPath: 'fixtures/mobile-expo' },
+    });
+    const projectFileResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-file-open',
+      correlationId: 'desktop-smoke-explorer',
+      method: 'file.openText',
+      payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx' },
     });
     const cycleResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -453,7 +584,8 @@
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
     const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const explorerPassed = projectTreeResponse.ok && projectTreeResponse.result.fileCount > 0 && projectFileResponse.ok && projectFileResponse.result?.relativePath === 'app/index.tsx' && projectFileResponse.result.content.includes('react-native');
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Provider-backed Planner وWorkCycle منفذة ومدفوعة ومتحقق منها عند `358e339e52f1a07e95c5e266f18bd37ba36072e3`؛ الخطوة التالية Development Environment العامة |
+| حالة الشجرة | Project Explorer وbounded file reader وtyped IPC وWorkspace dynamic tree منفذة محليًا؛ full gate ناجح وقيد commit/push |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `105/105` اختبارًا؛ full gate وGitHub verification ناجحان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `111/111` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -37,6 +37,8 @@
 أضيفت typed provider configuration UI/IPC: `provider.list` و`provider.configure` و`provider.doctor` مع loopback وlow-memory validators، وربط provider controls في composition، ولوحة Providers في Workspace تعرض metadata آمنة وتنفذ Save config وRun doctor. توسع desktop smoke إلى list → configure disabled → doctor disabled دون network.
 
 أضيف provider-backed planning: `AsyncPlannerPort` و`LlmPlanner` و`ProviderBackedPlannerCritic`، واختيار `providerId`/`modelId`/`offlineMode` في WorkCycle وIPC. الاستجابة JSON strict ومحدودة، وprovider selection الصريح يمنع fallback، بينما تبقى الكتابة خلف Human Gate و`submitGuarded`. Electron smoke يثبت plan-less generation عبر fixture provider وعدم mutation.
+
+أضيفت أول شريحة من Development Environment العامة: `ProjectExplorerPort` و`WorkspaceFileReaderPort` وfilesystem adapters bounded، typed `project.tree` و`file.openText`، وشجرة Workspace ديناميكية تعرض النص عبر DOM nodes آمنة. تشمل الحماية traversal وsymlink وbinary والحجم وأسماء secrets الشائعة، دون كتابة أو scripts أو native toolchains.
 
 أضيف production root picker من خلال `chooseProjectRoot` في main process وtyped preload وقناة allowlisted وcanonical path validation. زر Workspace يطلب directory فقط ويعرض حالات cancel/error/selected دون تشغيل المشروع تلقائيًا، واختبر المسار عبر `DESKTOP_ROOT_PICKER_SMOKE=PASS`.
 
@@ -80,19 +82,20 @@
 | Local Provider Adapters | Ollama/llama.cpp mapping وhealth وloopback security وHTTP errors وtimeout/cancellation وoptional composition registration PASS؛ delivery `c18b6befcaf82acc4679f9ed72899659d00d6a11`، local == `origin/main` |
 | Provider Policy/Doctor/Quota | bounded configuration وdisabled/blocked/healthy doctor وconcurrency/rate/circuit وGateway admission PASS؛ delivery `8be5293f29c8e2c520cd422a54226d9f7f31128a`، local == `origin/main` |
 | Provider-backed Planner/WorkCycle | LlmPlanner routing وstrict JSON وexplicit selection وplan-less generation وHuman Gate/resume guards وElectron fixture smoke PASS؛ delivery `358e339e52f1a07e95c5e266f18bd37ba36072e3`، local == `origin/main` |
+| Development Environment: Project Explorer/File Reader | ProjectExplorerPort وWorkspaceFileReaderPort وtree/file IPC وWorkspace dynamic rendering وtraversal/symlink/secret-name guards وElectron smoke PASS؛ delivery pending commit |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow وAgentWorkCycle وContextIndex وtyped WorkCycle IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وOllama/llama.cpp adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProvider-backed Planner/WorkCycle موجودة كـapplication/desktop slices bounded، لكن persistence المستقلة لإعدادات providers وmodel discovery وstreaming وtool execution وLLM inference التلقائي وquota/circuit breaker الكامل وsigned/tamper-evident export ما زالت لاحقة.
+ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow وAgentWorkCycle وContextIndex وtyped WorkCycle IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وOllama/llama.cpp adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProvider-backed Planner/WorkCycle وProject Explorer/File Reader موجودة كـapplication/desktop slices bounded، لكن persistence المستقلة لإعدادات providers وmodel discovery وstreaming وtool execution وMonaco/LSP وterminal worker وGit write وtest runner وquota/circuit breaker الكامل وsigned/tamper-evident export ما زالت لاحقة.
  SQLite مربوط اختياريًا داخل `createEmbeddedApplication`، ومسار `sqlite-profile` يفرض profile path policy وexclusive locking؛ backup UX والتشفير ما زالا لاحقين.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
 ## القرار والخطوة التالية
 
-بعد إغلاق Provider-backed Planner/WorkCycle، تبدأ Development Environment العامة وفق الخطة، ثم Production Studio وSecond Brain؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق شريحة Project Explorer/File Reader، تأتي شريحة Editor boundary/Monaco integration أو terminal policy وفق الترتيب المعتمد؛ ثم Production Studio وSecond Brain، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `358e339e52f1a07e95c5e266f18bd37ba36072e3`؛ Provider-backed Planner/WorkCycle مدفوعة ومتحقق منها، local == `origin/main`.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `358e339e52f1a07e95c5e266f18bd37ba36072e3`؛ Project Explorer/File Reader قيد commit/push.

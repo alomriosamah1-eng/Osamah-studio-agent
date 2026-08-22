@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Development Environment: Project Explorer وBounded File Reader
+
+### Added
+
+- `ProjectExplorerPort` و`WorkspaceFileReaderPort` لعزل عرض بنية المشروع وقراءة النص عن Electron وNode APIs.
+- `FilesystemProjectExplorer` بشجرة deterministic، تجاهل directories الثقيلة، truncation bounded، ومنع symlink entries.
+- `FilesystemWorkspaceFileReader` بحدود UTF-8 والحجم وSHA-256 ورفض traversal وsymlink وbinary والملفات الحساسة الشائعة مثل `.env` و`credentials.json` وprivate keys.
+- typed IPC methods `project.tree` و`file.openText` مع validators وhandlers وcomposition wiring.
+- Workspace dynamic Project Explorer وفتح الملفات عبر DOM text nodes آمنة، مع fallback للـprototype خارج Electron.
+- Electron smoke للتحقق من tree/file open إلى جانب root picker وHuman Gate، دون تشغيل scripts أو native toolchains أو network عند startup.
+- توثيق الشريحة في `docs/64-development-environment-file-explorer.md`.
+
+### Verified
+
+- `pnpm check`: `111/111` اختبارًا ناجحًا.
+- Project Explorer/File Reader contract tests وIPC path guards وsecret-name guards: PASS.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+
+### Boundaries
+
+- لا توجد بعد Monaco أو LSP أو terminal worker أو Git write أو test runner أو React Native Web/Metro parity؛ Lightweight Web Preview ما يزال مؤجلًا إلى آخر مراحل تصميم البيئة.
+
 ## [Unreleased] — Provider-backed Planner وWorkCycle
 
 ### Added

@@ -3,12 +3,15 @@ import type { HumanGatePort } from "../application/human-gate.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 import type { ProviderListItem } from "./contracts.js";
 import type { FilesystemProjectContextIndex } from "../application/project-context.js";
+import type { ProjectExplorerPort, WorkspaceFileReaderPort } from "../application/project-explorer.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
 export interface AgentIpcDependencies {
   readonly context: Pick<FilesystemProjectContextIndex, "build">;
+  readonly explorer: Pick<ProjectExplorerPort, "list">;
+  readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly workCycle: Pick<AgentWorkCycleService, "start" | "inspect" | "cancel">;
   readonly humanGate: Pick<HumanGatePort, "listPending" | "decide">;
   readonly providers: {
@@ -63,6 +66,8 @@ export const registerEmbeddedSimulatorHandlers = (
   });
   if (agentDependencies) {
     transport.register("context.index", (request) => agentDependencies.context.build(request.payload.rootPath));
+    transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
+    transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("workCycle.start", (request) => agentDependencies.workCycle.start(request.payload));
     transport.register("workCycle.inspect", (request) => Promise.resolve(agentDependencies.workCycle.inspect(request.payload.cycleId)));
     transport.register("workCycle.cancel", (request) => Promise.resolve(agentDependencies.workCycle.cancel(request.payload.cycleId)));

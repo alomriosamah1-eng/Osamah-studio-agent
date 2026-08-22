@@ -15,6 +15,7 @@ import { buildProjectPreviewBundle } from "./mobile/preview-runtime.js";
 import type { PreviewSession } from "./domain/entities.js";
 import { isIpcEvent } from "./ipc/contracts.js";
 import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from "./ipc/contracts.js";
+import type { ProjectTreeResult, WorkspaceFileContent } from "./application/project-explorer.js";
 import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
@@ -84,6 +85,34 @@ test("typed IPC opens a filesystem project and starts the embedded preview", asy
   } as const) as IpcResponse<PreviewInspection>;
   assert.equal(inspected.ok, true);
   if (inspected.ok) assert.equal(inspected.result.bundle?.projectId, "filesystem-ipc-fixture");
+});
+
+test("typed IPC lists a bounded project tree and opens text through the safe reader", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-ipc-explorer-"));
+  const app = createEmbeddedApplication();
+  try {
+    await mkdir(join(root, "src"));
+    await writeFile(join(root, "src", "app.ts"), "export const value = 1;\n");
+    await writeFile(join(root, "binary.bin"), Buffer.from([0, 1, 2]));
+    const tree = await app.ipc.dispatch({ protocolVersion: 1, requestId: "tree-1", correlationId: "explorer-1", method: "project.tree", payload: { rootPath: root } } as const) as IpcResponse<ProjectTreeResult>;
+    assert.equal(tree.ok, true);
+    if (!tree.ok) return;
+    assert.equal(tree.result.fileCount, 2);
+    assert.equal(tree.result.root.children?.[0]?.name, "src");
+    const opened = await app.ipc.dispatch({ protocolVersion: 1, requestId: "file-1", correlationId: "explorer-1", method: "file.openText", payload: { rootPath: root, relativePath: "src/app.ts" } } as const) as IpcResponse<WorkspaceFileContent | undefined>;
+    assert.equal(opened.ok, true);
+    if (opened.ok) {
+      assert.equal(opened.result?.content, "export const value = 1;\n");
+      assert.equal(opened.result?.relativePath, "src/app.ts");
+    }
+    const traversal = await app.ipc.dispatch({ protocolVersion: 1, requestId: "file-traversal-1", correlationId: "explorer-1", method: "file.openText", payload: { rootPath: root, relativePath: "../secret.txt" } } as const);
+    assert.equal(traversal.ok, false);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "file-malformed-1", correlationId: "explorer-1", method: "file.openText", payload: { rootPath: root, relativePath: "" } } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("typed IPC rejects project entries that escape the selected root", async () => {

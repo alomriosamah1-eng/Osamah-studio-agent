@@ -86,11 +86,7 @@
       <aside class="panel left">
         <div class="project"><strong>Mobile App</strong><span>Expo · compatibility preview</span><span id="projectState">session ready</span></div>
         <div class="section-title">Project files</div>
-        <div class="tree">
-          <button class="folder">▾ app/</button><button class="indent file active" data-file="index.tsx">◻ index.tsx</button><button class="indent file" data-file="settings.tsx">◻ settings.tsx</button><button class="indent file" data-file="_layout.tsx">◻ _layout.tsx</button>
-          <button class="folder">▾ components/</button><button class="indent file" data-file="HomeCard.tsx">◻ HomeCard.tsx</button><button class="indent file" data-file="DeviceStatus.tsx">◻ DeviceStatus.tsx</button>
-          <button class="folder">▾ assets/</button><button class="indent file" data-file="icon.png">◉ icon.png</button><button>◻ package.json</button><button>◻ app.json</button><button>◻ metro.config.js</button>
-        </div>
+        <div class="tree" id="projectTree" aria-live="polite"></div>
         <div class="section-title">Tools</div>
         <div class="tree"><button>▣ Agent Tasks</button><button>⌁ Git Changes</button><button>◉ Artifacts</button><button>⚙ Project Doctor</button></div>
         <div class="section-title">Boundary</div><div class="hint">المحاكي مدمج في Workspace. Native modules غير المدعومة تظهر كتحذير ولا تُعامل كنجاح زائف.</div>
