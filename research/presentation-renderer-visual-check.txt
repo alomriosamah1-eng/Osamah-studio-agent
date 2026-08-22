@@ -1,0 +1,13 @@
+2026-08-22 — Presentation renderer visual check
+
+Opened http://127.0.0.1:4173/prototypes/studio/index.html through the local Studio Workspace prototype. The embedded phone panel rendered the PreviewRenderNode-derived content: heading "Build with clarity.", body copy, Preview session card, and compatibility status "embedded_web". The surrounding file tree, editor, device inspector, session console, and Workspace inspector remained visible, confirming that the renderer is mounted inside the development workspace rather than being a separate test surface.
+
+Clicked settings.tsx in the project tree. The editor switched to app/settings.tsx, the phone preview re-rendered to "Settings" and "Settings is rendered through the same bounded preview tree.", and the session console recorded "file.opened settings.tsx". No visible loading failure or renderer error appeared. Native fidelity remained explicitly labeled compatibility and transport remained embedded_web.
+
+The browser screenshot also showed the expected Pixel 9 frame and embedded simulator controls. This is a visual prototype check; it does not claim native React Native fidelity or Metro HMR.
+
+Additional interaction check:
+
+Clicked Rotate. The phone frame switched to landscape, the inspector frame changed to 2424×1080, and the console recorded "orientation.changed landscape" while the rendered Settings tree remained visible.
+
+Clicked Fast Refresh. The renderer rebuilt the preview tree in place, the console recorded "FastRefresh: state preserved", and the compatibility labels remained explicit. No visible error appeared.

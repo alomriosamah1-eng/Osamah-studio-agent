@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر baseline مدفوع قبل الشريحة الحالية هو `f388e8957e602b96c97968feed2c3f8ebf08df23`. اكتملت محليًا شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`، ونجح `pnpm check` مع `17/17` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر delivery مدفوع هو `f43882953e06a87e4c8ebba32ca0041bd99ea031`. اكتملت شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`. اكتملت محليًا الآن شريحة Presentation renderer بإضافة renderer نقي وbrowser adapter مدمج داخل Workspace؛ نجح `pnpm check` مع `19/19` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -14,7 +14,7 @@ Clean Architecture: Domain مستقل، Application use cases/ports، Interface 
 
 ## الملفات المهمة
 
-`docs/31-gap-analysis.md` سجل الفجوات. `docs/33-mobile-development-architecture.md` قرار mobile. `docs/34-clean-architecture.md` قواعد الطبقات والـ ports. `docs/35-domain-and-events.md` state/event model. `docs/36-foundation-implementation-plan.md` acceptance sequence. `docs/39-embedded-simulator-architecture.md` قرار المحاكي داخل Workspace. `docs/40-embedded-simulator-implementation.md` mapping التنفيذ. `docs/41-project-preview-runtime.md` العقد. `docs/42-project-preview-runtime-implementation.md` التنفيذ. `src/domain/entities.ts` القواعد الحالية. `src/application/use-cases.ts` use cases. `src/application/project-preview-service.ts` filesystem-to-bundle service. `src/infrastructure/filesystem-project-scanner.ts` scanner الآمن. `src/mobile/preview-runtime.ts` bundle/runtime. `src/mobile/embedded-controller.ts` controller. `src/ipc/` protocol/transport/handlers. `src/*test.ts` الاختبارات. `db/migrations/001_initial.sql` schema contract. `prototypes/studio/index.html` Workspace prototype. `docs/reference/` خرائط المعرفة الحية.
+`docs/31-gap-analysis.md` سجل الفجوات. `docs/33-mobile-development-architecture.md` قرار mobile. `docs/34-clean-architecture.md` قواعد الطبقات والـ ports. `docs/35-domain-and-events.md` state/event model. `docs/36-foundation-implementation-plan.md` acceptance sequence. `docs/39-embedded-simulator-architecture.md` قرار المحاكي داخل Workspace. `docs/40-embedded-simulator-implementation.md` mapping التنفيذ. `docs/41-project-preview-runtime.md` العقد. `docs/42-project-preview-runtime-implementation.md` التنفيذ. `docs/43-presentation-renderer-implementation.md` renderer. `src/domain/entities.ts` القواعد الحالية. `src/application/use-cases.ts` use cases. `src/application/project-preview-service.ts` filesystem-to-bundle service. `src/infrastructure/filesystem-project-scanner.ts` scanner الآمن. `src/mobile/preview-runtime.ts` bundle/runtime. `src/presentation/preview-renderer.ts` renderer contract. `src/mobile/embedded-controller.ts` controller. `src/ipc/` protocol/transport/handlers. `src/*test.ts` الاختبارات. `db/migrations/001_initial.sql` schema contract. `prototypes/studio/index.html` Workspace prototype و`preview-renderer.js` browser adapter. `research/presentation-renderer-visual-check.txt` دليل بصري. `docs/reference/` خرائط المعرفة الحية.
 
 ## القواعد
 
@@ -36,7 +36,7 @@ git diff --check
 
 ## التسلسل التالي
 
-تم تنفيذ SQLite schema contract وtyped IPC in-memory وEmbeddedSimulatorController وProject Preview Runtime مع filesystem scanner/service. بعد الدفع، الخطوة التالية هي Presentation renderer يستهلك `PreviewRenderNode` داخل embedded panel في commit مستقل. بعد استقرار embedded renderer، أضف React Native Web/Metro الحقيقي، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
+تم تنفيذ SQLite schema contract وtyped IPC in-memory وEmbeddedSimulatorController وProject Preview Runtime وPresentation renderer داخل embedded panel. بعد الدفع، الخطوة التالية هي IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. بعد ذلك أضف React Native Web/Metro الحقيقي، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
 
 ## أسئلة مفتوحة
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md` وملفات الحالة، وإضافة Project Preview Runtime وfilesystem scanner/service واختبارات contract. نجحت `pnpm check` بـ17/17. feature commit الشريحة هو `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`، ودُفعت الشريحة ووثائقها وتحقق تطابق GitHub عند `5431527feab7b45d41ff9c96802f0aebfbe25849`، والشجرة نظيفة. يبدأ الآن Presentation renderer، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
+تم تنفيذ Presentation renderer bounded: `src/presentation/preview-renderer.ts`، browser adapter، ودمج `#previewTree` داخل Workspace. نجحت `pnpm check` بـ19/19، ونجح syntax/secret/diff audit، وتم التحقق بصريًا من render tree وفتح settings وrotate وFast Refresh. يلزم الآن commit/push والتحقق من hash، وليس Android/iOS native قبل اكتمال IPC project open وdoctor/resource contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

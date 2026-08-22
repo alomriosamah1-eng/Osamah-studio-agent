@@ -1,5 +1,21 @@
 # سجل التغييرات
 
+## [Unreleased] — Presentation Renderer
+
+### Added
+
+- `src/presentation/preview-renderer.ts` لتحويل `PreviewRenderNode` إلى HTML دلالي محدود قابل للتركيب داخل embedded simulator.
+- escaping آمن للنصوص والخصائص، deterministic attribute ordering، وحد أقصى لعمق شجرة العرض.
+- browser adapter في `prototypes/studio/preview-renderer.js` ودمجه في `prototypes/studio/index.html`.
+- إعادة تركيب المعاينة عند فتح ملف، Run، وتطبيق Fast Refresh مع بقاء المحاكي وInspector وConsole داخل Workspace.
+- `docs/43-presentation-renderer-implementation.md` و`research/presentation-renderer-visual-check.txt`.
+
+### Verified
+
+- `pnpm check`: نجاح typecheck و`19/19` اختبارًا.
+- `node --check prototypes/studio/preview-renderer.js` و`git diff --check` وsecret scan ناجحة.
+- تحقق بصري من render tree، فتح `settings.tsx`، rotate، وFast Refresh داخل اللوحة المدمجة.
+
 ## [Unreleased] — Project Preview Runtime
 
 ### Added

@@ -14,6 +14,8 @@
 | Performance | startup/RSS/CPU/GPU/queue | مفقود |
 | IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect | منفذ: `src/ipc.test.ts` |
 | Preview runtime security | blocked imports/path traversal/source hash/diagnostics | منفذ: `src/preview-runtime.test.ts` |
+| Presentation renderer | semantic mapping/escaping/deterministic props/depth guard | منفذ: `src/preview-renderer.test.ts` |
+| Visual prototype | embedded tree/file switch/orientation/Fast Refresh | منفذ bounded: `research/presentation-renderer-visual-check.txt` |
 | Migration contract | SQLite tables/indexes/schema version | منفذ: `scripts/validate_sqlite_migration.py` |
 | Security | injection/sandbox/secrets/plugins | مفقود |
 
