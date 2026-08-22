@@ -1,6 +1,6 @@
 # Agent Work Cycle وProject Context Index
 
-**الحالة:** منفذة ومختبرة محليًا، وقيد بوابة التوثيق والدفع.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند `fb5d93ec87939125373dd8c450d1195af50fc911`؛ local == `origin/main`.
 
 **النطاق:** تحويل خطة يقدّمها caller إلى دورة تنفيذ قابلة للمراجعة حول `BoundedAgentRuntime`: بناء context محدود، targeted read، patch preview، authorization، checkpoint، ثم apply. لا تنشئ هذه الشريحة planner أو LLM تلقائيًا، ولا تشغّل scripts أو native toolchains من المشروع.
 

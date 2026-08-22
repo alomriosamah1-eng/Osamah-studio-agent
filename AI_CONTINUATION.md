@@ -8,7 +8,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock؛ آخر delivery متحقق قبل الشريحة الحالية هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع تطابق local وremote SHA.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`71/71` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage؛ full gate ناجح، ودُفعت الشريحة عند `c833f0e9c37cfaa1800aa9fcc300881984ab6878` مع تطابق local وremote SHA. أضيفت الآن Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، والاختبارات ناجحة وقيد full gate والدفع.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`71/71` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage؛ full gate ناجح، ودُفعت الشريحة عند `c833f0e9c37cfaa1800aa9fcc300881984ab6878` مع تطابق local وremote SHA. أضيفت الآن Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، والاختبارات وfull gate ناجحة؛ دُفعت الشريحة عند `fb5d93ec87939125373dd8c450d1195af50fc911` مع تطابق local وremote SHA.
 
 validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret scan وdiff hygiene؛ سجل الأداء `low_memory` وReact Native → `lightweight_web` وpreview حوالي 11.56ms وheap delta حوالي 0.32MB وRSS delta حوالي 3MB، مع `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
 
@@ -53,7 +53,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery هو `c833f0e9c37cfaa1800aa9fcc300881984ab6878`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main`.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery هو `fb5d93ec87939125373dd8c450d1195af50fc911`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main`.
 
 ## ما يزال مؤجلًا
 
@@ -69,4 +69,4 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `c833f0e9c37cfaa1800aa9fcc300881984ab6878`؛ `GITHUB_PUSH_VERIFIED=true`.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `fb5d93ec87939125373dd8c450d1195af50fc911`؛ `GITHUB_PUSH_VERIFIED=true`.

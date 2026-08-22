@@ -15,7 +15,7 @@
 
 - `pnpm check`: `71/71` اختبارًا ناجحًا.
 - دورة approval ثم checkpoint ثم apply، denial، conflict، no-op checkpoint، وpatch safety: PASS.
-- full static/build/desktop/performance gates ستُعاد قبل commit الدفع النهائي لهذه الشريحة.
+- full static/build/desktop/performance gates: PASS؛ `DESKTOP_SMOKE=PASS` و`PERF_SMOKE=PASS` وmigration/JSON/diff/secret checks PASS.
 
 ### Boundaries
 
