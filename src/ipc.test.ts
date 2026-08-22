@@ -19,6 +19,8 @@ import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
+import { FixtureProviderAdapter } from "./infrastructure/fixture-provider.js";
+import type { ProviderManifest } from "./application/provider-contracts.js";
 
 const setup = () => {
   const { useCases } = createFoundation();
@@ -144,6 +146,57 @@ test("typed IPC exposes project context and a full guarded work cycle", async ()
     const cancelled = await app.ipc.dispatch({ protocolVersion: 1, requestId: "cycle-cancel-1", correlationId: "ipc-cycle", method: "workCycle.cancel", payload: { cycleId: "ipc-cycle-1" } } as const);
     assert.equal(cancelled.ok, true);
     if (cancelled.ok) assert.equal(cancelled.result.cancelled, false);
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("typed IPC starts a plan-less WorkCycle with provider/model selection and preserves Human Gate", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-ipc-provider-planner-"));
+  await writeFile(join(root, "app.ts"), "export const value = 1;\n");
+  const manifest: ProviderManifest = {
+    id: "ollama",
+    label: "Ollama fixture",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  };
+  const provider = new FixtureProviderAdapter({
+    manifest,
+    responseText: JSON.stringify({ summary: "IPC generated plan", steps: [{ id: "review", title: "Review", description: "Review bounded context." }] }),
+  });
+  const app = createEmbeddedApplication({ providers: [provider], providerConfigs: [{ ...defaultLocalProviderConfig("ollama", "fixture-model"), enabled: true }] });
+  try {
+    const response = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "provider-cycle-start-1",
+      correlationId: "provider-cycle",
+      method: "workCycle.start",
+      payload: {
+        cycleId: "provider-cycle-1",
+        sessionId: "provider-session-1",
+        rootPath: root,
+        goal: "Update safely through the selected provider",
+        constraints: ["Do not execute scripts."],
+        targetedPaths: ["app.ts"],
+        providerId: "ollama",
+        modelId: "fixture-model",
+        offlineMode: true,
+        patch: { proposalId: "provider-cycle-patch", operations: [{ relativePath: "app.ts", mode: "update" as const, content: "export const value = 2;\n" }] },
+      },
+    } as const) as IpcResponse<WorkCycleResult>;
+    assert.equal(response.ok, true);
+    if (!response.ok) return;
+    assert.equal(response.result.cycle.stage, "waiting_approval");
+    assert.equal(response.result.cycle.providerId, "ollama");
+    assert.equal(response.result.cycle.modelId, "fixture-model");
+    assert.equal(response.result.plan.summary, "IPC generated plan");
+    assert.equal(provider.requests.length, 1);
+    assert.equal(app.humanGate.listPending(10).length, 1);
+    assert.equal(await readFile(join(root, "app.ts"), "utf8"), "export const value = 1;\n");
   } finally {
     app.close();
     await rm(root, { recursive: true, force: true });

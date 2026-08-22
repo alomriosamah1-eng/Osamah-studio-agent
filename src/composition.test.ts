@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { createEmbeddedApplication } from "./composition.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
+import { FixtureProviderAdapter } from "./infrastructure/fixture-provider.js";
+import type { ProviderManifest } from "./application/provider-contracts.js";
+import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 
 const migrationsPath = join(process.cwd(), "db", "migrations");
 
@@ -37,6 +40,51 @@ test("composition registers explicitly provided local providers without probing 
     assert.equal(fetchCalls, 0);
   } finally {
     application.close();
+  }
+});
+
+test("composition routes a plan-less WorkCycle through the selected local provider and stops at Human Gate", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-composition-provider-planner-"));
+  const sourcePath = join(root, "app.ts");
+  await writeFile(sourcePath, "export const value = 1;\n", "utf8");
+  const manifest: ProviderManifest = {
+    id: "ollama",
+    label: "Ollama fixture",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  };
+  const provider = new FixtureProviderAdapter({
+    manifest,
+    responseText: JSON.stringify({ summary: "Generated safely", steps: [{ id: "review", title: "Review", description: "Review bounded context." }] }),
+  });
+  const config = { ...defaultLocalProviderConfig("ollama", "fixture-model"), enabled: true };
+  const application = createEmbeddedApplication({ providers: [provider], providerConfigs: [config] });
+  try {
+    const result = await application.agentWorkCycle.start({
+      cycleId: "cycle-provider-planner",
+      sessionId: "session-provider-planner",
+      rootPath: root,
+      goal: "Update the application safely",
+      constraints: ["Do not run project scripts"],
+      targetedPaths: ["app.ts"],
+      providerId: "ollama",
+      modelId: "fixture-model",
+      offlineMode: true,
+      patch: { proposalId: "patch-provider-planner", operations: [{ relativePath: "app.ts", mode: "update", content: "export const value = 2;\n" }] },
+    });
+    assert.equal(result.cycle.stage, "waiting_approval");
+    assert.equal(result.plan.summary, "Generated safely");
+    assert.equal(provider.requests.length, 1);
+    assert.equal(provider.requests[0]?.providerId, "ollama");
+    assert.equal(provider.requests[0]?.modelId, "fixture-model");
+    assert.equal(application.humanGate.listPending(10).length, 1);
+    assert.equal(await readFile(sourcePath, "utf8"), "export const value = 1;\n");
+  } finally {
+    application.close();
+    await rm(root, { recursive: true, force: true });
   }
 });
 

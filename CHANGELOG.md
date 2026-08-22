@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Provider-backed Planner وWorkCycle
+
+### Added
+
+- `AsyncPlannerPort` و`LlmPlanner` و`ProviderBackedPlannerCritic` لطلب خطة من `ProviderGateway` عند غياب `plan`، مع JSON strict parsing وprompt/output bounds.
+- `providerId` و`modelId` و`offlineMode` في WorkCycle وProviderInvocation contracts، مع منع fallback عند الاختيار الصريح وحفظ selection داخل snapshot ورفض تغييره أثناء resume.
+- ربط composition بالـprovider-backed planner مع إبقاء provider registration اختياريًا وعدم إجراء network أو model loading عند startup.
+- توسيع typed `workCycle.start` ليقبل plan اختياريًا واختيار provider/model bounded، مع Electron smoke يستخدم fixture provider فقط ويفحص عدم mutation.
+- توثيق المعمارية والتنفيذ في `docs/63-provider-backed-planner-architecture.md`.
+
+### Verified
+
+- `pnpm check`: `105/105` اختبارًا ناجحًا.
+- LlmPlanner routing وstrict JSON وProviderGateway explicit selection وWorkCycle plan-less generation وHuman Gate/resume guards: PASS.
+- Electron desktop smoke وperformance وSQLite/JSON/diff/secret gates: PASS.
+
+### Boundaries
+
+- لا توجد streaming أو tool calling أو remote providers أو model discovery أو persistence مستقلة لإعدادات providers؛ Lightweight Web Preview ما يزال مؤجلًا إلى آخر مراحل تصميم البيئة.
+
 ## [Unreleased] — Typed Provider Configuration UI وIPC
 
 ### Added

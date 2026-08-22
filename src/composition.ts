@@ -8,7 +8,7 @@ import { AgentWorkCycleService } from "./application/agent-work-cycle.js";
 import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
-import { DeterministicPlannerCritic } from "./application/planner-critic.js";
+import { LlmPlanner, ProviderBackedPlannerCritic } from "./application/planner-critic.js";
 import { BoundedProviderConfiguration, BoundedProviderExecutionPolicy, defaultLocalProviderConfig, isLocalProviderId, type LocalProviderConfig, type LocalProviderId } from "./application/provider-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { ProviderAdapter } from "./application/provider-contracts.js";
@@ -121,6 +121,10 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const providerExecutionPolicy = new BoundedProviderExecutionPolicy(options.providerConfigs ?? []);
   const providerDoctor = new LocalProviderDoctor(options.providers ?? [], () => Date.parse(foundation.dependencies.clock.now()));
   const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, executionPolicy: providerExecutionPolicy, now: () => foundation.dependencies.clock.now() });
+  for (const manifest of providerGateway.listProviders()) {
+    if (!isLocalProviderId(manifest.id) || providerConfiguration.get(manifest.id)) continue;
+    providerExecutionPolicy.configure(defaultLocalProviderConfig(manifest.id, manifest.models[0]?.id ?? "unconfigured-model"));
+  }
   const configFor = (providerId: LocalProviderId): LocalProviderConfig => {
     const configured = providerConfiguration.get(providerId);
     if (configured) return configured;
@@ -158,7 +162,10 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const projectContextIndex = new FilesystemProjectContextIndex(scanner, new GitStatusAdapter(), resourcePolicy, () => foundation.dependencies.clock.now());
   const checkpointStore = new InMemoryCheckpointStore();
   const projectPatchAdapter = new FilesystemPatchAdapter(resourcePolicy);
-  const plannerCritic = new DeterministicPlannerCritic();
+  const plannerCritic = new ProviderBackedPlannerCritic(new LlmPlanner({
+    providerGateway,
+    nextRequestId: () => foundation.dependencies.ids.next("planner"),
+  }));
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,

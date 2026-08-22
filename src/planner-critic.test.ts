@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { assertPlanAccepted, BoundedPlanCritic, DeterministicPlannerCritic, type PlannerRequest } from "./application/planner-critic.js";
+import { assertPlanAccepted, BoundedPlanCritic, DeterministicPlannerCritic, LlmPlanner, LlmPlannerError, ProviderBackedPlannerCritic, type PlannerRequest } from "./application/planner-critic.js";
+import { ProviderGateway } from "./application/provider-gateway.js";
+import type { ProviderManifest } from "./application/provider-contracts.js";
+import { FixtureProviderAdapter } from "./infrastructure/fixture-provider.js";
 import type { ProjectContextSnapshot, TargetedContextFile } from "./application/project-context.js";
 
 const context = (overrides: Partial<ProjectContextSnapshot> = {}): ProjectContextSnapshot => ({
@@ -48,6 +51,68 @@ test("critic rejects unsafe targeted paths and mismatched byte counts", () => {
   assert.equal(critique.issues.some((issue) => issue.code === "unsafe_target" && issue.severity === "blocking"), true);
   assert.equal(critique.issues.some((issue) => issue.code === "context_mismatch" && issue.severity === "blocking"), true);
   assert.throws(() => assertPlanAccepted(critique), /rejected the plan/);
+});
+
+test("LLM planner routes the bounded prompt to the selected offline provider and parses strict JSON", async () => {
+  const providerManifest: ProviderManifest = {
+    id: "ollama",
+    label: "Ollama fixture",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  };
+  const fixture = new FixtureProviderAdapter({
+    manifest: providerManifest,
+    responseText: JSON.stringify({ summary: "Fixture plan", steps: [{ id: "inspect", title: "Inspect", description: "Inspect bounded context." }] }),
+  });
+  const planner = new LlmPlanner({ providerGateway: new ProviderGateway([fixture]), nextRequestId: () => "planner-request-1" });
+  const result = await planner.plan({ ...request(), requestId: "cycle-1:planner", sessionId: "session-1", providerId: "ollama", modelId: "fixture-model", offlineMode: true });
+  assert.equal(result.summary, "Fixture plan");
+  assert.equal(result.steps[0]?.id, "inspect");
+  assert.equal(fixture.requests.length, 1);
+  assert.equal(fixture.requests[0]?.providerId, "ollama");
+  assert.equal(fixture.requests[0]?.modelId, "fixture-model");
+  assert.equal(fixture.requests[0]?.privacy, "local_only");
+  assert.equal(fixture.requests[0]?.offlineMode, true);
+  assert.equal(fixture.requests[0]?.sideEffect, "none");
+});
+
+test("LLM planner rejects malformed or fenced output before WorkCycle can mutate", async () => {
+  const providerManifest: ProviderManifest = {
+    id: "ollama",
+    label: "Ollama fixture",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  };
+  const fixture = new FixtureProviderAdapter({ manifest: providerManifest, responseText: "```json {\"summary\":\"bad\"} ```" });
+  const planner = new LlmPlanner({ providerGateway: new ProviderGateway([fixture]), nextRequestId: () => "planner-request-2" });
+  await assert.rejects(planner.plan({ ...request(), providerId: "ollama", modelId: "fixture-model", offlineMode: true }), (error: unknown) => error instanceof LlmPlannerError);
+});
+
+test("provider-backed planner critic reviews generated plans without granting mutation authorization", async () => {
+  const providerManifest: ProviderManifest = {
+    id: "ollama",
+    label: "Ollama fixture",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  };
+  const fixture = new FixtureProviderAdapter({
+    manifest: providerManifest,
+    responseText: JSON.stringify({ summary: "Safe plan", steps: [{ id: "review", title: "Review", description: "Review bounded context." }] }),
+  });
+  const planner = new LlmPlanner({ providerGateway: new ProviderGateway([fixture]), nextRequestId: () => "planner-request-3" });
+  const reviewed = await new ProviderBackedPlannerCritic(planner).review({ ...request(), providerId: "ollama", modelId: "fixture-model", offlineMode: true });
+  assert.equal(reviewed.critique.accepted, true);
+  assert.equal(reviewed.plan.summary, "Safe plan");
+  assert.equal(fixture.requests.length, 1);
 });
 
 test("critic rejects duplicate plan steps and never treats blocking issues as accepted", () => {

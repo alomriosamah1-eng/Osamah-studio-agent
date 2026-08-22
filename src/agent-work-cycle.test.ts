@@ -62,6 +62,22 @@ test("agent work cycle waits for approval, checkpoints, applies, and emits lifec
   }
 });
 
+test("work cycle resume rejects provider selection changes after approval", async () => {
+  const root = await createFixture("osamah-cycle-provider-resume-");
+  const app = createEmbeddedApplication();
+  try {
+    const waiting = await app.agentWorkCycle.start({ ...makeRequest(root, sha256("export const value = 1;\n")), providerId: "ollama", modelId: "model-a", offlineMode: true });
+    assert.equal(waiting.cycle.stage, "waiting_approval");
+    assert.ok(waiting.cycle.approvalId);
+    app.approvalWorkflow.resolve(waiting.cycle.approvalId!, "approved");
+    await assert.rejects(app.agentWorkCycle.start({ ...makeRequest(root, sha256("export const value = 1;\n")), providerId: "ollama", modelId: "model-b", offlineMode: true, approvalId: waiting.cycle.approvalId }), /provider selection does not match/);
+    assert.equal(await readFile(join(root, "src", "example.ts"), "utf8"), "export const value = 1;\n");
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("denied work cycle never applies its patch", async () => {
   const root = await createFixture("osamah-cycle-denied-");
   const app = createEmbeddedApplication();

@@ -28,6 +28,7 @@ interface Candidate {
 const isLocalAllowed = (request: ProviderInvocationRequest, adapter: ProviderAdapter): boolean => {
   if (request.privacy === "local_only" && adapter.manifest.privacy !== "local") return false;
   if (request.offlineMode && !adapter.manifest.offline) return false;
+  if (request.providerId && adapter.manifest.id !== request.providerId) return false;
   return true;
 };
 

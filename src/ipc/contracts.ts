@@ -54,8 +54,11 @@ export interface IpcMethodMap {
       goal: string;
       constraints: readonly string[];
       targetedPaths: readonly string[];
-      plan: AgentPlan;
+      plan?: AgentPlan;
       patch: PatchProposal;
+      providerId?: string;
+      modelId?: string;
+      offlineMode?: boolean;
       approvalId?: string;
       timeoutMs?: number;
     };
@@ -148,8 +151,11 @@ const isWorkCycleStartPayload = (value: unknown): boolean => {
     && isString(value.goal, 4096)
     && isStringArray(value.constraints, 32)
     && isStringArray(value.targetedPaths, 24)
-    && isAgentPlanPayload(value.plan)
+    && (value.plan === undefined || isAgentPlanPayload(value.plan))
     && isPatchProposalPayload(value.patch)
+    && (value.providerId === undefined || isString(value.providerId, 256))
+    && (value.modelId === undefined || isString(value.modelId, 256))
+    && (value.offlineMode === undefined || typeof value.offlineMode === "boolean")
     && (value.approvalId === undefined || isString(value.approvalId, 256))
     && (value.timeoutMs === undefined || (typeof value.timeoutMs === "number" && Number.isInteger(value.timeoutMs) && value.timeoutMs > 0 && value.timeoutMs <= 120_000));
 };

@@ -2,6 +2,8 @@ import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createEmbeddedApplication } from "../composition.js";
+import { FixtureProviderAdapter } from "../infrastructure/fixture-provider.js";
+import type { ProviderManifest } from "../application/provider-contracts.js";
 import { invalidRequest, isIpcRequest, type IpcEvent } from "../ipc/contracts.js";
 import { chooseProjectRoot } from "./root-picker.js";
 import { APPROVAL_EVENTS_CHANNEL, DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender, PROJECT_ROOT_PICKER_CHANNEL } from "./security.js";
@@ -9,7 +11,19 @@ import { APPROVAL_EVENTS_CHANNEL, DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_C
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const workspacePath = join(currentDirectory, "../../prototypes/studio/index.html");
 const workspaceUrl = pathToFileURL(workspacePath).toString();
-const embeddedApplication = createEmbeddedApplication();
+const smokePlannerProvider = new FixtureProviderAdapter({
+  manifest: {
+    id: "fixture-planner",
+    label: "Fixture Planner (smoke only)",
+    transport: "fixture",
+    privacy: "local",
+    offline: true,
+    capabilities: ["text", "structured_output"],
+    models: [{ id: "fixture-planner-model", capabilities: ["text", "structured_output"], contextWindow: 4096, streaming: false, offline: true, estimatedLatencyMs: 1 }],
+  } satisfies ProviderManifest,
+  responseText: JSON.stringify({ summary: "Electron smoke plan", steps: [{ id: "review", title: "Review", description: "Review bounded context." }] }),
+});
+const embeddedApplication = createEmbeddedApplication(process.env.OSAMAH_SMOKE === "1" ? { providers: [smokePlannerProvider] } : {});
 if (process.env.OSAMAH_DISABLE_GPU === "1") app.disableHardwareAcceleration();
 let mainWindow: BrowserWindow | undefined;
 let unsubscribeApprovalEvents: (() => void) | undefined;

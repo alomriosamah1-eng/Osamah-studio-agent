@@ -34,6 +34,7 @@ export interface ProviderHealth {
 export interface ProviderInvocationRequest {
   readonly requestId: string;
   readonly sessionId: string;
+  readonly providerId?: string;
   readonly capability: ProviderCapability;
   readonly input: string;
   readonly privacy: "local_only" | "workspace" | "remote_allowed";

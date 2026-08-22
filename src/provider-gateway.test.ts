@@ -54,6 +54,20 @@ test("provider gateway chooses local provider before a faster remote provider", 
   assert.equal("input" in (routeAudit.list(1)[0] ?? {}), false);
 });
 
+test("explicit provider selection excludes every other provider", async () => {
+  const selected = new FixtureProviderAdapter({ manifest: manifest("selected", "local", true, 50) });
+  const other = new FixtureProviderAdapter({ manifest: manifest("other", "local", true, 1) });
+  const gateway = new ProviderGateway([other, selected]);
+  const result = await gateway.invoke(request({ providerId: "selected", modelId: "selected-model", offlineMode: true }));
+  assert.equal(result.route.providerId, "selected");
+  assert.equal(other.requests.length, 0);
+  assert.equal(selected.requests.length, 1);
+
+  await assert.rejects(gateway.invoke(request({ providerId: "missing-provider", offlineMode: true })), (error: unknown) =>
+    error instanceof ProviderGatewayError && error.code === "NO_PROVIDER",
+  );
+});
+
 test("offline mode excludes remote providers and returns a clear no-provider error", async () => {
   const remote = new FixtureProviderAdapter({ manifest: manifest("remote", "remote", false, 1) });
   const gateway = new ProviderGateway([remote]);

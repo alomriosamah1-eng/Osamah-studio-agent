@@ -410,6 +410,24 @@
       method: 'provider.doctor',
       payload: { providerId: 'ollama' },
     });
+    const providerPlannerResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-provider-planner',
+      correlationId: 'desktop-smoke-provider-planner',
+      method: 'workCycle.start',
+      payload: {
+        cycleId: 'desktop-smoke-provider-cycle',
+        sessionId: 'desktop-smoke-provider-session',
+        rootPath: 'fixtures/mobile-expo',
+        goal: 'Generate a bounded plan without mutation.',
+        constraints: ['Do not execute scripts.'],
+        targetedPaths: ['app/index.tsx'],
+        providerId: 'fixture-planner',
+        modelId: 'fixture-planner-model',
+        offlineMode: true,
+        patch: { proposalId: 'desktop-smoke-provider-patch', operations: [] },
+      },
+    });
     const approvalResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-approval-list',
@@ -434,7 +452,8 @@
     const streamReady = typeof window.osamah.subscribe === 'function';
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
