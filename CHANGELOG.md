@@ -1,5 +1,23 @@
 # سجل التغييرات
 
+## [Unreleased] — Local Provider Adapters
+
+### Added
+
+- `LocalHttpProviderAdapter` المشترك مع loopback-only URL validation وHTTP status mapping وtimeout/cancellation وinput/output bounds.
+- `OllamaProviderAdapter` لـ`/api/generate` و`/api/tags`، و`LlamaCppProviderAdapter` لـ`/v1/chat/completions` و`/health`.
+- تسجيل providers اختياري في `createEmbeddedApplication({ providers })` دون health probe أو model loading عند startup، وتوثيق التنفيذ في `docs/60-local-provider-adapters.md`.
+
+### Verified
+
+- `pnpm check`: `92/92` اختبارًا ناجحًا.
+- Ollama/llama.cpp mapping، malformed output، HTTP auth failure، model mismatch، timeout/cancellation، وloopback security: PASS.
+- Desktop IPC وperformance smoke وSQLite migration/JSON/diff/secret checks: PASS.
+
+### Boundaries
+
+- لا يوجد model discovery أو streaming أو tool execution أو model download أو quota/circuit breaker كامل؛ الاتصالات لا تبدأ إلا عبر health/invoke صريحين.
+
 ## [Unreleased] — Planner وCritic Contracts
 
 ### Added
@@ -11,13 +29,13 @@
 
 ### Verified
 
-- `pnpm check`: `86/86` اختبارًا ناجحًا.
+- `pnpm check`: `92/92` اختبارًا ناجحًا.
 - Desktop IPC smoke وWorkCycle approval flow بعد تحديث fixture بخطة صالحة: PASS.
 - Planner/Critic bounded validation وfail-closed filesystem guard: PASS.
 
 ### Boundaries
 
-- لا يوجد بعد LLM planner أو provider adapter أو تخطيط متعدد الدورات أو persistence مستقلة للخطة؛ أي provider لاحق يمر عبر ProviderGateway ثم Critic وHuman Gate.
+- لا يوجد بعد LLM planner أو تخطيط متعدد الدورات أو persistence مستقلة للخطة؛ provider adapters المحلية موجودة لكن model discovery وstreaming وquota/circuit breaker الكامل ما زالت لاحقة، وتبقى النتائج خلف ProviderGateway ثم Critic وHuman Gate.
 
 ## [Unreleased] — Persistent Audit وHuman Gate
 
@@ -38,7 +56,7 @@
 
 ### Verified
 
-- `pnpm check`: `86/86` اختبارًا ناجحًا.
+- `pnpm check`: `92/92` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
 - approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.

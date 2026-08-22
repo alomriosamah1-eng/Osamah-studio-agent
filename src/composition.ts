@@ -10,6 +10,7 @@ import { ResourcePolicy } from "./application/resource-policy.js";
 import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
 import { DeterministicPlannerCritic } from "./application/planner-critic.js";
 import type { ApplicationDependencies } from "./application/ports.js";
+import type { ProviderAdapter } from "./application/provider-contracts.js";
 import type { EventBus } from "./domain/events.js";
 import { FixedClock, InMemoryApprovalStore, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
 import { createSqliteApplicationStorage, type SqliteApplicationStorage } from "./infrastructure/sqlite.js";
@@ -43,6 +44,8 @@ export type EmbeddedApplicationStorageOptions =
 
 export interface EmbeddedApplicationOptions {
   readonly storage?: EmbeddedApplicationStorageOptions;
+  /** Providers are opt-in; construction never performs health checks or model loading. */
+  readonly providers?: readonly ProviderAdapter[];
 }
 
 type RepositoryBundle = Pick<ApplicationDependencies, "workspaces" | "sessions" | "approvals" | "devices" | "previews">;
@@ -109,7 +112,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
-  const providerGateway = new ProviderGateway([], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });
+  const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });
   const agentRuntime = new BoundedAgentRuntime(resourcePolicy, approvalWorkflow);
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
   const ipc = new InMemoryIpcTransport();

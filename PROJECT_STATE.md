@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Planner وCritic Contracts بعد Audit Export وRetention Policy |
-| الحالة | Planner وCritic Contracts منفذة ومدفوعة ومتحقق منها على `origin/main`؛ الخطوة التالية provider adapters الفعلية |
+| المرحلة | Local Provider Adapters بعد Planner وCritic Contracts |
+| الحالة | Ollama وllama.cpp adapters منفذة محليًا ومربوطة اختياريًا بالـGateway؛ full gate ناجح وقيد commit/push |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -15,7 +15,7 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | `pnpm check` ناجح، `86/86` اختبارًا؛ full gate وGitHub verification ناجحتان في 2026-08-22 |
+| آخر فحص | `pnpm check` ناجح، `92/92` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
@@ -61,6 +61,8 @@
 
 أضيفت عقود `PlannerPort` و`CriticPort` و`PlannerCriticPort`، و`DeterministicPlanner` و`BoundedPlanCritic`. يمر WorkCycle بالمراجعة بعد targeted read وقبل patch preview أو approval، ويرفض الخطة غير الآمنة fail-closed دون mutation، مع إبقاء context truncation warning قابلًا للمراجعة.
 
+أضيفت `LocalHttpProviderAdapter` المشتركة و`OllamaProviderAdapter` و`LlamaCppProviderAdapter` مع loopback-only URLs وtimeout/cancellation وinput/output bounds وtyped HTTP/output errors. التسجيل في composition اختياري ولا يجري health probe أو model loading عند startup.
+
 ## التحقق الحالي
 
 | الفحص | النتيجة |
@@ -79,6 +81,7 @@
 | Human Gate UI/event stream | `approval.changed` contract وpreload filter/unsubscribe وWorkspace panel وdesktop smoke end-to-end PASS؛ delivery `0b5acbf136d168fb43312379f44846c1075c802f`، local == `origin/main` |
 | Audit Export/Retention | NDJSON/manifest/SHA/redaction/destination safety وage/count bounded purge PASS؛ delivery `5cf3d03605215ee2160473afee4c77585f0e9f61`، local == `origin/main` |
 | Planner/Critic | bounded plan generation وwarnings وunsafe target/byte mismatch/duplicate step rejection وWorkCycle no-mutation guard PASS؛ delivery `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`، local == `origin/main` |
+| Local Provider Adapters | Ollama/llama.cpp mapping وhealth وloopback security وHTTP errors وtimeout/cancellation وoptional composition registration PASS؛ delivery pending commit |
 | approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
@@ -88,7 +91,7 @@
 
 ## الحدود الحالية
 
-أصبح SQLite مربوطًا اختياريًا بـ`createEmbeddedApplication` مع profile path policy وقفل حصري عند استخدام `sqlite-profile`. أضيف Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic كـapplication/desktop slices bounded؛ لم يُنفذ بعد FTS5 أو object store أو provider adapters الفعلية أو terminal sandbox أو production packaging الموقّع.
+أصبح SQLite مربوطًا اختياريًا بـ`createEmbeddedApplication` مع profile path policy وقفل حصري عند استخدام `sqlite-profile`. أضيف Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وlocal Ollama/llama.cpp adapters كـapplication/desktop slices bounded؛ لم يُنفذ بعد FTS5 أو object store أو terminal sandbox أو production packaging الموقّع.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
@@ -96,9 +99,9 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إغلاق Planner/Critic Contracts، تأتي provider adapters الفعلية، ثم Development Environment العامة.
+بعد إغلاق Local Provider Adapters، تُثبت provider configuration وdoctor/resource/quota contracts ثم تُربط adapters بمسار planner/critic، وبعدها Development Environment العامة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Planner/Critic مدفوع ومتحقق منه.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Local Provider Adapters قيد commit/push.

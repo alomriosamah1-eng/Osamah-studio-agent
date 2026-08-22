@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { createEmbeddedApplication } from "./composition.js";
+import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
 
 const migrationsPath = join(process.cwd(), "db", "migrations");
 
@@ -16,6 +17,25 @@ test("composition keeps the lightweight in-memory backend as the default", () =>
     assert.equal(application.resourcePolicy.profile, "low_memory");
   } finally {
     application.close();
+    application.close();
+  }
+});
+
+test("composition registers explicitly provided local providers without probing them at startup", () => {
+  let fetchCalls = 0;
+  const provider = new OllamaProviderAdapter({
+    baseUrl: "http://127.0.0.1:11434",
+    modelId: "local-model",
+    fetchImpl: async () => {
+      fetchCalls += 1;
+      return new Response(JSON.stringify({ models: [] }), { status: 200 });
+    },
+  });
+  const application = createEmbeddedApplication({ providers: [provider] });
+  try {
+    assert.deepEqual(application.providerGateway.listProviders().map((manifest) => manifest.id), ["ollama"]);
+    assert.equal(fetchCalls, 0);
+  } finally {
     application.close();
   }
 });
