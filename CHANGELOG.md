@@ -84,6 +84,26 @@
 - الروابط لا تنشئ graph traversal أو semantic relevance أو authorization system كاملًا، ولا تستدعي provider أو network أو vector service.
 - لا embeddings أو FTS5 أو provider sharing أو automatic consolidation؛ agent scope/permission filtering يبقى شريحة لاحقة مستقلة.
 
+## [Unreleased] — Second Brain Agent Scope Filtering bounded
+
+### Added
+
+- `MemoryAgentScopePort` و`MemorySearchOptions.agentId` لربط البحث المحلي بمتطلبات الذاكرة في `AgentCatalog` بدل قبول scope حر من الطلب.
+- visibility وretention وproviderAccess filters bounded قبل lexical scoring، مع السماح بالفلتر الأضيق ورفض طلب visibility الأوسع من scope.
+- typed IPC validation لـsafe `agentId` وتمريره عبر embedded handler، مع unknown/invalid scope fail-closed وعدم أي provider أو filesystem call.
+- `docs/94-memory-agent-scope-bounded.md` لتوثيق القرار والحدود، مع اختبار restart يثبت إعادة تطبيق scope على MemoryEntry مستعادة من SQLite.
+
+### Verified
+
+- `pnpm check`: `208/208` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `909b67c2e8c2ffa764b5139965252f54cf710601` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- هذه policy filter محلية وليست authentication أو authorization system كاملًا، ولا تنشئ session claims أو role management أو multi-tenant isolation.
+- لا FTS5 أو embeddings أو vector services أو provider sharing أو automatic consolidation أو Avatar runtime؛ FTS5 ما تزال مشروطة بتوفر runtime مدعوم.
+
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 
 ### Added

@@ -78,7 +78,7 @@ links_json TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(links_json))
 
 ## ما يلي هذه الشريحة
 
-لا تزال FTS5 غير متوفرة في runtime الحالي (`no such module: fts5`). الخطوة التالية هي مراجعة agent scope/permission filtering أو adapter FTS اختياري إذا توفر runtime مدعوم، ثم تقييم semantic memory فقط بعد قرار مستقل. لا تبدأ embeddings أو vector services أو provider sharing من هذه الشريحة. يبقى Virtual Human / AI Avatar موثقًا ومؤجلًا ولا توجد voice أو avatar runtime.
+لا تزال FTS5 غير متوفرة في runtime الحالي (`no such module: fts5`). أُضيف بعد هذه الشريحة agent scope filtering في `docs/94-memory-agent-scope-bounded.md` باستخدام AgentCatalog وقيود visibility/retention/providerAccess. الخطوة التالية هي adapter FTS اختياري إذا توفر runtime مدعوم، ثم تقييم semantic memory فقط بعد قرار مستقل. لا تبدأ embeddings أو vector services أو provider sharing من هذه الشريحة. يبقى Virtual Human / AI Avatar موثقًا ومؤجلًا ولا توجد voice أو avatar runtime.
 
 إعداد: Manus AI. تاريخ التحديث: 2026-08-22.
 

@@ -36,11 +36,11 @@
 
 ## الاختبارات والبوابة
 
-تغطي الاختبارات query متعددة الكلمات، normalization عربيًا، ترتيب title/tag/content، عدم إظهار نتائج ناقصة، visibility filtering exact-match، رفض visibility غير المسموحة، واستمرار البحث العربي بعد restart لـSQLite profile. نجح full gate في 2026-08-22 مع `pnpm check` بـ`206/206`، و`pnpm build`، و`pnpm desktop:smoke`، و`pnpm performance:smoke`، وSQLite validator وJSON وNode syntax و`git diff --check` وhigh-confidence secret scan. سجل البوابة محفوظ في [research/memory-scope-full-gate-output-2026-08-22.txt](../research/memory-scope-full-gate-output-2026-08-22.txt).
+تغطي الاختبارات query متعددة الكلمات، normalization عربيًا، ترتيب title/tag/content، عدم إظهار نتائج ناقصة، visibility filtering exact-match، رفض visibility غير المسموحة، استمرار البحث العربي بعد restart لـSQLite profile، وإعادة تطبيق agent scope. نجح full gate في 2026-08-22 مع `pnpm check` بـ`208/208`، و`pnpm build`، و`pnpm desktop:smoke`، و`pnpm performance:smoke`، وSQLite validator وJSON وNode syntax و`git diff --check` وhigh-confidence secret scan. سجل البوابة محفوظ في [research/memory-agent-scope-full-gate-output-2026-08-22.txt](../research/memory-agent-scope-full-gate-output-2026-08-22.txt).
 
 ## الحدود وما يليها
 
-لا توجد FTS5 في runtime الحالي، ولا تُخفي الشريحة هذا القيد. أصبحت visibility filtering exact-match منفذة؛ الخطوة التالية هي تقييم relational links وagent scope/permission filtering أو adapter FTS اختياري بعد توفير runtime مدعوم ومراجعة build/legal/security. لا تبدأ embeddings أو vector services أو provider sharing أو automatic consolidation من هذه الشريحة، ولا يتغير قرار Virtual Human / AI Avatar: يظل موثقًا ومؤجلًا ولا توجد voice أو avatar runtime.
+لا توجد FTS5 في runtime الحالي، ولا تُخفي الشريحة هذا القيد. أُضيف agent scope filtering في `docs/94-memory-agent-scope-bounded.md` باستخدام AgentCatalog وقيود visibility/retention/providerAccess، مع بقاء authorization الكامل خارج النطاق. الخطوة التالية هي تقييم adapter FTS اختياري بعد توفير runtime مدعوم ومراجعة build/legal/security، ثم semantic memory بقرار مستقل. لا تبدأ embeddings أو vector services أو provider sharing أو automatic consolidation من هذه الشريحة، ولا يتغير قرار Virtual Human / AI Avatar: يظل موثقًا ومؤجلًا ولا توجد voice أو avatar runtime.
 
 ## الملفات الرئيسية
 
