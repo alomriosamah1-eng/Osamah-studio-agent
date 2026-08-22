@@ -125,6 +125,19 @@
 - هذه معاينة metadata-only وليست publish أو write-to-destination أو PDF/HTML/PPTX render، ولا تعني factual verification أو external citation validation.
 - لا embeddings أو vector services أو provider sharing أو Avatar runtime؛ كتابة destination مستقبلية تحتاج port مستقلًا وdestination policy وHuman Gate وatomic write وmanifest/hash.
 
+## [Unreleased] — Semantic Memory Deferred Decision
+
+### Decision
+
+- أضيفت `docs/96-semantic-memory-deferred-decision.md` لتثبيت أن semantic memory وembeddings وvector retrieval ليست منفذة ولا تُضاف تلقائيًا بعد فشل توفر FTS5 في runtime الحالي.
+- أبقي `MemoryEntry` و`MemoryCandidate` وlocal lexical retrieval وvisibility/agent scope filtering وrelational links كطبقات محلية bounded، مع providerAccess وHuman Gate منفصلين.
+- حُددت شروط فتح المرحلة مستقبلًا: versioning وrebuild deterministic وsource/scope traceability وretention/deletion وArabic/English benchmark وUbuntu 8GB budget وlexical fallback.
+
+### Boundaries
+
+- لا runtime code changes أو migration جديدة أو native FTS dependency أو provider sharing أو automatic consolidation نتيجة هذا القرار.
+- تبقى Voice وAvatar مؤجلتين؛ المسار التنفيذي التالي destination review أو FTS adapter مشروط بعد مراجعة مستقلة.
+
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 
 ### Added

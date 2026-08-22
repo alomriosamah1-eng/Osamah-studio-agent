@@ -39,7 +39,8 @@
       "second-brain-visibility-filtered-retrieval",
       "second-brain-relational-memory-links-bounded",
       "second-brain-agent-scope-filtering-bounded",
-      "production-markdown-export-preview-bounded"
+      "production-markdown-export-preview-bounded",
+      "second-brain-semantic-memory-deferred-decision"
     ],
     "tests": "209/209",
     "next_phase": "production-markdown-destination-review",
