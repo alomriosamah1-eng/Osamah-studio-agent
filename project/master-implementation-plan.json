@@ -31,10 +31,11 @@
       "report-document-bounded-reporting",
       "arabic-first-application-settings-control-center",
       "external-accounts-metadata-only",
-      "storage-settings-read-only"
+      "storage-settings-read-only",
+      "self-development-candidate-review-bounded"
     ],
-    "tests": "189/189",
-    "next_phase": "self-development-candidate-review",
+    "tests": "195/195",
+    "next_phase": "persistence-or-semantic-memory-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

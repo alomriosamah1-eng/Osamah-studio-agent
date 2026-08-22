@@ -26,6 +26,7 @@ import type { RenderPolicyPreview } from "./application/render-policy.js";
 import type { MemoryEntry } from "./application/memory-capture.js";
 import type { ExternalAccountRecord } from "./application/external-account-registry.js";
 import type { StorageSettings } from "./application/storage-settings.js";
+import type { SelfDevelopmentCandidate, SelfDevelopmentImpactPreview } from "./application/self-development.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -172,6 +173,31 @@ test("typed IPC exposes read-only storage metadata without filesystem operations
     assert.equal(response.result.lockState, "not_applicable");
     assert.equal(response.result.backupState, "not_configured");
     const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "storage-malformed-1", correlationId: "storage-1", method: "storage.get", payload: { action: "backup" } } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC exposes bounded self-development candidate review without execution", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const created = await app.ipc.dispatch({ protocolVersion: 1, requestId: "selfdev-create-1", correlationId: "selfdev-1", method: "self-development.create", payload: { kind: "instruction", title: "Review summaries", content: "Review summaries locally before using them.", scope: "second-brain", source: "owner-input" } } as const) as IpcResponse<SelfDevelopmentCandidate>;
+    assert.equal(created.ok, true);
+    if (!created.ok) return;
+    assert.equal(created.result.status, "review_required");
+    assert.equal(created.result.providerAccess, "never");
+    const preview = await app.ipc.dispatch({ protocolVersion: 1, requestId: "selfdev-preview-1", correlationId: "selfdev-1", method: "self-development.preview", payload: { candidateId: created.result.candidateId } } as const) as IpcResponse<SelfDevelopmentImpactPreview | undefined>;
+    assert.equal(preview.ok, true);
+    if (!preview.ok || !preview.result) return;
+    assert.equal(preview.result.canActivate, true);
+    assert.equal(preview.result.executionChanges, false);
+    assert.equal(preview.result.providerAccessChange, "none");
+    const activated = await app.ipc.dispatch({ protocolVersion: 1, requestId: "selfdev-review-1", correlationId: "selfdev-1", method: "self-development.review", payload: { candidateId: created.result.candidateId, decision: "activate", reason: "Owner confirmed the removable overlay." } } as const) as IpcResponse<SelfDevelopmentCandidate>;
+    assert.equal(activated.ok, true);
+    if (!activated.ok) return;
+    assert.equal(activated.result.status, "active");
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "selfdev-malformed-1", correlationId: "selfdev-1", method: "self-development.create", payload: { kind: "instruction", title: "bad", content: "valid", token: "secret" } } as const);
     assert.equal(malformed.ok, false);
   } finally {
     app.close();

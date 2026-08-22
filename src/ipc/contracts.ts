@@ -23,6 +23,7 @@ import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportRev
 import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
 import type { ExternalAccountRecord, RegisterExternalAccountRequest } from "../application/external-account-registry.js";
 import type { StorageSettings, StorageSettingsPort } from "../application/storage-settings.js";
+import type { CreateSelfDevelopmentCandidateRequest, SelfDevelopmentCandidate, SelfDevelopmentCandidatePort, SelfDevelopmentImpactPreview, SelfDevelopmentReviewRequest } from "../application/self-development.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -98,6 +99,12 @@ export interface IpcMethodMap {
   "external.account.register": { payload: RegisterExternalAccountRequest; result: ExternalAccountRecord };
   "external.account.list": { payload: { limit?: number }; result: readonly ExternalAccountRecord[] };
   "storage.get": { payload: Record<string, never>; result: StorageSettings };
+  "self-development.create": { payload: CreateSelfDevelopmentCandidateRequest; result: SelfDevelopmentCandidate };
+  "self-development.get": { payload: { candidateId: string }; result: SelfDevelopmentCandidate | undefined };
+  "self-development.list": { payload: { limit?: number }; result: readonly SelfDevelopmentCandidate[] };
+  "self-development.active": { payload: { limit?: number }; result: readonly SelfDevelopmentCandidate[] };
+  "self-development.preview": { payload: { candidateId: string }; result: SelfDevelopmentImpactPreview | undefined };
+  "self-development.review": { payload: SelfDevelopmentReviewRequest; result: SelfDevelopmentCandidate };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -431,6 +438,35 @@ const isExternalAccountListPayload = (value: unknown): boolean => isRecord(value
   && hasOnlyKeys(value, ["limit"])
   && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
 const isStorageGetPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
+const isSelfDevelopmentKindPayload = (value: unknown): boolean => value === "instruction" || value === "strategy" || value === "plan" || value === "skill";
+const isSelfDevelopmentProvenancePayload = (value: unknown): boolean => value === "user_submitted" || value === "local_parse" || value === "agent_suggestion";
+const isSelfDevelopmentDetailsPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["inputs", "outputs", "tools", "permissions", "applicability", "tradeoffs", "examples", "dependencies", "acceptanceCriteria"])
+  && (value.inputs === undefined || isBoundedStringList(value.inputs, 16, 256))
+  && (value.outputs === undefined || isBoundedStringList(value.outputs, 16, 256))
+  && (value.tools === undefined || isBoundedStringList(value.tools, 16, 256))
+  && (value.permissions === undefined || isBoundedStringList(value.permissions, 16, 256))
+  && (value.applicability === undefined || isSingleLineString(value.applicability, 512))
+  && (value.tradeoffs === undefined || isSingleLineString(value.tradeoffs, 1_024))
+  && (value.examples === undefined || isBoundedStringList(value.examples, 16, 256))
+  && (value.dependencies === undefined || isBoundedStringList(value.dependencies, 16, 256))
+  && (value.acceptanceCriteria === undefined || isBoundedStringList(value.acceptanceCriteria, 16, 256));
+const isSelfDevelopmentCreatePayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["kind", "title", "content", "scope", "source", "provenance", "details"])
+  && isSelfDevelopmentKindPayload(value.kind)
+  && isSingleLineString(value.title, 256)
+  && isString(value.content, 8_000)
+  && (value.scope === undefined || isSingleLineString(value.scope, 512))
+  && (value.source === undefined || isSingleLineString(value.source, 512))
+  && (value.provenance === undefined || isSelfDevelopmentProvenancePayload(value.provenance))
+  && (value.details === undefined || isSelfDevelopmentDetailsPayload(value.details));
+const isSelfDevelopmentCandidateGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["candidateId"]) && isString(value.candidateId, 256);
+const isSelfDevelopmentListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isSelfDevelopmentReviewPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["candidateId", "decision", "reason"])
+  && isString(value.candidateId, 256)
+  && (value.decision === "activate" || value.decision === "archive" || value.decision === "rollback")
+  && isSingleLineString(value.reason, 512);
 const isSettingsUpdatePayload = (value: unknown): value is UpdateApplicationSettingsRequest => {
   if (!isRecord(value) || !hasOnlyKeys(value, ["locale", "theme", "fontScale", "density", "reduceMotion"])) return false;
   if (value.locale !== undefined && value.locale !== "ar" && value.locale !== "en") return false;
@@ -479,6 +515,12 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "external.account.register") return isExternalAccountRegisterPayload(payload);
   if (method === "external.account.list") return isExternalAccountListPayload(payload);
   if (method === "storage.get") return isStorageGetPayload(payload);
+  if (method === "self-development.create") return isSelfDevelopmentCreatePayload(payload);
+  if (method === "self-development.get") return isSelfDevelopmentCandidateGetPayload(payload);
+  if (method === "self-development.list") return isSelfDevelopmentListPayload(payload);
+  if (method === "self-development.active") return isSelfDevelopmentListPayload(payload);
+  if (method === "self-development.preview") return isSelfDevelopmentCandidateGetPayload(payload);
+  if (method === "self-development.review") return isSelfDevelopmentReviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

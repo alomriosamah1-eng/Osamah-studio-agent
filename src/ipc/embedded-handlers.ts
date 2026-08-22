@@ -20,6 +20,7 @@ import type { ReportDocumentPort } from "../application/report-document.js";
 import type { ApplicationSettingsPort } from "../application/application-settings.js";
 import type { ExternalAccountRegistryPort } from "../application/external-account-registry.js";
 import type { StorageSettingsPort } from "../application/storage-settings.js";
+import type { SelfDevelopmentCandidatePort } from "../application/self-development.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -38,6 +39,7 @@ export interface AgentIpcDependencies {
   readonly settings: Pick<ApplicationSettingsPort, "get" | "update">;
   readonly externalAccounts: Pick<ExternalAccountRegistryPort, "register" | "get" | "list">;
   readonly storageSettings: Pick<StorageSettingsPort, "get">;
+  readonly selfDevelopment: Pick<SelfDevelopmentCandidatePort, "create" | "get" | "list" | "listActive" | "preview" | "review">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -133,6 +135,12 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("external.account.register", async (request) => agentDependencies.externalAccounts.register(request.payload));
     transport.register("external.account.list", async (request) => agentDependencies.externalAccounts.list(request.payload.limit));
     transport.register("storage.get", async () => agentDependencies.storageSettings.get());
+    transport.register("self-development.create", async (request) => agentDependencies.selfDevelopment.create(request.payload));
+    transport.register("self-development.get", async (request) => agentDependencies.selfDevelopment.get(request.payload.candidateId));
+    transport.register("self-development.list", async (request) => agentDependencies.selfDevelopment.list(request.payload.limit));
+    transport.register("self-development.active", async (request) => agentDependencies.selfDevelopment.listActive(request.payload.limit));
+    transport.register("self-development.preview", async (request) => agentDependencies.selfDevelopment.preview(request.payload.candidateId));
+    transport.register("self-development.review", async (request) => agentDependencies.selfDevelopment.review(request.payload));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

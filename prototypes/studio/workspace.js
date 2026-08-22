@@ -473,6 +473,96 @@
       if (button) button.disabled = false;
     }
   };
+  const selfDevelopmentKindLabels = { instruction: 'توجيه', strategy: 'استراتيجية', plan: 'مخطط', skill: 'مهارة' };
+  const renderSelfDevelopmentCandidates = (candidates) => {
+    const list = $('selfDevelopmentList');
+    if (!list) return;
+    list.replaceChildren();
+    if (candidates.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'approval-empty';
+      empty.textContent = 'لا توجد مرشحات بعد.';
+      list.append(empty);
+      return;
+    }
+    candidates.forEach((candidate) => {
+      const card = document.createElement('article');
+      card.className = 'account-card self-development-card';
+      const title = document.createElement('strong');
+      title.textContent = `${selfDevelopmentKindLabels[candidate.kind] || candidate.kind} · ${candidate.title}`;
+      const meta = document.createElement('div');
+      meta.className = 'account-meta';
+      meta.textContent = `${candidate.status} · scope=${candidate.scope} · providerAccess=${candidate.providerAccess}`;
+      const content = document.createElement('div');
+      content.className = 'account-meta';
+      content.textContent = candidate.content;
+      card.append(title, meta, content);
+      if (candidate.conflicts.length > 0) {
+        const conflicts = document.createElement('div');
+        conflicts.className = 'account-meta conflict';
+        conflicts.textContent = `تعارضات: ${candidate.conflicts.join(', ')}`;
+        card.append(conflicts);
+      }
+      if (candidate.status === 'review_required') {
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        const activate = document.createElement('button');
+        activate.type = 'button';
+        activate.textContent = candidate.conflicts.length > 0 ? 'التفعيل محظور' : 'تفعيل بعد المراجعة';
+        activate.disabled = candidate.conflicts.length > 0;
+        activate.addEventListener('click', () => reviewSelfDevelopmentCandidate(candidate.candidateId, 'activate'));
+        const archive = document.createElement('button');
+        archive.type = 'button';
+        archive.textContent = 'أرشفة';
+        archive.addEventListener('click', () => reviewSelfDevelopmentCandidate(candidate.candidateId, 'archive'));
+        actions.append(activate, archive);
+        card.append(actions);
+      } else if (candidate.status === 'active') {
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        const rollback = document.createElement('button');
+        rollback.type = 'button';
+        rollback.textContent = 'إزالة overlay';
+        rollback.addEventListener('click', () => reviewSelfDevelopmentCandidate(candidate.candidateId, 'rollback'));
+        actions.append(rollback);
+        card.append(actions);
+      }
+      list.append(card);
+    });
+  };
+  const loadSelfDevelopmentCandidates = async () => {
+    if (!window.osamah?.dispatch) return;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('self-development-list'),
+      correlationId: nextRequest('self-development-list-correlation'),
+      method: 'self-development.list',
+      payload: { limit: 64 },
+    });
+    if (!response.ok) {
+      $('selfDevelopmentStatus').textContent = `فشل تحميل المرشحات: ${response.error.message}`;
+      log(`self-development.list_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderSelfDevelopmentCandidates(response.result);
+    $('selfDevelopmentStatus').textContent = `${response.result.length} مرشح/مرشحات محلية؛ كل المحتوى في review_required أو active بعد تأكيد صريح.`;
+  };
+  const reviewSelfDevelopmentCandidate = async (candidateId, decision) => {
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest(`self-development-${decision}`),
+      correlationId: nextRequest('self-development-review-correlation'),
+      method: 'self-development.review',
+      payload: { candidateId, decision, reason: decision === 'activate' ? 'تأكيد صريح من المالك بعد مراجعة محلية.' : decision === 'rollback' ? 'إزالة overlay بطلب صريح من المالك.' : 'أرشفة المرشح بطلب صريح من المالك.' },
+    });
+    if (!response.ok) {
+      $('selfDevelopmentStatus').textContent = `تعذر تحديث المرشح: ${response.error.message}`;
+      log(`self-development.review_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    $('selfDevelopmentStatus').textContent = `تم تحديث المرشح إلى ${response.result.status}؛ لا تغيير في الصلاحيات أو provider access.`;
+    await loadSelfDevelopmentCandidates();
+  };
   const renderStorageSettings = (settings) => {
     const list = $('storageSettingsList');
     const status = $('storageSettingsStatus');
@@ -1623,6 +1713,29 @@
   $('appDensity').onchange = () => { void updateApplicationSettings(); };
   $('appReduceMotion').onchange = () => { void updateApplicationSettings(); };
   $('registerExternalAccount').onclick = () => { void registerExternalAccount(); };
+  $('createSelfDevelopmentCandidate').onclick = async () => {
+    const button = $('createSelfDevelopmentCandidate');
+    const title = $('selfDevelopmentTitle').value.trim();
+    const content = $('selfDevelopmentContent').value;
+    const scope = $('selfDevelopmentScope').value.trim();
+    const source = $('selfDevelopmentSource').value.trim();
+    button.disabled = true;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('self-development-create'),
+      correlationId: nextRequest('self-development-create-correlation'),
+      method: 'self-development.create',
+      payload: { kind: $('selfDevelopmentKind').value, title, content, scope, source },
+    });
+    button.disabled = false;
+    if (!response.ok) {
+      $('selfDevelopmentStatus').textContent = `تعذر إنشاء المرشح: ${response.error.message}`;
+      log(`self-development.create_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    $('selfDevelopmentStatus').textContent = response.result.conflicts.length > 0 ? `أضيف المرشح review_required مع ${response.result.conflicts.length} تعارض؛ التفعيل محظور حتى الإصلاح.` : 'أضيف المرشح review_required؛ يحتاج مراجعة وتأكيدًا صريحًا.';
+    await loadSelfDevelopmentCandidates();
+  };
   $('createReportDocument').onclick = () => { void createReportDocument(); };
   $('refreshReportDocuments').onclick = () => { void loadReportDocuments(); };
   $('approveReportDocument').onclick = () => { void approveReportDocument(); };
@@ -1675,6 +1788,34 @@
       correlationId: 'desktop-smoke-storage',
       method: 'storage.get',
       payload: { action: 'backup' },
+    });
+    const selfDevelopmentCreateResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-selfdev-create',
+      correlationId: 'desktop-smoke-selfdev',
+      method: 'self-development.create',
+      payload: { kind: 'instruction', title: 'Desktop smoke candidate', content: 'Review locally before using this instruction.', scope: 'second-brain', source: 'desktop-smoke' },
+    });
+    const selfDevelopmentPreviewResponse = selfDevelopmentCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-selfdev-preview',
+      correlationId: 'desktop-smoke-selfdev',
+      method: 'self-development.preview',
+      payload: { candidateId: selfDevelopmentCreateResponse.result.candidateId },
+    }) : { ok: false };
+    const selfDevelopmentReviewResponse = selfDevelopmentCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-selfdev-review',
+      correlationId: 'desktop-smoke-selfdev',
+      method: 'self-development.review',
+      payload: { candidateId: selfDevelopmentCreateResponse.result.candidateId, decision: 'activate', reason: 'Desktop smoke explicit review.' },
+    }) : { ok: false };
+    const selfDevelopmentMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-selfdev-malformed',
+      correlationId: 'desktop-smoke-selfdev',
+      method: 'self-development.create',
+      payload: { kind: 'instruction', title: 'bad', content: 'valid', token: 'secret' },
     });
     const accountRegisterResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -2084,6 +2225,7 @@
     const settingsNoMutationPassed = settingsPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const accountPassed = accountRegisterResponse.ok && accountRegisterResponse.result.status === 'disconnected' && accountRegisterResponse.result.consentState === 'required' && accountRegisterResponse.result.verificationState === 'unknown' && accountListResponse.ok && accountListResponse.result.length === 1 && accountMalformedResponse.ok === false;
     const storagePassed = storageResponse.ok && storageResponse.result.backend === 'memory' && storageResponse.result.location === 'ephemeral_memory' && storageResponse.result.lockState === 'not_applicable' && storageResponse.result.backupState === 'not_configured' && storageMalformedResponse.ok === false;
+    const selfDevelopmentPassed = selfDevelopmentCreateResponse.ok && selfDevelopmentCreateResponse.result.status === 'review_required' && selfDevelopmentCreateResponse.result.providerAccess === 'never' && selfDevelopmentPreviewResponse.ok && selfDevelopmentPreviewResponse.result?.canActivate === true && selfDevelopmentPreviewResponse.result?.executionChanges === false && selfDevelopmentReviewResponse.ok && selfDevelopmentReviewResponse.result.status === 'active' && selfDevelopmentReviewResponse.result.providerAccess === 'never' && selfDevelopmentMalformedResponse.ok === false;
     const agentCatalogPassed = agentCatalogResponse.ok && agentCatalogResponse.result.length === 46 && agentCatalogResponse.result.find((definition) => definition.agentId === 'api-architect')?.executionStatus === 'bounded_capability' && agentDefinitionResponse.ok && agentDefinitionResponse.result?.agentId === 'security' && agentDefinitionResponse.result?.memoryRequirements.providerAccess === 'never';
     const agentCatalogNoMutationPassed = agentCatalogPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
@@ -2113,7 +2255,7 @@
     const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && storagePassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && storagePassed && selfDevelopmentPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -2124,6 +2266,7 @@
   void loadApplicationSettings();
   void loadExternalAccounts();
   void loadStorageSettings();
+  void loadSelfDevelopmentCandidates();
   void loadReportDocuments();
   void loadProviders();
   void loadSources();

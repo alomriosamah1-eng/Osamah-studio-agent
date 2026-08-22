@@ -20,6 +20,26 @@
 - هذه الشريحة **RESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION ONLY**؛ لم تُضف حزمة أو model أو voice أو asset أو native toolchain، ولم يُعدّل runtime أو typed IPC أو Electron shell لأجل Avatar.
 - Avatar planned/deferred داخل Second Brain، والميكروفون وwake word والـoverlay معطلة افتراضيًا في التصميم؛ Human Gate وtext fallback وUbuntu 8GB degradation إلزامية لأي تنفيذ لاحق.
 
+## [Unreleased] — Self-development Candidate Review وRule Overlay
+
+### Added
+
+- `SelfDevelopmentCandidate` و`SelfDevelopmentCandidatePort` و`InMemorySelfDevelopmentCandidateService` لدورة create/preview/review المحلية.
+- `self-development.create/get/list/active/preview/review` عبر typed IPC exact-key validation، مع أنواع instruction/strategy/plan/skill وحالات review_required/active/archived.
+- Control Center Self-development panel للإدخال والعرض والتفعيل/الأرشفة/إزالة overlay بعد قرار صريح فقط.
+- redaction وحدود المحتوى والقوائم وكشف محافظ للتعارضات التي تطلب تجاوز Human Gate أو security أو تنفيذ tool أو امتيازات غير مقيدة.
+- `docs/89-self-development-candidate-review.md` لتوثيق Rule Overlay والخصوصية والحدود ومعايير القبول.
+
+### Verified
+
+- `pnpm check`: `195/195` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+- desktop smoke تحقق من create/preview/explicit activate ورفض token-shaped payload، مع عدم إنشاء tool أو provider access أو approval ticket.
+
+### Boundaries
+
+- المرشح لا ينفذ محتواه ولا يغير core policy أو الصلاحيات أو Human Gate أو provider access؛ `active` مجرد overlay محلي قابل للإزالة.
+- persistence وSQLite migration وsemantic verification وautomatic skill execution وremote synchronization مؤجلة.
+
 ## [Unreleased] — Storage Settings Read-only Snapshot
 
 ### Added
