@@ -45,6 +45,7 @@ import { InMemoryApplicationSettings } from "./application/application-settings.
 import { InMemoryExternalAccountRegistry } from "./application/external-account-registry.js";
 import { createStorageSettingsSnapshot, StaticStorageSettings } from "./application/storage-settings.js";
 import { InMemorySelfDevelopmentCandidateService } from "./application/self-development.js";
+import { InMemoryMemoryConsolidationService } from "./application/memory-consolidation.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -201,6 +202,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const externalAccounts = new InMemoryExternalAccountRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const storageSettings = new StaticStorageSettings(createStorageSettingsSnapshot({ storageKind: persistence.storageKind, profileId: persistence.profilePaths?.profileId, hasProfileLock: persistence.profileLock !== undefined, fallbackReason: persistence.storageFallbackReason }));
   const selfDevelopment = new InMemorySelfDevelopmentCandidateService({ ids: { next: (prefix) => foundation.dependencies.ids.next(prefix) }, clock: { now: () => foundation.dependencies.clock.now() } });
+  const memoryConsolidation = new InMemoryMemoryConsolidationService({ memory: memoryCapture, ids: { next: (prefix) => foundation.dependencies.ids.next(prefix) }, clock: { now: () => foundation.dependencies.clock.now() } });
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,
@@ -219,7 +221,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, settings: applicationSettings, externalAccounts, storageSettings, selfDevelopment, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, settings: applicationSettings, externalAccounts, storageSettings, selfDevelopment, memoryConsolidation, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -256,6 +258,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     externalAccounts,
     storageSettings,
     selfDevelopment,
+    memoryConsolidation,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,

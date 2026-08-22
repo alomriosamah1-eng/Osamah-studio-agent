@@ -24,6 +24,7 @@ import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSet
 import type { ExternalAccountRecord, RegisterExternalAccountRequest } from "../application/external-account-registry.js";
 import type { StorageSettings, StorageSettingsPort } from "../application/storage-settings.js";
 import type { CreateSelfDevelopmentCandidateRequest, SelfDevelopmentCandidate, SelfDevelopmentCandidatePort, SelfDevelopmentImpactPreview, SelfDevelopmentReviewRequest } from "../application/self-development.js";
+import type { CreateMemoryCandidateRequest, MemoryCandidate, MemoryCandidateReviewRequest, MemoryConsolidationPort, MemoryConsolidationPreview } from "../application/memory-consolidation.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -105,6 +106,12 @@ export interface IpcMethodMap {
   "self-development.active": { payload: { limit?: number }; result: readonly SelfDevelopmentCandidate[] };
   "self-development.preview": { payload: { candidateId: string }; result: SelfDevelopmentImpactPreview | undefined };
   "self-development.review": { payload: SelfDevelopmentReviewRequest; result: SelfDevelopmentCandidate };
+  "memory-candidate.create": { payload: CreateMemoryCandidateRequest; result: MemoryCandidate };
+  "memory-candidate.get": { payload: { candidateId: string }; result: MemoryCandidate | undefined };
+  "memory-candidate.list": { payload: { limit?: number }; result: readonly MemoryCandidate[] };
+  "memory-candidate.consolidated": { payload: { limit?: number }; result: readonly MemoryCandidate[] };
+  "memory-candidate.preview": { payload: { candidateId: string }; result: MemoryConsolidationPreview | undefined };
+  "memory-candidate.review": { payload: MemoryCandidateReviewRequest; result: MemoryCandidate };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -467,6 +474,23 @@ const isSelfDevelopmentReviewPayload = (value: unknown): boolean => isRecord(val
   && isString(value.candidateId, 256)
   && (value.decision === "activate" || value.decision === "archive" || value.decision === "rollback")
   && isSingleLineString(value.reason, 512);
+const isMemoryCandidateKindPayload = (value: unknown): boolean => value === "summary" || value === "fact" || value === "decision" || value === "procedure" || value === "episode";
+const isMemoryCandidateCreatePayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["kind", "title", "content", "sourceEntryIds", "scope", "importance", "expiresAt"])
+  && isMemoryCandidateKindPayload(value.kind)
+  && isSingleLineString(value.title, 512)
+  && isString(value.content, 16_000)
+  && isUniqueBoundedStringList(value.sourceEntryIds, 8, 256)
+  && (value.scope === undefined || isSingleLineString(value.scope, 512))
+  && (value.importance === undefined || (typeof value.importance === "number" && Number.isSafeInteger(value.importance) && value.importance >= 1 && value.importance <= 5))
+  && (value.expiresAt === undefined || (isSingleLineString(value.expiresAt, 128) && Number.isFinite(Date.parse(value.expiresAt))));
+const isMemoryCandidateGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["candidateId"]) && isString(value.candidateId, 256);
+const isMemoryCandidateListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemoryCandidateReviewPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["candidateId", "decision", "reason"])
+  && isString(value.candidateId, 256)
+  && (value.decision === "consolidate" || value.decision === "archive" || value.decision === "rollback")
+  && isSingleLineString(value.reason, 512);
 const isSettingsUpdatePayload = (value: unknown): value is UpdateApplicationSettingsRequest => {
   if (!isRecord(value) || !hasOnlyKeys(value, ["locale", "theme", "fontScale", "density", "reduceMotion"])) return false;
   if (value.locale !== undefined && value.locale !== "ar" && value.locale !== "en") return false;
@@ -521,6 +545,12 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "self-development.active") return isSelfDevelopmentListPayload(payload);
   if (method === "self-development.preview") return isSelfDevelopmentCandidateGetPayload(payload);
   if (method === "self-development.review") return isSelfDevelopmentReviewPayload(payload);
+  if (method === "memory-candidate.create") return isMemoryCandidateCreatePayload(payload);
+  if (method === "memory-candidate.get") return isMemoryCandidateGetPayload(payload);
+  if (method === "memory-candidate.list") return isMemoryCandidateListPayload(payload);
+  if (method === "memory-candidate.consolidated") return isMemoryCandidateListPayload(payload);
+  if (method === "memory-candidate.preview") return isMemoryCandidateGetPayload(payload);
+  if (method === "memory-candidate.review") return isMemoryCandidateReviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

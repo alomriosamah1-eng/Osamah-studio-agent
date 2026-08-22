@@ -27,6 +27,7 @@ import type { MemoryEntry } from "./application/memory-capture.js";
 import type { ExternalAccountRecord } from "./application/external-account-registry.js";
 import type { StorageSettings } from "./application/storage-settings.js";
 import type { SelfDevelopmentCandidate, SelfDevelopmentImpactPreview } from "./application/self-development.js";
+import type { MemoryCandidate, MemoryConsolidationPreview } from "./application/memory-consolidation.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -198,6 +199,38 @@ test("typed IPC exposes bounded self-development candidate review without execut
     if (!activated.ok) return;
     assert.equal(activated.result.status, "active");
     const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "selfdev-malformed-1", correlationId: "selfdev-1", method: "self-development.create", payload: { kind: "instruction", title: "bad", content: "valid", token: "secret" } } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC exposes memory consolidation only after confirmed source review", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const captured = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-capture-for-consolidation", correlationId: "memory-consolidation-1", method: "brain.memory.capture", payload: { kind: "learning", title: "Consolidation source", content: "A local learning for consolidation.", providerAccess: "never", visibility: "private", retention: "session" } } as const) as IpcResponse<MemoryEntry>;
+    assert.equal(captured.ok, true);
+    if (!captured.ok) return;
+    const reviewed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-for-consolidation", correlationId: "memory-consolidation-1", method: "brain.memory.review", payload: { entryId: captured.result.entryId, decision: "confirm", reason: "Owner reviewed the source locally." } } as const) as IpcResponse<MemoryEntry>;
+    assert.equal(reviewed.ok, true);
+    if (!reviewed.ok) return;
+    const created = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-candidate-create-1", correlationId: "memory-consolidation-1", method: "memory-candidate.create", payload: { kind: "summary", title: "Consolidated summary", content: "A summary derived from the confirmed source.", sourceEntryIds: [reviewed.result.entryId], scope: "second-brain", importance: 4 } } as const) as IpcResponse<MemoryCandidate>;
+    assert.equal(created.ok, true);
+    if (!created.ok) return;
+    assert.equal(created.result.state, "review_required");
+    assert.deepEqual(created.result.blockedReasons, []);
+    const preview = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-candidate-preview-1", correlationId: "memory-consolidation-1", method: "memory-candidate.preview", payload: { candidateId: created.result.candidateId } } as const) as IpcResponse<MemoryConsolidationPreview | undefined>;
+    assert.equal(preview.ok, true);
+    if (!preview.ok || !preview.result) return;
+    assert.equal(preview.result.canConsolidate, true);
+    assert.equal(preview.result.sourceMutation, false);
+    assert.equal(preview.result.embeddingIndex, "not_configured");
+    const consolidated = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-candidate-review-1", correlationId: "memory-consolidation-1", method: "memory-candidate.review", payload: { candidateId: created.result.candidateId, decision: "consolidate", reason: "Owner explicitly consolidated the candidate." } } as const) as IpcResponse<MemoryCandidate>;
+    assert.equal(consolidated.ok, true);
+    if (!consolidated.ok) return;
+    assert.equal(consolidated.result.state, "consolidated");
+    assert.equal(reviewed.result.state, "confirmed");
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-candidate-malformed-1", correlationId: "memory-consolidation-1", method: "memory-candidate.create", payload: { kind: "summary", title: "bad", content: "valid", sourceEntryIds: [reviewed.result.entryId], token: "secret" } } as const);
     assert.equal(malformed.ok, false);
   } finally {
     app.close();

@@ -1,0 +1,39 @@
+BUILD
+Already up to date
+Done in 393ms using pnpm v11.20.0
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+DESKTOP_SMOKE
+Already up to date
+Done in 401ms using pnpm v11.20.0
+$ pnpm build && node scripts/desktop-smoke.mjs
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+Osamah Studio Agent desktop shell ready.
+DESKTOP_RENDERER_CONSOLE=DESKTOP_ROOT_PICKER_SMOKE=PASS
+DESKTOP_RENDERER_CONSOLE=DESKTOP_IPC_SMOKE=PASS
+Osamah Studio Agent preload and IPC bridge ready.
+DESKTOP_IPC_SMOKE=PASS
+DESKTOP_WINDOW_CLOSED
+DESKTOP_SMOKE=PASS
+PERFORMANCE_SMOKE
+Already up to date
+Done in 432ms using pnpm v11.20.0
+$ pnpm build && node --max-old-space-size=768 scripts/performance-smoke.mjs
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+(node:151002) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PERF_PROFILE=low_memory
+PERF_CLASSIFICATION=react_native:lightweight_web
+PERF_PREVIEW_MS=16.86
+PERF_HEAP_DELTA_BYTES=-108560
+PERF_RSS_DELTA_BYTES=3801088
+PERF_MODULES=2
+PERF_ASSETS=0
+PERF_MEMORY_TARGET_BYTES=1073741824
+PERF_SMOKE=PASS
+SQLITE_JSON_DIFF_SECRET
+SQLITE_MIGRATION_VALID=true
+MIGRATION_COUNT=4
+SCHEMA_VERSION=004
+TABLE_COUNT=12
+INDEX_COUNT=24
+SECRET_SCAN=PASS

@@ -55,6 +55,7 @@
 | `87-external-accounts-metadata-only.md` | تنفيذ metadata-only للحسابات الخارجية دون OAuth أو network أو secrets |
 | `88-storage-settings-read-only.md` | عرض حالة التخزين والسياسة فقط دون نقل أو حذف أو backup أو restore |
 | `89-self-development-candidate-review.md` | Candidate Review وRule Overlay bounded دون تنفيذ المحتوى أو رفع الصلاحيات |
+| `90-memory-consolidation-bounded.md` | Memory Candidate وConsolidation Review من مصادر مؤكدة دون embeddings أو provider sharing |
 
 ## ملفات الحالة خارج هذا المجلد
 

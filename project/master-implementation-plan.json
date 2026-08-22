@@ -32,10 +32,11 @@
       "arabic-first-application-settings-control-center",
       "external-accounts-metadata-only",
       "storage-settings-read-only",
-      "self-development-candidate-review-bounded"
+      "self-development-candidate-review-bounded",
+      "memory-consolidation-bounded"
     ],
-    "tests": "195/195",
-    "next_phase": "persistence-or-semantic-memory-review",
+    "tests": "201/201",
+    "next_phase": "memory-persistence-sqlite-or-semantic-retrieval-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

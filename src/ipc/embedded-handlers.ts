@@ -21,6 +21,7 @@ import type { ApplicationSettingsPort } from "../application/application-setting
 import type { ExternalAccountRegistryPort } from "../application/external-account-registry.js";
 import type { StorageSettingsPort } from "../application/storage-settings.js";
 import type { SelfDevelopmentCandidatePort } from "../application/self-development.js";
+import type { MemoryConsolidationPort } from "../application/memory-consolidation.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -40,6 +41,7 @@ export interface AgentIpcDependencies {
   readonly externalAccounts: Pick<ExternalAccountRegistryPort, "register" | "get" | "list">;
   readonly storageSettings: Pick<StorageSettingsPort, "get">;
   readonly selfDevelopment: Pick<SelfDevelopmentCandidatePort, "create" | "get" | "list" | "listActive" | "preview" | "review">;
+  readonly memoryConsolidation: Pick<MemoryConsolidationPort, "create" | "get" | "list" | "listConsolidated" | "preview" | "review">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -141,6 +143,12 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("self-development.active", async (request) => agentDependencies.selfDevelopment.listActive(request.payload.limit));
     transport.register("self-development.preview", async (request) => agentDependencies.selfDevelopment.preview(request.payload.candidateId));
     transport.register("self-development.review", async (request) => agentDependencies.selfDevelopment.review(request.payload));
+    transport.register("memory-candidate.create", async (request) => agentDependencies.memoryConsolidation.create(request.payload));
+    transport.register("memory-candidate.get", async (request) => agentDependencies.memoryConsolidation.get(request.payload.candidateId));
+    transport.register("memory-candidate.list", async (request) => agentDependencies.memoryConsolidation.list(request.payload.limit));
+    transport.register("memory-candidate.consolidated", async (request) => agentDependencies.memoryConsolidation.listConsolidated(request.payload.limit));
+    transport.register("memory-candidate.preview", async (request) => agentDependencies.memoryConsolidation.preview(request.payload.candidateId));
+    transport.register("memory-candidate.review", async (request) => agentDependencies.memoryConsolidation.review(request.payload));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

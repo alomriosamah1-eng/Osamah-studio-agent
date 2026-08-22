@@ -1291,6 +1291,106 @@
     log(`brain.memory.review ${response.result.entryId} ${decision}`, 'ok');
   };
 
+  const renderMemoryCandidates = (candidates) => {
+    const list = $('memoryCandidateList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!candidates.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No consolidation candidates yet.';
+      list.append(empty);
+      return;
+    }
+    candidates.forEach((candidate) => {
+      const item = document.createElement('div');
+      item.className = `brain-item consolidation-card ${candidate.state}`;
+      const sourceText = candidate.sources.map((source) => `${source.entryId}:${source.state}`).join(', ');
+      item.textContent = `${candidate.title} · ${candidate.kind} · ${candidate.state}\n${candidate.content}\nscope=${candidate.scope} · sensitivity=${candidate.sensitivity} · providerAccess=${candidate.providerAccess}\nsources=${sourceText || 'none'}${candidate.blockedReasons.length ? `\nblocked=${candidate.blockedReasons.join(', ')}` : ''}`;
+      if (candidate.state === 'review_required') {
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        const consolidate = document.createElement('button');
+        consolidate.type = 'button';
+        consolidate.textContent = candidate.blockedReasons.length ? 'Consolidation blocked' : 'Consolidate locally';
+        consolidate.disabled = candidate.blockedReasons.length > 0;
+        consolidate.onclick = () => { void reviewMemoryCandidate(candidate.candidateId, 'consolidate'); };
+        const archive = document.createElement('button');
+        archive.type = 'button';
+        archive.textContent = 'Archive';
+        archive.onclick = () => { void reviewMemoryCandidate(candidate.candidateId, 'archive'); };
+        actions.append(consolidate, archive);
+        item.append(actions);
+      } else if (candidate.state === 'consolidated') {
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        const rollback = document.createElement('button');
+        rollback.type = 'button';
+        rollback.textContent = 'Rollback consolidation';
+        rollback.onclick = () => { void reviewMemoryCandidate(candidate.candidateId, 'rollback'); };
+        actions.append(rollback);
+        item.append(actions);
+      }
+      list.append(item);
+    });
+  };
+  const loadMemoryCandidates = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('memoryConsolidationStatus').textContent = 'Desktop IPC unavailable; no consolidation request was sent.';
+      return;
+    }
+    const response = await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('memory-candidate-list'), correlationId: nextRequest('memory-candidate-list-correlation'), method: 'memory-candidate.list', payload: { limit: 32 } });
+    if (!response.ok) {
+      $('memoryConsolidationStatus').textContent = `Consolidation list rejected: ${response.error.message}`;
+      log(`memory-candidate.list_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderMemoryCandidates(response.result);
+    $('memoryConsolidationStatus').textContent = `${response.result.length} consolidation candidate(s); no embeddings or provider sharing.`;
+  };
+  const createMemoryCandidate = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') return;
+    const sourceEntryIds = $('memoryCandidateSourceIds').value.split(',').map((value) => value.trim()).filter(Boolean);
+    if (!sourceEntryIds.length) {
+      $('memoryConsolidationStatus').textContent = 'Enter at least one confirmed memory entry ID; no request was sent.';
+      return;
+    }
+    const button = $('createMemoryCandidate');
+    button.disabled = true;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('memory-candidate-create'),
+      correlationId: nextRequest('memory-candidate-create-correlation'),
+      method: 'memory-candidate.create',
+      payload: { kind: $('memoryCandidateKind').value, title: $('memoryCandidateTitle').value.trim(), content: $('memoryCandidateContent').value, sourceEntryIds, scope: $('memoryCandidateScope').value.trim() },
+    });
+    button.disabled = false;
+    if (!response.ok) {
+      $('memoryConsolidationStatus').textContent = `Candidate rejected: ${response.error.message}`;
+      log(`memory-candidate.create_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    $('memoryConsolidationStatus').textContent = response.result.blockedReasons.length ? `Candidate ${response.result.candidateId} requires review; consolidation blocked.` : `Candidate ${response.result.candidateId} requires explicit consolidation review.`;
+    await loadMemoryCandidates();
+  };
+  const reviewMemoryCandidate = async (candidateId, decision) => {
+    if (typeof window.osamah?.dispatch !== 'function') return;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest(`memory-candidate-${decision}`),
+      correlationId: nextRequest('memory-candidate-review-correlation'),
+      method: 'memory-candidate.review',
+      payload: { candidateId, decision, reason: decision === 'consolidate' ? 'Owner explicitly consolidated the reviewed candidate.' : decision === 'rollback' ? 'Owner explicitly rolled back the consolidation.' : 'Owner explicitly archived the candidate.' },
+    });
+    if (!response.ok) {
+      $('memoryConsolidationStatus').textContent = `Candidate review rejected: ${response.error.message}`;
+      log(`memory-candidate.review_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    $('memoryConsolidationStatus').textContent = `Candidate ${response.result.candidateId} is ${response.result.state}; source entry remains unchanged.`;
+    await loadMemoryCandidates();
+  };
+
   let activeArtifact;
   const renderArtifact = (draft) => {
     activeArtifact = draft;
@@ -1689,6 +1789,8 @@
   $('captureMemoryEntry').onclick = () => { void captureMemoryEntry(); };
   $('searchMemoryEntries').onclick = () => { void searchMemoryEntries(); };
   $('listMemoryReview').onclick = () => { void loadMemoryReviewEntries(); };
+  $('createMemoryCandidate').onclick = () => { void createMemoryCandidate(); };
+  $('listMemoryCandidates').onclick = () => { void loadMemoryCandidates(); };
   $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
@@ -2093,6 +2195,41 @@
       method: 'brain.memory.listForReview',
       payload: { limit: 8 },
     }) : { ok: false };
+    const memoryCandidateCreateResponse = memoryReviewResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-candidate-create',
+      correlationId: 'desktop-smoke-memory-candidate',
+      method: 'memory-candidate.create',
+      payload: { kind: 'summary', title: 'Desktop smoke memory summary', content: 'A summary derived from a confirmed local memory entry.', sourceEntryIds: [memoryReviewResponse.result.entryId], scope: 'second-brain' },
+    }) : { ok: false };
+    const memoryCandidatePreviewResponse = memoryCandidateCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-candidate-preview',
+      correlationId: 'desktop-smoke-memory-candidate',
+      method: 'memory-candidate.preview',
+      payload: { candidateId: memoryCandidateCreateResponse.result.candidateId },
+    }) : { ok: false };
+    const memoryCandidateReviewResponse = memoryCandidateCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-candidate-review',
+      correlationId: 'desktop-smoke-memory-candidate',
+      method: 'memory-candidate.review',
+      payload: { candidateId: memoryCandidateCreateResponse.result.candidateId, decision: 'consolidate', reason: 'Desktop smoke explicit consolidation review.' },
+    }) : { ok: false };
+    const memoryCandidateRollbackResponse = memoryCandidateCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-candidate-rollback',
+      correlationId: 'desktop-smoke-memory-candidate',
+      method: 'memory-candidate.review',
+      payload: { candidateId: memoryCandidateCreateResponse.result.candidateId, decision: 'rollback', reason: 'Desktop smoke explicit rollback.' },
+    }) : { ok: false };
+    const memoryCandidateMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-candidate-malformed',
+      correlationId: 'desktop-smoke-memory-candidate',
+      method: 'memory-candidate.create',
+      payload: { kind: 'summary', title: 'bad', content: 'valid', sourceEntryIds: [memoryCaptureResponse.ok ? memoryCaptureResponse.result.entryId : 'missing'], token: 'secret' },
+    });
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -2254,8 +2391,9 @@
     const reportPassed = reportCreateResponse.ok && reportCreateResponse.result.reviewState === 'review_required' && reportCreateResponse.result.claims[0]?.verificationState === 'unresolved' && reportCreateResponse.result.warnings.includes('content_plan_has_unresolved_claims') && reportGetResponse.ok && reportGetResponse.result?.reportId === reportCreateResponse.result.reportId && reportListResponse.ok && reportListResponse.result.length === 1 && reportMalformedResponse.ok === false;
     const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
-    const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && storagePassed && selfDevelopmentPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const memoryConsolidationPassed = memoryCandidateCreateResponse.ok && memoryCandidateCreateResponse.result.state === 'review_required' && memoryCandidateCreateResponse.result.providerAccess === 'never' && memoryCandidateCreateResponse.result.blockedReasons.length === 0 && memoryCandidatePreviewResponse.ok && memoryCandidatePreviewResponse.result?.canConsolidate === true && memoryCandidatePreviewResponse.result?.sourceMutation === false && memoryCandidatePreviewResponse.result?.embeddingIndex === 'not_configured' && memoryCandidateReviewResponse.ok && memoryCandidateReviewResponse.result.state === 'consolidated' && memoryCandidateRollbackResponse.ok && memoryCandidateRollbackResponse.result.state === 'archived' && memoryCandidateMalformedResponse.ok === false;
+    const memoryNoMutationPassed = memoryPassed && memoryConsolidationPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && storagePassed && selfDevelopmentPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryConsolidationPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -2267,6 +2405,7 @@
   void loadExternalAccounts();
   void loadStorageSettings();
   void loadSelfDevelopmentCandidates();
+  void loadMemoryCandidates();
   void loadReportDocuments();
   void loadProviders();
   void loadSources();

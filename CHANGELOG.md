@@ -20,6 +20,25 @@
 - هذه الشريحة **RESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION ONLY**؛ لم تُضف حزمة أو model أو voice أو asset أو native toolchain، ولم يُعدّل runtime أو typed IPC أو Electron shell لأجل Avatar.
 - Avatar planned/deferred داخل Second Brain، والميكروفون وwake word والـoverlay معطلة افتراضيًا في التصميم؛ Human Gate وtext fallback وUbuntu 8GB degradation إلزامية لأي تنفيذ لاحق.
 
+## [Unreleased] — Second Brain Memory Consolidation bounded
+
+### Added
+
+- `MemoryCandidate` و`MemoryConsolidationPort` و`InMemoryMemoryConsolidationService` لاشتقاق summary/fact/decision/procedure/episode من MemoryEntry موجودة.
+- `memory-candidate.create/get/list/consolidated/preview/review` عبر typed IPC، مع اشتراط source IDs معروفة ومراجعة `confirmed` قبل `consolidate`.
+- Second Brain consolidation panel يعرض source state وblocked reasons ويدعم consolidate/archive/rollback صريحًا دون تعديل المصدر.
+- sensitivity وscope guards محافظة، وredaction وحدود للمحتوى والمصادر والأهمية، مع `providerAccess=never` و`embeddingIndex=not_configured`.
+- `docs/90-memory-consolidation-bounded.md` لتوثيق الدورة والعقود والخصوصية والأداء والحدود.
+
+### Verified
+
+- `pnpm check`: `201/201` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+- desktop smoke تحقق من confirmed source إلى candidate preview ثم consolidate وrollback، ومن عدم تعديل المصدر ورفض token-shaped payload.
+
+### Boundaries
+
+- لا توجد persistence أو SQLite migration لمرشحات الذاكرة، ولا FTS/vector/embeddings أو provider sharing أو automatic consolidation أو حقن النتائج في Agent Runtime.
+
 ## [Unreleased] — Self-development Candidate Review وRule Overlay
 
 ### Added
