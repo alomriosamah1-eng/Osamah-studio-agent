@@ -11,7 +11,7 @@
 | آخر فحص | `pnpm check` ناجح، `31/31` اختبارًا، في 2026-08-22 |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
-| حالة push لهذه الشريحة | code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation state عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83`؛ `GITHUB_FINAL_SHA_MATCH=true` |
+| حالة push لهذه الشريحة | code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation commits عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ `GITHUB_FINAL_SHA_MATCH=true` |
 
 ## المكتمل
 
