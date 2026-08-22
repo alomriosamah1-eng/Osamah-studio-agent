@@ -10,7 +10,7 @@
 
 ## 2. الوضع الحالي ونقطة الانطلاق
 
-حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، وBoundedAgentRuntime slice. آخر حالة موثقة هي الإصدار `0.6.0` مع **47/47 اختبارًا ناجحًا** وproduction root picker منفذ محليًا وقابلًا للتحقق عبر desktop smoke.
+حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، BoundedAgentRuntime slice، production root picker، وoptional SQLite composition wiring. آخر حالة موثقة هي الإصدار `0.6.0` مع **50/50 اختبارًا ناجحًا** وrestart persistence وexplicit fallback.
 
 لذلك لا تعيد الخطة بناء الأساس من الصفر. تبدأ الخطوة التنفيذية التالية من **typed Electron preload boundary** ثم تنتقل تدريجيًا إلى طبقة البيانات الفعلية وAgent Runtime وبقية البيئات. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
 
@@ -131,11 +131,12 @@ src/
 
 1. تنفيذ SQLite adapter خلف ports الحالية مع migration runner وschema version.
 2. إكمال جداول workspace/project/session/task/job/artifact/source/audit/checkpoint والفهارس المطلوبة.
-3. إضافة FTS5 للرسائل والملاحظات والنصوص المستخرجة مع normalization للعربية دون فقد النص الأصلي.
-4. إضافة object store content-addressed وmanifest وcleanup وquota.
-5. إضافة structured JSONL logs وSQLite index وcorrelation IDs وevent replay محدود.
-6. تنفيذ backup/restore dry-run وchecksum وmigration rollback profile منفصل.
-7. إضافة test fixtures وmigration upgrade/downgrade tests وcrash recovery tests.
+3. ربط SQLite اختياريًا داخل composition مع memory default وprofile close وrestart persistence وexplicit fallback.
+4. إضافة FTS5 للرسائل والملاحظات والنصوص المستخرجة مع normalization للعربية دون فقد النص الأصلي.
+5. إضافة object store content-addressed وmanifest وcleanup وquota.
+6. إضافة structured JSONL logs وSQLite index وcorrelation IDs وevent replay محدود.
+7. تنفيذ backup/restore dry-run وchecksum وmigration rollback profile منفصل.
+8. إضافة test fixtures وmigration upgrade/downgrade tests وcrash recovery tests.
 
 **معيار القبول:** restart لا يفقد session أو checkpoint، backup قابل للتحقق، migration فاشلة لا تفسد profile، والـ UI لا يتجمد عند فهرسة ملف كبير.
 

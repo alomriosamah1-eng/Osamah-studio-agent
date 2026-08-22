@@ -21,10 +21,12 @@
       "lightweight-web-preview",
       "general-project-classification",
       "low-memory-resource-policy",
-      "bounded-agent-runtime-slice"
+      "bounded-agent-runtime-slice",
+      "production-root-picker",
+      "optional-sqlite-composition"
     ],
-    "tests": "44/44",
-    "next_phase": "production-root-picker-and-optional-sqlite-wiring",
+    "tests": "50/50",
+    "next_phase": "profile-path-policy-and-provider-approval-contracts",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [
@@ -87,7 +89,7 @@
       "name": "sqlite-data-and-observability",
       "depends_on": [1],
       "primary_owner": "data",
-      "deliverables": ["SQLite adapter", "migration runner", "FTS5", "object store", "structured logs", "backup and restore dry-run", "bounded observability"],
+      "deliverables": ["SQLite adapter", "migration runner", "FTS5", "object store", "structured logs", "backup and restore dry-run", "bounded observability", "optional composition wiring", "restart persistence", "explicit fallback"],
       "exit_gate": "restart, migration failure, backup checksum, and large-file indexing tests pass"
     },
     {

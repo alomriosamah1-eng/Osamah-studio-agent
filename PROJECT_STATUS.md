@@ -9,10 +9,11 @@
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
 | آخر commit تنفيذي سابق | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
-| حالة root picker الحالية | production root picker منفذ ومدفوع ومتحقق منه عند `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
-| حالة الشجرة | نظيفة؛ local و`origin/main` متطابقان |
+| آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
+| حالة SQLite composition الحالية | opt-in wiring منفذة محليًا، مع restart persistence وfallback صريح |
+| حالة الشجرة | تغييرات SQLite composition والتوثيق الحالية قيد الدفع بعد الفحوص |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `47/47` اختبارًا، و`pnpm performance:smoke` وroot-picker desktop smoke ناجحان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `50/50` اختبارًا، و`pnpm performance:smoke` وroot-picker desktop smoke ناجحان في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -35,6 +36,8 @@
 
 أضيف production root picker من خلال `chooseProjectRoot` في main process وtyped preload وقناة allowlisted وcanonical path validation. زر Workspace يطلب directory فقط ويعرض حالات cancel/error/selected دون تشغيل المشروع تلقائيًا، واختبر المسار عبر `DESKTOP_ROOT_PICKER_SMOKE=PASS`.
 
+أضيف optional SQLite composition wiring: `createEmbeddedApplication({ storage })` يبقي memory default، ويفتح SQLite فقط عند opt-in، ويدعم restart persistence وfallback صريحًا و`close()` idempotent. عولجت event ID collision المحتملة باستخدام UUID وإغلاق الاتصال عند initialization failure.
+
 أضيف `LocalSqliteBackupProvider` الذي ينشئ snapshot atomic عبر `VACUUM INTO`، ويكتب manifest مع SHA-256، ويتحقق من schema وforeign keys وmigration dry-run على نسخة مؤقتة، ويستعيد إلى profile منفصل دون overwrite للقاعدة الحية.
 
 ## المعمارية الحالية
@@ -48,7 +51,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `47/47` ناجحة |
+| `pnpm test` | `50/50` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
@@ -58,6 +61,7 @@
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
 | desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
+| composition SQLite | opt-in/restart/fallback/close lifecycle PASS |
 
 ## العمل المتبقي
 

@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Optional SQLite Composition
+
+### Added
+
+- optional `storage` options في `createEmbeddedApplication` مع `memory` default و`sqlite` opt-in.
+- profile lifecycle صريح مع `storageKind` و`close()` idempotent، دون فتح SQLite أو WAL عند عدم طلبه.
+- fallback إلى in-memory فقط عند `allowFallback: true`، مع `storageFallbackReason` واضح، وfail-closed عند تعطيل fallback.
+- restart persistence test عبر نفس SQLite profile، وإغلاق الاتصال عند فشل initialization أو migration لمنع resource leak.
+- توليد UUID لـ`domain_events.event_id` لتجنب collision عند إعادة تشغيل composition.
+- `docs/50-optional-sqlite-composition.md` و`src/composition.test.ts` لتوثيق واختبار lifecycle.
+
+### Verified
+
+- `pnpm check`: `50/50` اختبارًا ناجحًا.
+- `pnpm performance:smoke`: PASS مع `low_memory` وبدون تغيير preview budgets.
+- `pnpm desktop:smoke`: PASS، وSQLite migration validator وJSON validation وsecret scan PASS.
+
+### Boundaries
+
+- SQLite opt-in حاليًا ولا يحفظ profile path تلقائيًا من OS app-data؛ production profile locking وencryption وbackup UX تبقى خطوات لاحقة.
+- لا يبدأ التطبيق SQLite أو workers أو local models تلقائيًا، ولا يتحول migration checksum failure إلى نجاح صامت.
+
 ## [Unreleased] — Production Root Picker
 
 ### Added

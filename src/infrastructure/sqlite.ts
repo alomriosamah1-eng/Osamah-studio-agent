@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -69,8 +69,14 @@ export class SqliteDatabase implements SqlExecutor {
       timeout: 5000,
       allowExtension: false,
     });
-    this.database.exec("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;");
-    this.applyMigrations(options.migrationsPath);
+    try {
+      this.database.exec("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;");
+      this.applyMigrations(options.migrationsPath);
+    } catch (error) {
+      this.database.close();
+      this.closed = true;
+      throw error;
+    }
   }
 
   public exec(sql: string): void { this.database.exec(sql); }
@@ -276,7 +282,7 @@ export class SqliteEventBus implements EventBus {
   public publish(event: DomainEvent): void {
     this.database.run(`INSERT INTO domain_events(event_id, event_type, aggregate_id, correlation_id, schema_version, payload_json, occurred_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [this.ids.next("event"), event.type, eventAggregateId(event), eventAggregateId(event), 1, redactJson(event as unknown as Record<string, unknown>), event.occurredAt]);
+    [randomUUID(), event.type, eventAggregateId(event), eventAggregateId(event), 1, redactJson(event as unknown as Record<string, unknown>), event.occurredAt]);
     this.history.push(event);
     for (const listener of this.listeners) listener(event);
   }

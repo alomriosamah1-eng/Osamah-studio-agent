@@ -75,8 +75,9 @@
 | SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
 | Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
 | Production Root Picker | main-process `dialog.showOpenDialog` بخاصية `openDirectory`، typed preload، trusted sender، canonical path validation، وroot-picker desktop smoke؛ delivery `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
+| Optional SQLite Composition | `createEmbeddedApplication({ storage })` مع memory default، SQLite opt-in، restart persistence، explicit fallback، idempotent close، وUUID event IDs؛ delivery pending final push |
 
-تم التحقق من `pnpm check` بـ47/47، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، ودُفعت root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، مع تطابق local و`origin/main`.
+تم التحقق من `pnpm check` بـ50/50، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، بينما SQLite composition الحالية تحت بوابة الدفع النهائية.
 
 ## الخطة التنفيذية المعتمدة
 
@@ -84,11 +85,11 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. يوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. SQLite adapter مربوط اختياريًا بـ`createEmbeddedApplication` مع memory default وrestart persistence وexplicit fallback، لكن profile path policy وprofile locking والتشفير لم تُحسم بعد. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي wiring اختيارية لـSQLite داخل composition مع profile lifecycle وfallback policy، ثم توسيع bounded Agent Runtime بعقود provider/approval. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي profile path policy وbackup UX وprofile locking وencryption/key management عند الحاجة، ثم توسيع bounded Agent Runtime بعقود provider/approval. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
 
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.

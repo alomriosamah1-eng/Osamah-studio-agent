@@ -8,7 +8,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore ثم دُفعت إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، مع تطابق local وremote SHA. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`47/47` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت slice الأداء `pnpm build` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret heuristic وdesktop smoke؛ سجل الأداء low_memory وReact Native → lightweight_web وpreview حوالي 11ms وheap delta حوالي 0.3MB وRSS delta حوالي 3.1MB، مع root picker `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`PERFORMANCE_FINAL_GATE=PASS`.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`50/50` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت slice الأداء `pnpm build` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret heuristic وdesktop smoke؛ سجل الأداء low_memory وReact Native → lightweight_web وpreview حوالي 10ms وheap delta حوالي 0.3MB وRSS delta حوالي 3.1MB، مع root picker `DESKTOP_ROOT_PICKER_SMOKE=PASS` وcomposition SQLite opt-in/restart/fallback PASS و`PERFORMANCE_FINAL_GATE=PASS`.
 
 ## المعمارية
 
@@ -49,12 +49,12 @@ git diff --check
 
 ## ما يزال مؤجلًا
 
-SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`.
+SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. أضيف optional SQLite composition wiring في `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، وينتظر دفع الشريحة الحالية.
  لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter.
 
 ## التسلسل التالي
 
-بعد دفع production root picker، نفّذ wiring اختيارية لـSQLite خلف composition مع lifecycle وfallback policy. بعدها تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم visual loop بحدود iteration وapproval.
+بعد دفع SQLite composition wiring، نفّذ profile path policy وbackup UX وencryption/key management عند الحاجة. بعدها تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم visual loop بحدود iteration وapproval.
 
 ## أسئلة مفتوحة
 
