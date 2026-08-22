@@ -1775,6 +1775,20 @@
     }
   };
 
+  const viewLabels = { development: 'بيئة التطوير', studio: 'Production Studio', brain: 'Second Brain', settings: 'مركز التحكم' };
+  const activateView = (view) => {
+    document.querySelectorAll('[data-app-view]').forEach((panel) => { panel.classList.toggle('active', panel.dataset.appView === view); });
+    document.querySelectorAll('[data-view]').forEach((button) => { button.classList.toggle('active', button.dataset.view === view); });
+    const label = viewLabels[view] || view;
+    document.querySelector('.main')?.scrollTo({ top: 0, behavior: 'auto' });
+    if ($('footerText')) $('footerText').textContent = `${label} · واجهة Osamah الموحدة`;
+    if ($('inspectorStatus')) $('inspectorStatus').textContent = `${label} · جاهز للمراجعة`;
+    document.title = `${label} · Osamah Studio Agent`;
+  };
+  document.querySelectorAll('[data-view]').forEach((button) => {
+    button.addEventListener('click', () => activateView(button.dataset.view || 'development'));
+  });
+
   $('openProject').onclick = () => { void chooseProjectRoot(); };
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
   $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
