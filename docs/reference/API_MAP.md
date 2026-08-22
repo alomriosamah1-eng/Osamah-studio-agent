@@ -14,4 +14,4 @@ AIProvider، ModelProvider، VoiceProvider، StorageProvider، GitProvider، Git
 
 ## API status
 
-يوجد الآن typed IPC in-memory transport فعلي في `src/ipc/` مع protocol v1 وhandlers للمحاكي: `health.get`, `device.get`, `preview.start`, `preview.input`, `preview.capture`, `preview.inspect`, و`preview.stop`. لا توجد واجهة HTTP أو Electron preload بعد، ولا يزال transport production boundary مخططًا. `createEmbeddedApplication` هو composition root الحالي.
+يوجد الآن typed IPC in-memory transport فعلي في `src/ipc/` مع protocol v1 وhandlers للمحاكي: `health.get`, `device.get`, `preview.start`, `preview.input`, `preview.refresh`, `preview.capture`, `preview.inspect`, و`preview.stop`. يقبل `preview.start/refresh` ProjectPreviewBundle، ويعيد `preview.inspect` source hash وmodule count وrender tree وevents/diagnostics. لا توجد واجهة HTTP أو Electron preload بعد، ولا يزال transport production boundary مخططًا. `createEmbeddedApplication` هو composition root الحالي.

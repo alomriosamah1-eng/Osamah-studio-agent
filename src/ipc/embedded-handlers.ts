@@ -13,6 +13,7 @@ export const registerEmbeddedSimulatorHandlers = (
   });
   transport.register("preview.start", (request) => controller.start(request.payload));
   transport.register("preview.input", (request) => controller.sendInput(request.payload.sessionId, request.payload.input));
+  transport.register("preview.refresh", (request) => controller.refresh(request.payload.sessionId, request.payload.kind, request.payload.bundle));
   transport.register("preview.capture", (request) => controller.capture(request.payload.sessionId));
   transport.register("preview.inspect", async (request) => controller.inspect(request.payload.sessionId));
   transport.register("preview.stop", async (request) => {

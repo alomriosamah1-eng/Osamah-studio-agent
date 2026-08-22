@@ -1,5 +1,21 @@
 # سجل التغييرات
 
+## [Unreleased] — Project Preview Runtime
+
+### Added
+
+- `ProjectPreviewBundle` و`FixturePreviewRuntime` لبناء وتشغيل معاينة bounded من file map مع module graph وsource hash وrender tree وdiagnostics.
+- ربط `EmbeddedSimulatorController` وtyped IPC بعمليات `preview.start` و`preview.refresh` و`preview.inspect` مع تمرير bundle وحالة runtime.
+- `FilesystemProjectScanner` بقراءة root/manifest/source محدودة، ومنع path traversal وتجاهل symlinks والمجلدات المولدة، دون تشغيل scripts من مشاريع الهاتف.
+- `FilesystemProjectPreviewService` لاختيار entry من manifest أو fallback معروف وبناء bundle من مشروع موجود على disk.
+- Expo fixture واختبارات contract تغطي filesystem scanner وProjectPreviewService.
+- وثيقتا العقد والتنفيذ `docs/41-project-preview-runtime.md` و`docs/42-project-preview-runtime-implementation.md`.
+
+### Verified
+
+- `pnpm check`: نجاح typecheck و`17/17` اختبارًا.
+- المسار يظل compatibility/fixture mode ولا يدعي native fidelity أو Metro HMR حقيقيًا.
+
 ## [Unreleased] — Discovery
 
 ### Added

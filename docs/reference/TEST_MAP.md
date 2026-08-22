@@ -7,12 +7,13 @@
 | Contract | ports/IPC/providers/Metro/ADB/Xcode | مخطط |
 | End-to-end | Desktop workspace/approval/Git | مفقود |
 | UI/accessibility | RTL/LTR/keyboard/screen reader | مفقود |
-| Mobile preview | device geometry/interactions/HMR | controller/input/refresh/capture contract منفذ؛ renderer/HMR الحقيقي لاحقًا |
+| Mobile preview | device geometry/interactions/HMR | controller/input/refresh/capture وbundle/runtime contract منفذة؛ Metro HMR الحقيقي لاحقًا |
 | Native mobile | Android/iOS build/run/log/screenshot | مفقود |
 | Visual regression | golden screenshots/threshold | مفقود |
 | AI | tool calling/fallback/memory/visual loop | مفقود |
 | Performance | startup/RSS/CPU/GPU/queue | مفقود |
-| IPC contract | protocol validation/unknown/duplicate/error mapping | منفذ: `src/ipc.test.ts` |
+| IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect | منفذ: `src/ipc.test.ts` |
+| Preview runtime security | blocked imports/path traversal/source hash/diagnostics | منفذ: `src/preview-runtime.test.ts` |
 | Migration contract | SQLite tables/indexes/schema version | منفذ: `scripts/validate_sqlite_migration.py` |
 | Security | injection/sandbox/secrets/plugins | مفقود |
 

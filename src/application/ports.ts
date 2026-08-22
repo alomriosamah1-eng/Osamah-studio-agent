@@ -35,6 +35,7 @@ export interface PreviewRepository {
 
 export interface ProjectScanner {
   listRelativeFiles(rootPath: string): Promise<readonly string[]>;
+  readText(rootPath: string, relativePath: string): Promise<string | undefined>;
   readJson(rootPath: string, relativePath: string): Promise<Record<string, unknown> | undefined>;
 }
 

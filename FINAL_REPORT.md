@@ -20,6 +20,8 @@
 | Prototype بصري | `prototypes/mobile-preview/index.html` بثلاثة profiles، إطار جهاز، Inspector، rotate، theme، refresh، screenshot |
 | Embedded Workspace | `prototypes/studio/index.html` يدمج شجرة الملفات والمحرر والمحاكي والـ Inspector والـ Console |
 | Embedded controller | `EmbeddedSimulatorController` يدعم start/input/refresh/capture/inspect/stop |
+| Project Preview Runtime | `ProjectPreviewBundle` و`FixturePreviewRuntime` مع module graph وsource hash وrender tree وdiagnostics |
+| Filesystem integration | `FilesystemProjectScanner` و`FilesystemProjectPreviewService` يقرآن root/manifest/entry بحدود آمنة دون تشغيل scripts |
 | Typed IPC | protocol v1 وin-memory transport وhandlers مع duplicate/unknown/malformed guards |
 | SQLite migration | `db/migrations/001_initial.sql` وvalidator للجداول والفهارس والإصدار |
 | CI | GitHub Actions لتثبيت lockfile وتشغيل typecheck/test وJSON validation وdiff hygiene |
@@ -34,13 +36,13 @@
 
 ## الاختبارات والفحوص
 
-نجحت جميع الاختبارات الحالية. يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، وpreview orientation/screenshot contract.
+نجحت جميع الاختبارات الحالية. يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، preview orientation/screenshot contract، bundle/runtime، blocked imports، filesystem scanner، وProjectPreviewService.
 
 | الفحص | النتيجة |
 |---|---|
 | `pnpm install --frozen-lockfile` | ناجح |
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | 11/11 ناجحة |
+| `pnpm test` | 17/17 ناجحة |
 | `pnpm check` | ناجح |
 | SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، 7 tables، 10 indexes |
 | `git diff --check` | ناجح |
@@ -58,16 +60,17 @@
 | مراجعة القرارات والاعتماديات | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
 | تحديث الحالة والـ handoff النهائي | `2fd2c219072d8d186460a5c02b7c70545b447cb8` |
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
+| Project Preview Runtime + filesystem scanner/service | pending حتى إتمام الفحوص والدفع |
 
 تم التحقق من أن `git rev-parse HEAD` يطابق `git ls-remote origin refs/heads/main` عند آخر push، وأن الشجرة المحلية كانت نظيفة عند الإغلاق.
 
 ## الحدود الحالية
 
-لا يوجد بعد Electron shell أو Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وWorkspace prototype، وليس React Native renderer أو Metro runtime حقيقيًا. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+لا يوجد بعد Electron shell أو Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وWorkspace prototype، وFixturePreviewRuntime compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-الخطوة التالية هي اختيار **adapter مستقل واحد**: actual SQLite adapter/session persistence أو React Native Web/Metro renderer داخل embedded panel. يسبق ذلك architecture note وports وcontract tests وin-memory adapter، ثم implementation bounded. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts وقياسات الموارد.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **Presentation renderer مستقل** يستهلك `PreviewRenderNode` داخل embedded panel. يسبقه architecture note وports وcontract tests وin-memory adapter، ثم implementation bounded. بعد renderer يمكن إضافة IPC لفتح مشروع filesystem من واجهة Workspace. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 

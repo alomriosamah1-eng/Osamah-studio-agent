@@ -6,8 +6,9 @@
 | Agent runtime/orchestration | FR-004/011/028 | Core | مفقودة |
 | Development IDE | FR-002/007/008/009/030 | P4 | مفقودة |
 | Mobile detector/generator | GAP-026/027 | Mobile | detector منفذ؛ generator مفقود |
-| Lightweight mobile preview | GAP-029/034/035 | Mobile | controller + IPC + prototype منفذة؛ renderer/Metro لاحقًا |
-| Metro/Fast Refresh | GAP-030 | Mobile | مفقودة |
+| Lightweight mobile preview | GAP-029/034/035 | Mobile | bundle builder/runtime + controller + IPC + prototype منفذة؛ React Native Web/Metro renderer لاحقًا |
+| Project preview runtime | GAP-030/034/035 | Mobile | bundle/fixture runtime وbounded refresh وfilesystem scanner/service منفذة؛ Metro HMR وPresentation renderer لاحقًا |
+| Metro/Fast Refresh | GAP-030 | Mobile | adapter الحقيقي مفقود |
 | Android native | GAP-031 | Mobile | adapter مخطط |
 | iOS native | GAP-032 | Mobile | macOS-only adapter مخطط |
 | Second Brain | FR-020/021/025/026 | Brain | مفقودة |

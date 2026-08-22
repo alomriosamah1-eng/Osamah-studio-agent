@@ -4,39 +4,38 @@
 
 | الحقل | القيمة |
 |---|---|
-| الإصدار | `0.2.0-embedded-simulator` |
-| المرحلة | Embedded Simulator Foundation + typed IPC + SQLite schema contract |
-| الحالة | Embedded Simulator Foundation مندفعة ومتحقق منها على GitHub |
-| أحدث commit معروف قبل التغيير | `79026c4368d978506ed5dad06a5f48b8f34e4036` |
-| commit المرحلة التنفيذية | `3e81421a03713dc433d61d4957ec013226e5008f` |
-| commit المراجعة والتسليم | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
-| commit التقرير النهائي | `befabc8863d929b55d8cca590d2b8f9cfafe2e3f` |
-| commit إغلاق الحالة | `8104e77d66dffee1544e45035846956893b855f7` |
-| commit Embedded Simulator | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
-| أحدث push مؤكد | `origin/main` عند commit `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
-| آخر build ناجح | `pnpm typecheck` في 2026-08-22 |
-| آخر اختبار ناجح | 11 اختبار Node/tsx، 11 passed؛ SQLite migration valid في 2026-08-22 |
-| commit الحالي لهذه المرحلة | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8`؛ local وremote متطابقان |
+| الإصدار | `0.3.0-project-preview-runtime` |
+| المرحلة | Project Preview Runtime + Embedded Simulator + typed IPC |
+| الحالة | مكتملة محليًا، جاهزة للفحوص النهائية والـ commit/push |
+| أحدث commit مدفوع قبل هذه الشريحة | `f388e8957e602b96c97968feed2c3f8ebf08df23` |
+| commit الشريحة الحالية | pending حتى إتمام التحقق والدفع |
+| آخر build ناجح | `pnpm check` في 2026-08-22 |
+| آخر اختبار ناجح | `17/17` اختبار Node/tsx ناجح في 2026-08-22 |
+| آخر push مؤكد | `origin/main` عند `f388e8957e602b96c97968feed2c3f8ebf08df23` قبل الشريحة الحالية |
 
-## مكتمل
+## المكتمل
 
-تمت مراجعة المستودع والوثائق السابقة، وإنشاء `docs/31-gap-analysis.md`، وإجراء بحث موثق عن React Native/Expo/Metro/Fast Refresh/React Native Web/Expo Snack/Android Emulator/iOS Simulator/Hermes/Debugging. أضيفت `docs/33` إلى `docs/40`، و16 reference maps تحت `docs/reference/`. أضيف Foundation code مستقل عن UI: domain primitives/errors/entities/events، application ports/use cases، in-memory adapters، MobileProjectDetector، PlatformCapabilityService، LightweightPreviewAdapter، EmbeddedSimulatorController، typed IPC transport/handlers، SQLite migration contract، composition root، و11 اختبارًا deterministic. أضيفت `prototypes/mobile-preview/index.html` و`prototypes/studio/index.html` وتم التحقق من المحاكي المدمج بصريًا وتفاعليًا.
+تمت مراجعة المستودع والوثائق السابقة، وإنشاء `docs/31-gap-analysis.md`، وإجراء بحث موثق عن React Native/Expo/Metro/Fast Refresh/React Native Web/Expo Snack/Android Emulator/iOS Simulator/Hermes/Debugging. أضيفت `docs/33` إلى `docs/42` و16 reference maps تحت `docs/reference/`. أضيف Foundation code مستقل عن UI: domain primitives/errors/entities/events، application ports/use cases، in-memory adapters، MobileProjectDetector، PlatformCapabilityService، LightweightPreviewAdapter، EmbeddedSimulatorController، typed IPC transport/handlers، SQLite migration contract، `ProjectPreviewBundle`، و`FixturePreviewRuntime`.
+
+أضيفت في هذه الشريحة `FilesystemProjectScanner` و`FilesystemProjectPreviewService` لقراءة مشروع من root مقيد واختيار manifest/entry وبناء bundle فعلي دون تشغيل scripts أو postinstall. كما أضيفت fixture Expo واختبارات filesystem وservice.
 
 ## النواة الحالية
 
-الطبقات الحالية هي Domain وApplication وIn-memory Infrastructure، مع EmbeddedSimulatorController وtyped IPC in-memory وSQLite schema contract. تدعم النواة فتح Workspace، إنشاء Session، Approval، DeviceProfile، تشغيل المحاكي المدمج، input/refresh/capture/inspect/stop، وانتقالات الحالة والأحداث. لا يوجد Electron shell أو SQLite native driver أو Metro أو Android/iOS runtime بعد.
+الطبقات الحالية هي Domain وApplication وInterface Adapters وInfrastructure، مع EmbeddedSimulatorController وProjectPreviewBundle/FixturePreviewRuntime وtyped IPC in-memory وSQLite schema contract. تدعم النواة فتح Workspace، إنشاء Session، Approval، DeviceProfile، بناء bundle من file map أو filesystem root، تحميل fixture runtime، input/refresh/capture/inspect/stop، وانتقالات الحالة والأحداث.
 
-## العمل النشط
+المحاكي المدمج جزء من Workspace إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console على مستوى prototype والعقود. Android Emulator وiOS Simulator transports اختيارية مستقبلية تغذي نفس اللوحة. الوضع الحالي compatibility/fixture mode ولا يساوي React Native native runtime أو Metro HMR حقيقيًا.
 
-اكتملت شريحة Embedded Simulator Foundation: Workspace prototype، controller، typed IPC، SQLite migration contract، SQLite validation، و11/11 tests. commit `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` مدفوع ومتحقق، والشجرة نظيفة.
+## التحقق الحالي
+
+نجح `pnpm check` مع typecheck و17 اختبارًا. الاختبارات تغطي controller lifecycle، typed IPC، mobile detection، preview adapter، bundle/runtime، blocked imports، path safety، filesystem scanner، وProjectPreviewService. لم تُشغّل مشاريع الهاتف أو package scripts تلقائيًا.
 
 ## العمل المتبقي
 
-المراحل التالية هي actual SQLite adapter/migrations/backup، typed Electron preload IPC، Project/File session integration، React/React Native Web renderer حقيقي داخل embedded panel، Metro/Fast Refresh، provider/agent runtime، terminal sandbox، mobile generator، Android doctor/ADB، iOS macOS adapter، visual tests، resource manager، security hardening، وrelease. controller والـ prototype هما foundation؛ لا يزال renderer الحقيقي وnative runtime غير منفذين.
+الخطوة التالية بعد الدفع هي Presentation renderer فعلي يستهلك `PreviewRenderNode` داخل لوحة المحاكي، ثم IPC لفتح مشروع filesystem من واجهة Workspace. بعد ذلك يأتي React Native Web/Metro adapter خلف نفس العقد، ثم actual SQLite adapter/migrations/backup، typed Electron preload IPC، provider/agent runtime، terminal sandbox، Android doctor/ADB adapter، iOS macOS-only adapter، visual tests، resource manager، security hardening، وrelease.
 
 ## المشكلات والمخاطر
 
-لا يوجد runtime UI أو native integration. Android يحتاج SDK/JDK/AVD/acceleration، وiOS Simulator يتطلب macOS/Xcode. OpenTo ما يزال غير موثق. `PROJECT_STATUS.md` القديم يذكر push 59c، ويجب تحديثه بعد المرحلة الحالية. dependencies الجديدة تحتاج license/SBOM audit بعد lockfile.
+لا يوجد Electron shell أو SQLite native driver أو Metro/React Native Web runtime أو Android/iOS toolchain بعد. Android يحتاج SDK/JDK/AVD/acceleration، وiOS Simulator يتطلب macOS/Xcode. OpenTo ما يزال `UNKNOWN / REQUIRES VALIDATION`. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا. dependencies الجديدة تحتاج license/SBOM audit بعد lockfile.
 
 ## قرارات مفتوحة
 
@@ -44,6 +43,6 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد هذه الشريحة، يبدأ commit مستقل واحد فقط: actual SQLite adapter أو React Native Web/Metro renderer. يجب أن يسبقه contract tests وadapter in-memory وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
+بعد إتمام commit/push والتحقق من hash، يبدأ commit مستقل واحد فقط لبناء Presentation renderer داخل Embedded Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8`. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد قبل الشريحة الحالية: `f388e8957e602b96c97968feed2c3f8ebf08df23`. إعداد: Manus AI.

@@ -5,6 +5,7 @@ import { MobileProjectDetector, PlatformCapabilityService } from "./application/
 test("detects an Expo project without executing project scripts", async () => {
   const detector = new MobileProjectDetector({
     async listRelativeFiles() { return ["package.json", "app.json", "metro.config.js", "src/App.tsx"]; },
+    async readText() { return undefined; },
     async readJson() { return { dependencies: { expo: "^53.0.0", "react-native-web": "^0.21.0" }, main: "expo-router/entry" }; },
   });
   const descriptor = await detector.detect("/workspace/mobile");
@@ -17,6 +18,7 @@ test("detects an Expo project without executing project scripts", async () => {
 test("detects bare React Native project and native folders", async () => {
   const detector = new MobileProjectDetector({
     async listRelativeFiles() { return ["package.json", "android", "ios", "src/App.tsx"]; },
+    async readText() { return undefined; },
     async readJson() { return { dependencies: { "react-native": "0.82.0" } }; },
   });
   const descriptor = await detector.detect("/workspace/rn");

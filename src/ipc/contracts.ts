@@ -2,6 +2,7 @@ import type { PreviewInput } from "../mobile/preview.js";
 import type { PreviewFrame, PreviewScreenshot } from "../mobile/preview.js";
 import type { DeviceProfile, PreviewSession } from "../domain/entities.js";
 import type { DeviceProfileId, PreviewSessionId } from "../domain/primitives.js";
+import type { ProjectPreviewBundle, PreviewRenderNode } from "../mobile/preview-runtime.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -9,6 +10,7 @@ export interface IpcMethodMap {
   "health.get": { payload: Record<string, never>; result: { status: "ok" | "degraded"; version: string } };
   "preview.start": { payload: { deviceProfileId: DeviceProfileId; mode?: PreviewSession["mode"] }; result: PreviewSession };
   "preview.input": { payload: { sessionId: PreviewSessionId; input: PreviewInput }; result: PreviewFrame };
+  "preview.refresh": { payload: { sessionId: PreviewSessionId; kind?: "fast" | "reload"; bundle?: ProjectPreviewBundle }; result: PreviewFrame };
   "preview.capture": { payload: { sessionId: PreviewSessionId }; result: PreviewScreenshot };
   "preview.inspect": { payload: { sessionId: PreviewSessionId }; result: PreviewInspection };
   "preview.stop": { payload: { sessionId: PreviewSessionId }; result: { stopped: true } };
@@ -40,6 +42,9 @@ export interface PreviewInspection {
   readonly mode: PreviewSession["mode"];
   readonly nativeFidelity: "compatibility" | "native";
   readonly warnings: readonly string[];
+  readonly diagnostics: readonly string[];
+  readonly events: readonly { type: string; message: string }[];
+  readonly bundle?: { projectId: string; entry: string; sourceHash: string; moduleCount: number; warningCount: number; renderTree?: PreviewRenderNode };
 }
 
 export const isIpcRequest = (value: unknown): value is IpcRequest => {

@@ -5,6 +5,9 @@ import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
 import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
 import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
+import { buildProjectPreviewBundle } from "./mobile/preview-runtime.js";
+import type { PreviewSession } from "./domain/entities.js";
+import type { PreviewInspection, IpcResponse } from "./ipc/contracts.js";
 
 const setup = () => {
   const { useCases } = createFoundation();
@@ -20,13 +23,21 @@ test("typed IPC starts and inspects embedded preview", async () => {
   const { profile, transport } = setup();
   const health = await transport.dispatch({ protocolVersion: 1, requestId: "health-1", correlationId: "c-1", method: "health.get", payload: {} });
   assert.equal(health.ok, true);
-  const started = await transport.dispatch({ protocolVersion: 1, requestId: "start-1", correlationId: "c-1", method: "preview.start", payload: { deviceProfileId: profile.id } });
+  const bundle = buildProjectPreviewBundle({ projectId: "ipc-fixture", rootPath: "/fixtures", entry: "app/index.tsx", files: {
+    "app/index.tsx": `import { Text } from "react-native"; export default function App() { return <Text>IPC content</Text>; }`,
+  } });
+  const started = await transport.dispatch({ protocolVersion: 1, requestId: "start-1", correlationId: "c-1", method: "preview.start", payload: { deviceProfileId: profile.id, bundle } } as const) as IpcResponse<PreviewSession>;
   assert.equal(started.ok, true);
   if (!started.ok) return;
   const sessionId = started.result.id;
-  const inspected = await transport.dispatch({ protocolVersion: 1, requestId: "inspect-1", correlationId: "c-1", method: "preview.inspect", payload: { sessionId } });
+  const inspected = await transport.dispatch({ protocolVersion: 1, requestId: "inspect-1", correlationId: "c-1", method: "preview.inspect", payload: { sessionId } } as const) as IpcResponse<PreviewInspection>;
   assert.equal(inspected.ok, true);
-  if (inspected.ok) assert.equal(inspected.result.nativeFidelity, "compatibility");
+  if (inspected.ok) {
+    assert.equal(inspected.result.nativeFidelity, "compatibility");
+    assert.equal(inspected.result.bundle?.sourceHash, bundle.sourceHash);
+  }
+  const refreshed = await transport.dispatch({ protocolVersion: 1, requestId: "refresh-1", correlationId: "c-1", method: "preview.refresh", payload: { sessionId, kind: "fast", bundle } } as const);
+  assert.equal(refreshed.ok, true);
 });
 
 test("typed IPC rejects malformed, unknown, and duplicate requests", async () => {
