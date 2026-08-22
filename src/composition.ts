@@ -44,6 +44,7 @@ import { InMemoryReportDocumentService } from "./application/report-document.js"
 import { InMemoryMarkdownExportService } from "./application/markdown-export.js";
 import { MarkdownDestinationService, type MarkdownDestinationPort } from "./application/markdown-destination.js";
 import { LocalMarkdownDestinationWriter } from "./infrastructure/markdown-destination.js";
+import { OpenCodeSdkProviderAdapter, type OpenCodeSdkProviderOptions } from "./infrastructure/opencode-sdk-provider.js";
 import { InMemoryApplicationSettings } from "./application/application-settings.js";
 import { InMemoryExternalAccountRegistry } from "./application/external-account-registry.js";
 import { createStorageSettingsSnapshot, StaticStorageSettings } from "./application/storage-settings.js";
@@ -72,6 +73,8 @@ export interface EmbeddedApplicationOptions {
   readonly providers?: readonly ProviderAdapter[];
   /** Execution policy is opt-in and applies only to explicitly configured provider IDs. */
   readonly providerConfigs?: readonly LocalProviderConfig[];
+  /** OpenCode SDK is opt-in; construction is inert and performs no health check or server startup. */
+  readonly openCode?: OpenCodeSdkProviderOptions;
   /** Markdown destination writes are opt-in and require an explicit safe root. */
   readonly markdownDestinationRoot?: string;
 }
@@ -140,10 +143,14 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
+  const configuredProviders: readonly ProviderAdapter[] = [
+    ...(options.providers ?? []),
+    ...(options.openCode ? [new OpenCodeSdkProviderAdapter(options.openCode)] : []),
+  ];
   const providerConfiguration = new BoundedProviderConfiguration({}, options.providerConfigs ?? []);
   const providerExecutionPolicy = new BoundedProviderExecutionPolicy(options.providerConfigs ?? []);
-  const providerDoctor = new LocalProviderDoctor(options.providers ?? [], () => Date.parse(foundation.dependencies.clock.now()));
-  const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, executionPolicy: providerExecutionPolicy, now: () => foundation.dependencies.clock.now() });
+  const providerDoctor = new LocalProviderDoctor(configuredProviders, () => Date.parse(foundation.dependencies.clock.now()));
+  const providerGateway = new ProviderGateway(configuredProviders, { audit: providerRouteAudit, executionPolicy: providerExecutionPolicy, now: () => foundation.dependencies.clock.now() });
   for (const manifest of providerGateway.listProviders()) {
     if (!isLocalProviderId(manifest.id) || providerConfiguration.get(manifest.id)) continue;
     providerExecutionPolicy.configure(defaultLocalProviderConfig(manifest.id, manifest.models[0]?.id ?? "unconfigured-model"));

@@ -19,5 +19,8 @@
     "electron": "43.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@opencode-ai/sdk": "1.18.21"
   }
 }

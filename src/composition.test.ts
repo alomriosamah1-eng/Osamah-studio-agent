@@ -43,6 +43,26 @@ test("composition registers explicitly provided local providers without probing 
   }
 });
 
+test("composition registers the OpenCode SDK provider only when opted in and does not probe at startup", () => {
+  let fetchCalls = 0;
+  const application = createEmbeddedApplication({
+    openCode: {
+      baseUrl: "http://127.0.0.1:4096",
+      modelId: "local-model",
+      fetchImpl: async () => {
+        fetchCalls += 1;
+        return new Response(JSON.stringify({ healthy: true }), { status: 200 });
+      },
+    },
+  });
+  try {
+    assert.deepEqual(application.providerGateway.listProviders().map((manifest) => manifest.id), ["opencode"]);
+    assert.equal(fetchCalls, 0);
+  } finally {
+    application.close();
+  }
+});
+
 test("composition routes a plan-less WorkCycle through the selected local provider and stops at Human Gate", async () => {
   const root = await mkdtemp(join(tmpdir(), "osamah-composition-provider-planner-"));
   const sourcePath = join(root, "app.ts");
