@@ -6,6 +6,7 @@ import type { ProjectPreviewBundle, PreviewRenderNode } from "../mobile/preview-
 import type { AgentPlan, PatchProposal, WorkCycleResult, WorkCycleSnapshot } from "../application/agent-work-cycle.js";
 import type { ProjectContextSnapshot } from "../application/project-context.js";
 import type { ProjectTreeResult, WorkspaceFileContent } from "../application/project-explorer.js";
+import type { DocumentSnapshot, EditProposal } from "../application/editor-document.js";
 import type { ApprovalTicket } from "../application/agent-contracts.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 
@@ -49,6 +50,8 @@ export interface IpcMethodMap {
   "context.index": { payload: { rootPath: string }; result: ProjectContextSnapshot };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
+  "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
+  "editor.propose": { payload: { rootPath: string; relativePath: string; content: string; expectedSha256: string }; result: EditProposal };
   "workCycle.start": {
     payload: {
       cycleId: string;
@@ -165,6 +168,12 @@ const isWorkCycleStartPayload = (value: unknown): boolean => {
 
 const isProjectTreePayload = (value: unknown): boolean => isRecord(value) && isString(value.rootPath, 4096);
 const isFileOpenTextPayload = (value: unknown): boolean => isRecord(value) && isString(value.rootPath, 4096) && isString(value.relativePath, 512);
+const isEditorOpenPayload = isFileOpenTextPayload;
+const isEditorProposePayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.rootPath, 4096)
+  && isString(value.relativePath, 512)
+  && typeof value.content === "string" && value.content.length <= 1_500_000 && !value.content.includes("\u0000")
+  && typeof value.expectedSha256 === "string" && /^[a-f0-9]{64}$/i.test(value.expectedSha256);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -190,6 +199,8 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "context.index") return isString(payload.rootPath, 4096);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
+  if (method === "editor.open") return isEditorOpenPayload(payload);
+  if (method === "editor.propose") return isEditorProposePayload(payload);
   if (method === "workCycle.start") return isWorkCycleStartPayload(payload);
   if (method === "workCycle.inspect" || method === "workCycle.cancel") return isWorkCycleIdPayload(payload);
   if (method === "approval.listPending") return isApprovalListPayload(payload);

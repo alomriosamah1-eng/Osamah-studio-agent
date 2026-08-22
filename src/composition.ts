@@ -27,6 +27,7 @@ import type { ProviderListItem } from "./ipc/contracts.js";
 import { FilesystemProjectPreviewService } from "./application/project-preview-service.js";
 import { FilesystemProjectScanner } from "./infrastructure/filesystem-project-scanner.js";
 import { FilesystemProjectExplorer, FilesystemWorkspaceFileReader } from "./infrastructure/filesystem-project-explorer.js";
+import { InMemoryEditorDocumentStore } from "./infrastructure/in-memory-editor-document.js";
 import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
 import { LocalProviderDoctor } from "./infrastructure/local-provider-doctor.js";
 
@@ -163,6 +164,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const projectContextIndex = new FilesystemProjectContextIndex(scanner, new GitStatusAdapter(), resourcePolicy, () => foundation.dependencies.clock.now());
   const projectExplorer = new FilesystemProjectExplorer(resourcePolicy);
   const workspaceFileReader = new FilesystemWorkspaceFileReader(resourcePolicy);
+  const editorDocuments = new InMemoryEditorDocumentStore(workspaceFileReader, resourcePolicy, { nextProposalId: () => foundation.dependencies.ids.next("editor-proposal") });
   const checkpointStore = new InMemoryCheckpointStore();
   const projectPatchAdapter = new FilesystemPatchAdapter(resourcePolicy);
   const plannerCritic = new ProviderBackedPlannerCritic(new LlmPlanner({
@@ -187,7 +189,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, explorer: projectExplorer, fileReader: workspaceFileReader, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -204,6 +206,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     projectContextIndex,
     projectExplorer,
     workspaceFileReader,
+    editorDocuments,
     checkpointStore,
     projectPatchAdapter,
     agentWorkCycle,

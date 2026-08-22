@@ -19,25 +19,34 @@
   let currentRelativePath = 'app/index.tsx';
   let currentRoot = '';
   let loadedFileContent;
+  let currentDocument;
   const $ = (id) => document.getElementById(id);
 
   const renderCode = () => {
-    const sourceLines = loadedFileContent === undefined ? (codeByFile[currentFile] || ['// file preview unavailable']) : loadedFileContent.split('\n');
-    const code = $('code');
-    code.replaceChildren();
-    sourceLines.forEach((line, index) => {
-      const codeLine = document.createElement('span');
-      codeLine.className = 'code-line';
-      const lineNumber = document.createElement('span');
-      lineNumber.className = 'ln';
-      lineNumber.textContent = String(index + 1).padStart(2, ' ');
-      const text = document.createElement('span');
-      text.textContent = line;
-      codeLine.append(lineNumber, text);
-      code.append(codeLine);
-    });
+    const source = loadedFileContent === undefined ? (codeByFile[currentFile] || ['// file preview unavailable']).join('\n') : loadedFileContent;
+    const editor = $('editorBuffer');
+    editor.value = source;
     $('path').textContent = currentRelativePath || `app/${currentFile}`;
-    $('tabName').replaceChildren(document.createTextNode(currentFile), Object.assign(document.createElement('small'), { textContent: loadedFileContent === undefined ? ' · fixture' : ' · loaded' }));
+    $('editorMeta').textContent = currentDocument?.sha256 ? `revision ${currentDocument.revision} · ${currentDocument.bytes} bytes` : 'fixture buffer · no mutation';
+    $('editorState').textContent = currentDocument?.sha256 ? 'loaded · proposal only' : 'fixture / read-only host';
+    $('tabName').replaceChildren(document.createTextNode(currentFile), Object.assign(document.createElement('small'), { textContent: currentDocument?.sha256 ? ' · loaded' : ' · fixture' }));
+  };
+
+  const renderDiff = (proposal) => {
+    const container = $('diffPreview');
+    container.replaceChildren();
+    proposal.diff.forEach((line) => {
+      const element = document.createElement('span');
+      element.className = `diff-line ${line.kind}`;
+      element.textContent = `${line.kind === 'add' ? '+' : line.kind === 'remove' ? '-' : ' '} ${line.text}`;
+      container.append(element);
+    });
+    if (proposal.diffTruncated) {
+      const warning = document.createElement('div');
+      warning.className = 'diff-line remove';
+      warning.textContent = '… diff output bounded; proposal is not shown as complete.';
+      container.append(warning);
+    }
   };
 
   const renderProjectTree = (treeResult) => {
@@ -90,6 +99,7 @@
     currentRelativePath = relativePath;
     currentFile = relativePath.split('/').at(-1) || relativePath;
     loadedFileContent = undefined;
+    currentDocument = undefined;
     if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
       renderProjectTree({ root: { name: 'Project', relativePath: '', kind: 'directory', children: [] }, fileCount: 0, truncated: false, warnings: [] });
       renderFallbackProjectTree();
@@ -100,9 +110,9 @@
     }
     const response = await window.osamah.dispatch({
       protocolVersion: 1,
-      requestId: nextRequest('file-open'),
-      correlationId: nextRequest('file-open-correlation'),
-      method: 'file.openText',
+      requestId: nextRequest('editor-open'),
+      correlationId: nextRequest('editor-open-correlation'),
+      method: 'editor.open',
       payload: { rootPath: currentRoot, relativePath },
     });
     if (!response.ok) {
@@ -115,6 +125,7 @@
       renderCode();
       return;
     }
+    currentDocument = response.result;
     loadedFileContent = response.result.content;
     renderCode();
     renderPreview();
@@ -417,6 +428,36 @@
     log(`provider.doctor ${providerId} ${report?.status || 'empty'}`, report?.status === 'healthy' ? 'ok' : 'warn');
   };
 
+  const proposeEditorDiff = async () => {
+    const content = $('editorBuffer').value;
+    if (!currentRoot || !currentDocument) {
+      $('editorState').textContent = 'fixture / no mutation';
+      $('diffPreview').textContent = 'Open a project file in Electron before proposing a diff.';
+      log('editor.propose_unavailable', 'warn');
+      return;
+    }
+    const response = await window.osamah?.dispatch?.({
+      protocolVersion: 1,
+      requestId: nextRequest('editor-propose'),
+      correlationId: nextRequest('editor-propose-correlation'),
+      method: 'editor.propose',
+      payload: { rootPath: currentRoot, relativePath: currentDocument.relativePath, content, expectedSha256: currentDocument.sha256 },
+    });
+    if (!response) {
+      log('editor.propose_unavailable', 'warn');
+      return;
+    }
+    if (!response.ok) {
+      $('editorState').textContent = response.error.code === 'DOMAIN_ERROR' ? 'conflict / reload required' : 'proposal rejected';
+      log(`editor.propose_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderDiff(response.result);
+    $('editorState').textContent = response.result.diffTruncated ? 'diff bounded / review incomplete' : 'diff ready / no mutation';
+    $('rightStatus').textContent = `Diff ready: ${currentDocument.relativePath}`;
+    log(`editor.diff_ready ${currentDocument.relativePath} · ${response.result.bytes} bytes`, 'ok');
+  };
+
   const chooseProjectRoot = async () => {
     const button = $('openProject');
     if (!window.osamah?.chooseProjectRoot) {
@@ -453,6 +494,10 @@
   };
 
   $('openProject').onclick = () => { void chooseProjectRoot(); };
+  $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
+  $('editorBuffer').addEventListener('input', () => {
+    if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
+  });
   renderFallbackProjectTree();
   $('deviceSelect').onchange = (event) => { selected = profiles[event.target.value]; renderProfile(); log(`device.selected ${selected.name}`); };
   $('rotate').onclick = () => { orientation = orientation === 'portrait' ? 'landscape' : 'portrait'; renderProfile(); log(`orientation.changed ${orientation}`); };
@@ -491,6 +536,22 @@
       method: 'file.openText',
       payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx' },
     });
+    const editorOpenResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-editor-open',
+      correlationId: 'desktop-smoke-editor',
+      method: 'editor.open',
+      payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx' },
+    });
+    const editorProposeResponse = editorOpenResponse.ok && editorOpenResponse.result
+      ? await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: 'desktop-smoke-editor-propose',
+        correlationId: 'desktop-smoke-editor',
+        method: 'editor.propose',
+        payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx', content: `${editorOpenResponse.result.content}\n// desktop smoke proposal\n`, expectedSha256: editorOpenResponse.result.sha256 },
+      })
+      : { ok: false };
     const cycleResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-cycle-start',
@@ -585,7 +646,8 @@
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
     const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
     const explorerPassed = projectTreeResponse.ok && projectTreeResponse.result.fileCount > 0 && projectFileResponse.ok && projectFileResponse.result?.relativePath === 'app/index.tsx' && projectFileResponse.result.content.includes('react-native');
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const editorPassed = editorOpenResponse.ok && Boolean(editorOpenResponse.result?.sha256) && editorProposeResponse.ok && editorProposeResponse.result?.diffTruncated === false;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && editorPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

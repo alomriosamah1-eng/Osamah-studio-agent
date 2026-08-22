@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Safe Editor Document Boundary وDiff Preview
+
+### Added
+
+- `EditorDocumentPort` و`DocumentSnapshot` و`EditProposal` و`DiffLine` لعزل buffer المحرر وdiff عن Electron وfilesystem mutation.
+- `InMemoryEditorDocumentStore` فوق safe reader مع revision وSHA-256 وstale-source conflict وbounded diff.
+- typed IPC methods `editor.open` و`editor.propose` مع path/content/hash validators وhandlers وcomposition wiring.
+- Workspace lightweight textarea buffer وPropose diff panel؛ التعديل يبقى في الذاكرة ولا توجد `editor.save` أو `apply` في هذه الشريحة.
+- Electron smoke للتحقق من editor open/propose وno-mutation إلى جانب Project Explorer وHuman Gate.
+- توثيق الشريحة في `docs/65-safe-editor-document-boundary.md`.
+
+### Verified
+
+- `pnpm check`: `117/117` اختبارًا ناجحًا.
+- deterministic diff وline metadata وdiff cap وstale-hash conflict وpath/NUL/size guards: PASS.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+
+### Boundaries
+
+- لا توجد بعد `editor.save` أو patch apply أو Monaco أو LSP أو terminal worker أو Git write؛ كل mutation ما يزال خلف WorkCycle وHuman Gate.
+
 ## [Unreleased] — Development Environment: Project Explorer وBounded File Reader
 
 ### Added

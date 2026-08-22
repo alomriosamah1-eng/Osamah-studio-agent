@@ -16,6 +16,7 @@ import type { PreviewSession } from "./domain/entities.js";
 import { isIpcEvent } from "./ipc/contracts.js";
 import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from "./ipc/contracts.js";
 import type { ProjectTreeResult, WorkspaceFileContent } from "./application/project-explorer.js";
+import type { DocumentSnapshot, EditProposal } from "./application/editor-document.js";
 import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
@@ -109,6 +110,34 @@ test("typed IPC lists a bounded project tree and opens text through the safe rea
     assert.equal(traversal.ok, false);
     const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "file-malformed-1", correlationId: "explorer-1", method: "file.openText", payload: { rootPath: root, relativePath: "" } } as const);
     assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("typed IPC opens and proposes editor documents without mutating the filesystem", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-ipc-editor-"));
+  const app = createEmbeddedApplication();
+  try {
+    await writeFile(join(root, "app.ts"), "const value = 1;\n");
+    const opened = await app.ipc.dispatch({ protocolVersion: 1, requestId: "editor-open-1", correlationId: "editor-1", method: "editor.open", payload: { rootPath: root, relativePath: "app.ts" } } as const) as IpcResponse<DocumentSnapshot | undefined>;
+    assert.equal(opened.ok, true);
+    if (!opened.ok || opened.result === undefined) return;
+    assert.equal(opened.result.content, "const value = 1;\n");
+    assert.equal(opened.result.revision, 1);
+    const proposed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "editor-propose-1", correlationId: "editor-1", method: "editor.propose", payload: { rootPath: root, relativePath: "app.ts", content: "const value = 2;\n", expectedSha256: opened.result.sha256 } } as const) as IpcResponse<EditProposal>;
+    assert.equal(proposed.ok, true);
+    if (proposed.ok) {
+      assert.equal(proposed.result.before, "const value = 1;\n");
+      assert.equal(proposed.result.after, "const value = 2;\n");
+      assert.equal(proposed.result.diffTruncated, false);
+    }
+    assert.equal(await readFile(join(root, "app.ts"), "utf8"), "const value = 1;\n");
+    const stale = await app.ipc.dispatch({ protocolVersion: 1, requestId: "editor-stale-1", correlationId: "editor-1", method: "editor.propose", payload: { rootPath: root, relativePath: "app.ts", content: "const value = 3;\n", expectedSha256: "0".repeat(64) } } as const);
+    assert.equal(stale.ok, false);
+    const invalid = await app.ipc.dispatch({ protocolVersion: 1, requestId: "editor-invalid-1", correlationId: "editor-1", method: "editor.propose", payload: { rootPath: root, relativePath: "app.ts", content: "bad\u0000content", expectedSha256: opened.result.sha256 } } as const);
+    assert.equal(invalid.ok, false);
   } finally {
     app.close();
     await rm(root, { recursive: true, force: true });
