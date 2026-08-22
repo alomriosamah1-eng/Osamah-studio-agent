@@ -45,6 +45,7 @@ import { InMemoryMarkdownExportService } from "./application/markdown-export.js"
 import { MarkdownDestinationService, type MarkdownDestinationPort } from "./application/markdown-destination.js";
 import { LocalMarkdownDestinationWriter } from "./infrastructure/markdown-destination.js";
 import { OpenCodeSdkProviderAdapter, type OpenCodeSdkProviderOptions } from "./infrastructure/opencode-sdk-provider.js";
+import { HermesAcpProviderAdapter, type HermesAcpProviderOptions } from "./infrastructure/hermes-acp-provider.js";
 import { InMemoryApplicationSettings } from "./application/application-settings.js";
 import { InMemoryExternalAccountRegistry } from "./application/external-account-registry.js";
 import { createStorageSettingsSnapshot, StaticStorageSettings } from "./application/storage-settings.js";
@@ -75,6 +76,8 @@ export interface EmbeddedApplicationOptions {
   readonly providerConfigs?: readonly LocalProviderConfig[];
   /** OpenCode SDK is opt-in; construction is inert and performs no health check or server startup. */
   readonly openCode?: OpenCodeSdkProviderOptions;
+  /** Hermes ACP is opt-in; construction never starts Python or probes a worker. */
+  readonly hermes?: HermesAcpProviderOptions;
   /** Markdown destination writes are opt-in and require an explicit safe root. */
   readonly markdownDestinationRoot?: string;
 }
@@ -143,9 +146,11 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
+  const hermesAdapter = options.hermes ? new HermesAcpProviderAdapter(options.hermes) : undefined;
   const configuredProviders: readonly ProviderAdapter[] = [
     ...(options.providers ?? []),
     ...(options.openCode ? [new OpenCodeSdkProviderAdapter(options.openCode)] : []),
+    ...(hermesAdapter ? [hermesAdapter] : []),
   ];
   const providerConfiguration = new BoundedProviderConfiguration({}, options.providerConfigs ?? []);
   const providerExecutionPolicy = new BoundedProviderExecutionPolicy(options.providerConfigs ?? []);
@@ -246,6 +251,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     closed = true;
     persistence.sqlite?.database.close();
     persistence.profileLock?.release();
+    hermesAdapter?.close().catch(() => undefined);
   };
   return {
     ...foundation,

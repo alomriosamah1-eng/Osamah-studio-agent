@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -58,6 +59,21 @@ test("composition registers the OpenCode SDK provider only when opted in and doe
   try {
     assert.deepEqual(application.providerGateway.listProviders().map((manifest) => manifest.id), ["opencode"]);
     assert.equal(fetchCalls, 0);
+  } finally {
+    application.close();
+  }
+});
+
+test("composition registers Hermes ACP only when opted in and does not spawn at startup", () => {
+  let spawnCalls = 0;
+  const spawnImpl = ((..._args: never[]) => {
+    spawnCalls += 1;
+    throw new Error("Hermes worker must not spawn during composition.");
+  }) as unknown as typeof spawn;
+  const application = createEmbeddedApplication({ hermes: { workspaceRoot: process.cwd(), spawnImpl } });
+  try {
+    assert.deepEqual(application.providerGateway.listProviders().map((manifest) => manifest.id), ["hermes"]);
+    assert.equal(spawnCalls, 0);
   } finally {
     application.close();
   }
