@@ -1,6 +1,6 @@
 # Second Brain: Memory Capture وKnowledge Entry Review
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ هذه الشريحة تضيف التقاط معرفة محليًا ومراجعة entry bounded، ولا تبني embeddings أو FTS أو مزامنة network أو autosave من renderer.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `39bd89c7f4242abab76fd624045b493b72e48088`؛ docs-close مستقل ويحدّث summaries فقط. تضيف الشريحة التقاط معرفة محليًا ومراجعة entry bounded، ولا تبني embeddings أو FTS أو مزامنة network أو autosave من renderer.
 
 ## الغرض
 

@@ -1,5 +1,28 @@
 # سجل التغييرات
 
+## [Unreleased] — Second Brain: Memory Capture وKnowledge Entry Review
+
+### Added
+
+- `MemoryCapturePort` و`InMemoryMemoryCapture` لتسجيل `MemoryEntry` محليًا bounded مع state ابتدائية `review_required`.
+- privacy defaults واضحة: `visibility=private` و`providerAccess=never` و`retention=session`، مع عدم إرسال entries إلى provider أو embeddings أو network.
+- redaction للنصوص الحساسة، وsource provenance validation، ورفض absolute/traversal IDs والـduplicate tags/references، وبحث نصي محلي محدود.
+- typed IPC methods `brain.memory.capture` و`brain.memory.get` و`brain.memory.list` و`brain.memory.searchLocal` مع validators fail-closed، ورفض حقول `embed` و`persist` و`send` و`execute`.
+- Workspace Second Brain panel لالتقاط entry ومراجعة metadata والمحتوى والـprovenance والتحذيرات والبحث المحلي باستخدام DOM آمن.
+- اختبارات Application وIPC وElectron smoke تثبت redaction والحدود وعدم provider access وعدم إنشاء approval ticket أو تعديل filesystem.
+- توثيق القرار في `docs/74-second-brain-memory-capture.md`.
+
+### Verified
+
+- `pnpm check`: `165/165` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ memory capture/search وreview_required/no-provider PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- هذه الشريحة in-memory وreview-only؛ لا SQLite persistence أو FTS/vector embeddings أو semantic retrieval أو consolidation أو provider sharing أو confirmation/delete الدائم.
+- `MemoryEntry` وprovenance لا يحولان citation إلى FACT؛ confirmation البشري شريحة لاحقة مستقلة.
+
 ## [Unreleased] — Production Studio: Render Job Policy وValidation Preview
 
 ### Added
