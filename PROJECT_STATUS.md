@@ -9,11 +9,11 @@
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
 | أحدث baseline مدفوع قبل الشريحة | `f388e8957e602b96c97968feed2c3f8ebf08df23` |
 | commit الشريحة المحلي | `cc4a35d3f621e5ab6f79e386cc9a1760e970f063` |
-| حالة الشجرة | feature commit منشأ؛ docs finalization ثم push والتحقق متبقيان |
+| حالة الشجرة | feature delivery pushed؛ docs state finalization محلية ثم push أخير متبقٍ |
 | الإصدار المحلي | `0.3.0-project-preview-runtime` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `17/17` اختبارًا ناجحًا |
-| SQLite migration | `SQLITE_MIGRATION_VALID=true` متوقع بعد تشغيل validator النهائي |
+| SQLite migration | `SQLITE_MIGRATION_VALID=true`؛ 7 tables و10 indexes |
 | Project Preview | bundle builder + fixture runtime + controller + typed IPC + filesystem scanner/service |
 | Embedded Simulator | جزء من Workspace إلى جانب file tree/editor/Inspector/Console على مستوى العقود والprototype |
 | Android native | adapter مخطط، يحتاج SDK/JDK/AVD/acceleration |
@@ -49,6 +49,6 @@
 
 ## الإجراء التالي
 
-بعد docs finalization ودفع الشريحة والتحقق من تطابق `git rev-parse HEAD` مع `git ls-remote origin refs/heads/main`، يبدأ commit مستقل لبناء Presentation renderer يستهلك `PreviewRenderNode` داخل لوحة المحاكي. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
+بعد إغلاق docs state النهائي والتحقق من تطابق `git rev-parse HEAD` مع GitHub، يبدأ commit مستقل لبناء Presentation renderer يستهلك `PreviewRenderNode` داخل لوحة المحاكي. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. إعداد: Manus AI.
