@@ -1,6 +1,6 @@
 # Production Studio: Artifact Assembly وManifest Review
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ هذه الشريحة تنشئ draft assembly وmanifest في الذاكرة فقط، ولا تنفذ render أو export أو كتابة ملفات.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `5244ed3e3b237a98e16f92aeec7453c1195b356d`؛ docs-close مستقل ويحدّث summaries فقط. تنشئ الشريحة draft assembly وmanifest في الذاكرة فقط، ولا تنفذ render أو export أو كتابة ملفات.
 
 ## الغرض
 

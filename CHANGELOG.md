@@ -1,5 +1,28 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Studio: Artifact Assembly وManifest Review
+
+### Added
+
+- `ArtifactAssemblyPort` و`InMemoryArtifactAssembly` لبناء draft assembly bounded من `ContentPlan` و`CreativeBrief` و`AssetCatalog`.
+- `ArtifactManifest` يجمع claim/source/asset IDs بصورة deterministic، ويثبت `tools: []` لأن render/converter لم يُستدعَ.
+- completeness guards لحالات `ready_for_render` و`needs_review` و`blocked`، مع منع claims غير المدعومة، citations المفقودة/غير الصالحة، والأصول المحظورة.
+- typed IPC methods `production.artifact.draft.create` و`production.artifact.draft.get` وvalidators ترفض القوائم المكررة والـpayloads غير الصالحة.
+- Workspace Artifact Review panel لعرض manifest وحالة المراجعة دون render أو export أو كتابة ملفات.
+- اختبارات Application وIPC وElectron smoke تثبت deterministic manifest وblocked unresolved claims وno-network/no-converter/no-mutation وبقاء Human Gate بلا تذكرة جديدة.
+- توثيق القرار في `docs/72-production-artifact-assembly-manifest.md`.
+
+### Verified
+
+- `pnpm check`: `155/155` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ Artifact Review وmanifest tools=0 PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- Artifact Assembly حاليًا in-memory وreview-only؛ لا render worker أو converter أو FFmpeg/ComfyUI أو object store أو signed manifest أو export.
+- `ready_for_render` تعني اكتمال شروط المراجعة المحلية فقط، ولا تعني نجاح render أو صلاحية النشر أو تحقق حقوق الملكية.
+
 ## [Unreleased] — Production Studio: Asset Catalog وCreative Brief
 
 ### Added
