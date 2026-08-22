@@ -89,10 +89,10 @@
 | Provider وApproval Contracts + ProviderGateway | default-deny، guarded queue، approval matching، route capability/privacy/offline/local-first، fallback bounded، malformed-output validation، وmutation idempotency؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
 | Agent Work Cycle + Project Context Index | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety؛ delivery `fb5d93ec87939125373dd8c450d1195af50fc911`، local == `origin/main` |
 | Typed Agent WorkCycle IPC | context index وstart/resume/inspect/cancel وmalformed payload validation وduplicate protection؛ delivery `786ea0b888634742936f546431c4d1e7251495e0`، local == `origin/main` |
-| ApprovalStore وhydration | schema 004 وfull ticket round-trip وpending hydration وduplicate prevention وdecision persistence بعد restart؛ delivery pending commit |
+| ApprovalStore وhydration | schema 004 وfull ticket round-trip وpending hydration وduplicate prevention وdecision persistence بعد restart؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | Persistent Audit وHuman Gate | schema 003 وSqliteAuditTrail وredaction/restart وpending/decide fail-closed؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
 
-تم التحقق من `pnpm check` بـ78/78، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وcomposition opt-in/restart/fallback وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ شريحة Approval hydration قيد commit/push التوثيقي.
+تم التحقق من `pnpm check` بـ78/78، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وcomposition opt-in/restart/fallback وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. آخر delivery هو `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ local SHA مطابق لـ`origin/main`.
  شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
@@ -113,4 +113,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true`.
+إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ `GITHUB_PUSH_VERIFIED=true`.

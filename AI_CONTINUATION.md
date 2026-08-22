@@ -6,11 +6,11 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration الحالية قيد الإغلاق.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`78/78` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart؛ schema 004 وredaction/restart وpending/decide contracts ناجحة، والشريحة الحالية قيد commit/push.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`78/78` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart؛ schema 004 وredaction/restart وpending/decide contracts ناجحة، والشريحة مدفوعة ومتحقق منها.
 
-validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `4`، schema version `004`، 12 جدولًا و24 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail وApprovalStore restart/redaction وHuman Gate fail-closed. full gate ناجح لشريحة hydration؛ commit/push النهائيان ما زالا مطلوبين.
+validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `4`، schema version `004`، 12 جدولًا و24 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail وApprovalStore restart/redaction وHuman Gate fail-closed. full gate وGitHub push verification ناجحان؛ `local_sha == remote_sha`.
 
 ## المعمارية
 
@@ -53,7 +53,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ شريحة ApprovalStore وhydration قيد commit/push بعد full gate الناجح.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ `GITHUB_PUSH_VERIFIED=true` مثبت.
 
 ## ما يزال مؤجلًا
 
@@ -63,11 +63,11 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-بعد إغلاق ApprovalStore وhydration الحاليين، تُنفذ Human Gate UI وevent streaming وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
+بعد إغلاق ApprovalStore وhydration، تُنفذ Human Gate UI وevent streaming وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ ApprovalStore وhydration قيد commit/push.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ `GITHUB_PUSH_VERIFIED=true`.

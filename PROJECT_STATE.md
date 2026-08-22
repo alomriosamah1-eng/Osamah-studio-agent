@@ -6,7 +6,7 @@
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
 | المرحلة | Approval hydration بعد Persistent Audit وHuman Gate |
-| الحالة | ApprovalStore وhydration بعد restart منفذان محليًا وقيد commit/push؛ الخطوة التالية Human Gate UI |
+| الحالة | ApprovalStore وhydration بعد restart منفذان ومدفوعان ومتحقق منهما على `origin/main`؛ الخطوة التالية Human Gate UI |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -15,7 +15,7 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | `pnpm check` ناجح، `78/78` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push |
+| آخر فحص | `pnpm check` ناجح، `78/78` اختبارًا؛ full gate وGitHub verification ناجحتان في 2026-08-22 |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
@@ -69,7 +69,7 @@
 | agent work cycle | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety PASS؛ delivery `fb5d93ec87939125373dd8c450d1195af50fc911`، local == `origin/main` |
 | typed workcycle IPC | context index وstart/resume/inspect/cancel وmalformed payload validation وduplicate protection PASS؛ delivery `786ea0b888634742936f546431c4d1e7251495e0`، local == `origin/main` |
 | persistent audit/Human Gate | schema 003 وSqliteAuditTrail وscope/reason redaction وrestart وpending/decide fail-closed PASS؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
-| approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery pending commit |
+| approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
 | event bus وobservability | persistence وrecursive redaction وbounded listing ناجحة |
@@ -91,4 +91,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ approval hydration قيد commit/push.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ approval hydration مدفوع ومتحقق منه.
