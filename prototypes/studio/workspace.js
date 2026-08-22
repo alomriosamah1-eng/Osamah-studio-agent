@@ -238,7 +238,7 @@
         goal: 'Request approval without applying a patch.',
         constraints: ['Do not execute scripts.'],
         targetedPaths: ['app/index.tsx'],
-        plan: { summary: 'Request approval.', steps: [] },
+        plan: { summary: 'Request approval.', steps: [{ id: 'inspect', title: 'Inspect', description: 'Review the selected file before approval.' }] },
         patch: { proposalId: 'desktop-smoke-patch', operations: [{ relativePath: 'app/index.tsx', mode: 'update', content: '// desktop smoke only\\n' }] },
       },
     });

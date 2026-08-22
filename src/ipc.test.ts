@@ -156,7 +156,7 @@ test("typed IPC can cancel a waiting work cycle before approval", async () => {
     await writeFile(join(root, "src", "example.ts"), "export const value = 1;\n");
     const waiting = await app.ipc.dispatch({ protocolVersion: 1, requestId: "cancel-start-1", correlationId: "ipc-cancel", method: "workCycle.start", payload: {
       cycleId: "ipc-cancel-1", sessionId: "ipc-session-1", rootPath: root, goal: "Cancel this patch", constraints: [], targetedPaths: ["src/example.ts"],
-      plan: { summary: "Cancel this patch", steps: [] }, patch: { proposalId: "ipc-cancel-patch", operations: [{ relativePath: "src/example.ts", mode: "update" as const, content: "cancelled\n" }] },
+      plan: { summary: "Cancel this patch", steps: [{ id: "inspect", title: "Inspect", description: "Review the selected file before approval." }] }, patch: { proposalId: "ipc-cancel-patch", operations: [{ relativePath: "src/example.ts", mode: "update" as const, content: "cancelled\n" }] },
     } } as const) as IpcResponse<WorkCycleResult>;
     assert.equal(waiting.ok, true);
     const cancelled = await app.ipc.dispatch({ protocolVersion: 1, requestId: "cancel-1", correlationId: "ipc-cancel", method: "workCycle.cancel", payload: { cycleId: "ipc-cancel-1" } } as const);

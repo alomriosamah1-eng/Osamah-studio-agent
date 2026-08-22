@@ -1,5 +1,24 @@
 # سجل التغييرات
 
+## [Unreleased] — Planner وCritic Contracts
+
+### Added
+
+- `PlannerRequest` و`PlannerPort` و`CriticPort` و`PlannerCriticPort` لعزل تحويل intent والسياق عن التنفيذ.
+- `DeterministicPlanner` و`BoundedPlanCritic` و`assertPlanAccepted` بخطوات مراجعة bounded وblocking/warning issues.
+- ربط `AgentWorkCycleService` بمراجعة الخطة بعد targeted read وقبل patch preview أو إنشاء approval، مع رفض unsafe paths وduplicate steps وbyte mismatches fail-closed.
+- توثيق التنفيذ في `docs/59-planner-critic-contracts.md` واختبارات integration تمنع mutation عند رفض Critic.
+
+### Verified
+
+- `pnpm check`: `86/86` اختبارًا ناجحًا.
+- Desktop IPC smoke وWorkCycle approval flow بعد تحديث fixture بخطة صالحة: PASS.
+- Planner/Critic bounded validation وfail-closed filesystem guard: PASS.
+
+### Boundaries
+
+- لا يوجد بعد LLM planner أو provider adapter أو تخطيط متعدد الدورات أو persistence مستقلة للخطة؛ أي provider لاحق يمر عبر ProviderGateway ثم Critic وHuman Gate.
+
 ## [Unreleased] — Persistent Audit وHuman Gate
 
 ### Added
@@ -19,7 +38,7 @@
 
 ### Verified
 
-- `pnpm check`: `81/81` اختبارًا ناجحًا.
+- `pnpm check`: `86/86` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
 - approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.
@@ -27,7 +46,7 @@
 
 ### Boundaries
 
-- multi-user identity وRBAC والتشفير وsigned/tamper-evident export ما زالت مؤجلة. Human Gate UI وapproval event streaming وapproval ticket hydration وAudit Export وRetention Policy أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
+- multi-user identity وRBAC والتشفير وsigned/tamper-evident export ما زالت مؤجلة. Planner/Critic وHuman Gate UI وapproval event streaming وapproval ticket hydration وAudit Export وRetention Policy أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
 
 ## [Unreleased] — Typed Agent WorkCycle IPC Boundary
 

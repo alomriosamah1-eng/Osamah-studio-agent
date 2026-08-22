@@ -6,9 +6,9 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming أُغلقت عند `0b5acbf136d168fb43312379f44846c1075c802f` مع تطابق local وremote SHA. شريحة Audit Export وRetention Policy منفذة محليًا وقيد commit/push.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming أُغلقت عند `0b5acbf136d168fb43312379f44846c1075c802f` مع تطابق local وremote SHA. شريحة Audit Export وRetention Policy منفذة محليًا وقيد commit/push. شريحة Planner/Critic منفذة ومربوطة بـWorkCycle وقيد commit/push.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`81/81` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart، ثم `IpcEvent` وpreload subscribe وWorkspace Human Gate panel، ثم `AuditExportProvider` و`BoundedAuditRetentionPolicy`؛ schema 004 وredaction/restart وpending/decide وapproval.changed وNDJSON/manifest/retention contracts ناجحة.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`86/86` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart، ثم `IpcEvent` وpreload subscribe وWorkspace Human Gate panel، ثم `AuditExportProvider` و`BoundedAuditRetentionPolicy`، ثم `PlannerPort` و`CriticPort` وربطهما بـWorkCycle؛ schema 004 وredaction/restart وpending/decide وapproval.changed وNDJSON/manifest/retention وplanner/critic contracts ناجحة.
 
 validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `4`، schema version `004`، 12 جدولًا و24 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail وApprovalStore restart/redaction وHuman Gate fail-closed. full gate وGitHub push verification ناجحان؛ `local_sha == remote_sha`.
 
@@ -28,9 +28,9 @@ Mobile subsystem له LightweightPreview وFixturePreview في compatibility mod
 
 `src/infrastructure/fixture-provider.ts` و`src/infrastructure/in-memory.ts` يوفران adapters deterministic خفيفة. composition يصدر `approvalWorkflow` و`auditTrail` و`providerGateway` و`providerRouteAudit`، مع registry فارغ فلا توجد network calls أو model loading عند الإقلاع.
 
-`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail` و`SqliteApprovalStore`، مع migrations 003 و004 لجدولي audit وapproval tickets. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل، و`src/infrastructure/audit-export.ts` ينشئ NDJSON وmanifest ذري. `src/application/audit-policy.ts` يعرّف bounded retention، و`src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` يعرّف approval methods و`IpcEvent`، و`src/ipc/embedded-handlers.ts` يعرّف approval pending/decide، و`src/desktop/main.ts` و`src/desktop/preload.cjs` يربطان event stream allowlisted.
+`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail` و`SqliteApprovalStore`، مع migrations 003 و004 لجدولي audit وapproval tickets. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل، و`src/infrastructure/audit-export.ts` ينشئ NDJSON وmanifest ذري. `src/application/audit-policy.ts` يعرّف bounded retention، و`src/application/planner-critic.ts` يعرّف planner/critic deterministic contracts، و`src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` يعرّف approval methods و`IpcEvent`، و`src/ipc/embedded-handlers.ts` يعرّف approval pending/decide، و`src/desktop/main.ts` و`src/desktop/preload.cjs` يربطان event stream allowlisted.
 
-التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md` و`docs/56-approval-hydration.md` و`docs/57-human-gate-ui-event-stream.md` و`docs/58-audit-export-retention.md`.
+التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md` و`docs/56-approval-hydration.md` و`docs/57-human-gate-ui-event-stream.md` و`docs/58-audit-export-retention.md` و`docs/59-planner-critic-contracts.md`.
 
 ## القواعد
 
@@ -57,17 +57,17 @@ git diff --check
 
 ## ما يزال مؤجلًا
 
-لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention الحالية contract/fixture bounded؛ لا يوجد planner/critic أو LLM inference تلقائي أو persistent project index أو checkpoint restore أو تشفير أو signed/tamper-evident export.
+لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic الحالية contract/fixture bounded؛ لا يوجد LLM inference تلقائي أو persistent project index أو checkpoint restore أو تشفير أو signed/tamper-evident export.
 
 Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
 
 ## التسلسل التالي
 
-بعد إغلاق Audit Export وRetention Policy، تُنفذ planner/critic contracts ثم provider adapters الفعلية.
+بعد إغلاق Planner/Critic Contracts، تُنفذ provider adapters الفعلية.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `5cf3d03605215ee2160473afee4c77585f0e9f61`؛ `GITHUB_PUSH_VERIFIED=true`.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `5cf3d03605215ee2160473afee4c77585f0e9f61`؛ Planner/Critic قيد commit/push.

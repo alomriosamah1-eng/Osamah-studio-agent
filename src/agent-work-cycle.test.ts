@@ -79,6 +79,25 @@ test("denied work cycle never applies its patch", async () => {
   }
 });
 
+test("planner critique rejects a malformed plan before approval or filesystem mutation", async () => {
+  const root = await createFixture("osamah-cycle-critic-");
+  const app = createEmbeddedApplication();
+  try {
+    const rejected = await app.agentWorkCycle.start({
+      ...makeRequest(root, sha256("export const value = 1;\n")),
+      cycleId: "cycle-critic-rejected",
+      plan: { summary: "Invalid duplicate plan", steps: [{ id: "same", title: "Same", description: "First" }, { id: "same", title: "Same", description: "Second" }] },
+    });
+    assert.equal(rejected.cycle.stage, "failed");
+    assert.match(rejected.cycle.error ?? "", /Planner critique rejected the plan/);
+    assert.equal(app.approvalWorkflow.listPending().length, 0);
+    assert.equal(await readFile(join(root, "src", "example.ts"), "utf8"), "export const value = 1;\n");
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("patch conflict fails before approval and traversal never reaches the filesystem", async () => {
   const root = await createFixture("osamah-cycle-conflict-");
   const app = createEmbeddedApplication();

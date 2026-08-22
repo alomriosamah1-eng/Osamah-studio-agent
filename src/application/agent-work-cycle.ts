@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { AgentAuthorizationError, BoundedAgentRuntime } from "./agent-runtime.js";
 import type { AgentActionRequest } from "./agent-contracts.js";
+import type { PlannerCriticPort } from "./planner-critic.js";
 import type {
   ProjectContextSnapshot,
   TargetedContextFile,
@@ -105,6 +106,7 @@ export interface WorkCycleResult {
 
 export interface AgentWorkCycleDependencies {
   readonly runtime: BoundedAgentRuntime;
+  readonly plannerCritic: PlannerCriticPort;
   readonly context: ContextIndexPort;
   readonly patches: PatchPort;
   readonly checkpoints: CheckpointStore;
@@ -194,6 +196,11 @@ export class AgentWorkCycleService {
       context = await this.dependencies.context.build(input.rootPath);
       if (this.snapshots.get(input.cycleId)?.stage === "cancelled") return { cycle: this.snapshots.get(input.cycleId)!, context, targetedFiles, plan: input.plan, validation };
       targetedFiles = await this.dependencies.context.readTargeted(input.rootPath, input.targetedPaths);
+      const review = this.dependencies.plannerCritic.review({ goal: input.goal, constraints: input.constraints, context, targetedFiles }, input.plan);
+      if (!review.critique.accepted) {
+        const reasons = review.critique.issues.filter((issue) => issue.severity === "blocking").map((issue) => issue.message).join(" ");
+        return this.failResult(input, context, targetedFiles, validation, `Planner critique rejected the plan. ${reasons}`.trim());
+      }
       const latestBeforePlanning = this.snapshots.get(input.cycleId);
       if (latestBeforePlanning?.stage === "cancelled") return { cycle: latestBeforePlanning, context, targetedFiles, plan: input.plan, validation };
       this.save({ ...(latestBeforePlanning ?? received), stage: "planning", updatedAt: this.dependencies.now() });

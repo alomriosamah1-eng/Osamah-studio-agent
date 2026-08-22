@@ -8,6 +8,7 @@ import { AgentWorkCycleService } from "./application/agent-work-cycle.js";
 import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
+import { DeterministicPlannerCritic } from "./application/planner-critic.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
 import { FixedClock, InMemoryApprovalStore, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
@@ -116,8 +117,10 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const projectContextIndex = new FilesystemProjectContextIndex(scanner, new GitStatusAdapter(), resourcePolicy, () => foundation.dependencies.clock.now());
   const checkpointStore = new InMemoryCheckpointStore();
   const projectPatchAdapter = new FilesystemPatchAdapter(resourcePolicy);
+  const plannerCritic = new DeterministicPlannerCritic();
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
+    plannerCritic,
     context: projectContextIndex,
     patches: projectPatchAdapter,
     checkpoints: checkpointStore,
@@ -151,6 +154,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     checkpointStore,
     projectPatchAdapter,
     agentWorkCycle,
+    plannerCritic,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,
