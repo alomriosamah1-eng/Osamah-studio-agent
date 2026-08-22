@@ -6,12 +6,12 @@
 |---|---|
 | الإصدار | `0.6.0`؛ شريحة SQLite/observability منفذة محليًا دون bump release |
 | المرحلة | SQLite Adapter + Observability + Backup/Restore |
-| الحالة | adapter وmigration 002 وrepositories وevent bus وobservability وbackup/restore منفذة محليًا؛ التوثيق والفحوص النهائية قيد الإغلاق قبل الدفع |
-| آخر commit مدفوع قبل هذه الشريحة | `ddeb5edc939c107f808339c480cf7535f1150595` |
+| الحالة | adapter وmigration 002 وrepositories وevent bus وobservability وbackup/restore منفذة ومدفوعة ومتحقق منها على `origin/main` |
+| آخر commit للشريحة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر فحص | `pnpm check` ناجح، `31/31` اختبارًا، في 2026-08-22 |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
-| حالة push لهذه الشريحة | pending final build/smoke/secret checks ثم commit وpush والتحقق من تطابق local وremote |
+| حالة push لهذه الشريحة | `GITHUB_PUSH_VERIFIED=true`؛ local و`origin/main` متطابقان عند `0c51c1e00726afa798182ade0e6dc16ab627eba7` |
 
 ## المكتمل
 
@@ -36,7 +36,7 @@
 | repository round-trip/restart | ناجح لجميع entities الحالية |
 | event bus وobservability | persistence وrecursive redaction وbounded listing ناجحة |
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
-| `git diff --check` وsecret scan وdesktop smoke | ستُعاد قبل commit النهائي |
+| `git diff --check` وsecret scan وdesktop smoke | ناجحة؛ `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 
 ## الحدود الحالية
 

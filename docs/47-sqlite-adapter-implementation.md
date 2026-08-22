@@ -1,6 +1,6 @@
 # تنفيذ SQLite Adapter وObservability وBackup/Restore
 
-**الحالة:** منفذ محليًا في هذه الشريحة، وقابل للدفع بعد اجتياز الفحوص النهائية.
+**الحالة:** مدفوع ومتحقق على `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`.
 **النطاق:** Infrastructure adapter خلف Clean Architecture ports، مع عدم تسريب `node:sqlite` إلى Domain أو Application.
 **تاريخ التحديث:** 2026-08-22.
 **إعداد:** Manus AI.

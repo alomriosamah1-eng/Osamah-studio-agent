@@ -17,6 +17,7 @@
 - `pnpm check`: `31/31` اختبارًا ناجحًا.
 - `python3 scripts/validate_sqlite_migration.py`: `SQLITE_MIGRATION_VALID=true`، migration count `2`، schema `002`.
 - backup/restore وforeign-key validation وmigration dry-run وsecret redaction اختُبرت محليًا.
+- commit `0c51c1e00726afa798182ade0e6dc16ab627eba7` دُفع إلى `origin/main`، وتطابق local وremote SHA.
 
 ### Boundaries
 

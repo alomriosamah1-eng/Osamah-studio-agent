@@ -7,8 +7,8 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | سيُحدّث بعد الدفع والتحقق من `origin/main` |
-| حالة الشجرة | تغييرات شريحة SQLite محلية قيد الفحوص والتوثيق قبل commit |
+| آخر commit مدفوع | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| حالة الشجرة | تغييرات توثيق حالة الدفع الحالية ستُثبت في commit توثيقي تالٍ |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm check` ناجح، `31/31` اختبارًا في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
@@ -48,9 +48,9 @@
 | SQLite repositories | round-trip وrestart persistence ناجحان |
 | event bus وobservability | persistence وredaction وbounded listing ناجحة |
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
-| `git diff --check` | سيُعاد تشغيله قبل commit |
-| secret scan | سيُعاد تشغيله قبل commit |
-| desktop smoke | سيُعاد تشغيله بعد تحديث الشريحة وقبل الإعلان عن الدفع |
+| `git diff --check` | ناجح |
+| secret scan | `SECRET_SCAN=PASS` |
+| desktop smoke | ناجح؛ `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 
 ## العمل المتبقي
 

@@ -6,9 +6,9 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت الآن شريحة SQLite adapter وobservability وbackup/restore محليًا، وما تزال غير مدفوعة حتى إغلاق الفحوص والـ commit. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore ثم دُفعت إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، مع تطابق local وremote SHA. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`31/31` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. لم يُحدّث remote بعد هذه الشريحة؛ يجب عدم إعلان النجاح قبل `git push` ثم مقارنة local SHA مع `git ls-remote`.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`31/31` اختبارًا. validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت الشريحة `pnpm build` و`pnpm desktop:smoke` و`git diff --check` وJSON validation وsecret scan؛ سجل `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
 
 ## المعمارية
 
@@ -45,7 +45,7 @@ python3 scripts/validate_sqlite_migration.py
 git diff --check
 ```
 
-قبل الدفع نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق ناجح هو `GITHUB_PUSH_VERIFIED=true` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`.
 
 ## ما يزال مؤجلًا
 

@@ -72,8 +72,9 @@
 | IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ delivery state متحقق في `c1b1613a92515b5daa186137ad48f37844834878` |
 | Electron Shell + Typed Preload | `src/desktop/` و`desktop:smoke`؛ 23/23 tests؛ startup/preload/IPC smoke ناجح؛ delivery state `2a0e891b544324ff06f18ad461282527af987a13` |
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
+| SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
 
-تم التحقق محليًا من `pnpm check` وSQLite migration وbackup/restore وredaction. تبقى `pnpm build` و`pnpm desktop:smoke` و`git diff --check` وsecret scan ضمن بوابة الإغلاق قبل commit هذه الشريحة. دُفعت سابقًا شرائح Presentation renderer وIPC Project Open والخطة الرئيسية وElectron shell ووثائقها؛ آخر delivery state قبل SQLite هو `ddeb5edc939c107f808339c480cf7535f1150595`.
+تم التحقق من `pnpm check` و`pnpm build` و`pnpm desktop:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. دُفعت شريحة SQLite والوثائق المرتبطة بها إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، وتطابق local وremote SHA.
 
 ## الخطة التنفيذية المعتمدة
 
