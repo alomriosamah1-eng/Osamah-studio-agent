@@ -9,8 +9,8 @@
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
 | آخر commit تنفيذي سابق | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
-| حالة root picker الحالية | production root picker منفذ محليًا، مع typed preload وcanonical validation وroot-picker smoke |
-| حالة الشجرة | تغييرات root picker والتوثيق الحالية قيد الدفع بعد الفحوص |
+| حالة root picker الحالية | production root picker منفذ ومدفوع ومتحقق منه عند `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
+| حالة الشجرة | نظيفة؛ local و`origin/main` متطابقان |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm check` ناجح، `47/47` اختبارًا، و`pnpm performance:smoke` وroot-picker desktop smoke ناجحان في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
@@ -67,7 +67,7 @@
 
 ## القرار والخطوة التالية
 
-بعد دفع root picker، تبدأ wiring اختيارية لـSQLite داخل composition root مع profile lifecycle وfallback policy. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
+بعد إغلاق root picker، تبدأ wiring اختيارية لـSQLite داخل composition root مع profile lifecycle وfallback policy. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

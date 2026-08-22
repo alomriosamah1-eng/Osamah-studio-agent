@@ -45,11 +45,12 @@ python3 scripts/validate_sqlite_migration.py
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق ناجح هو `GITHUB_PUSH_VERIFIED=true` عند `b9089efee33a174c3958a9295853623beae27503`؛ performance slice وWeb preview وresource governance مدفوعة ومتحقق منها.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق ناجح هو `GITHUB_PUSH_VERIFIED=true` عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`؛ performance slice وWeb preview وresource governance وproduction root picker مدفوعة ومتحقق منها.
 
 ## ما يزال مؤجلًا
 
-SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation، وينتظر دفع هذه الشريحة. لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter.
+SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`.
+ لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter.
 
 ## التسلسل التالي
 

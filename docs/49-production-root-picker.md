@@ -1,6 +1,6 @@
 # Production Root Picker
 
-**الحالة:** منفذ محليًا واجتاز الفحوص؛ pending final commit/push.
+**الحالة:** منفذ ومدفوع ومتحقق منه عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`.
 
 **النطاق:** اختيار مجلد مشروع محلي من خلال Electron main process، مع typed preload، canonical path validation، وعدم تشغيل المشروع أو أي script تلقائيًا.
 
