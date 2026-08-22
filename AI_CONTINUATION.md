@@ -54,7 +54,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو Memory Review عند `4f1709cd927b77627c4532ec396f572f3bbedb2c` وآخر docs-close هو `04e49b1590fe7df529636e8c721f5b57b86d439f`، وكلاهما متحقق local == remote. audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد.
+بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو Memory Review عند `4f1709cd927b77627c4532ec396f572f3bbedb2c` وآخر docs-close هو `04e49b1590fe7df529636e8c721f5b57b86d439f`، وكلاهما متحقق local == remote. audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` وdocs-close `f0c3d86c329f45335cd22cc1465ba673435fea87` متحققان local==remote. Agent Catalog feature `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد.
 
 ## ما يزال مؤجلًا
 
@@ -64,11 +64,11 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-بعد إغلاق audit documentation، تكون الخطوة التقنية المقترحة `Agent Definition Contract وAgent Catalog bounded` من دون تشغيل agents أو tools؛ ثم `ReportDocument` أو `PreviewSharePort` أو bounded local memory links حسب قرار المالك. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
+بعد إغلاق Agent Catalog، تكون الخطوة التقنية المقترحة `ReportDocument` أو `PreviewSharePort` أو bounded local memory links حسب قرار المالك؛ لا تُضاف persistence أو embeddings أو external connectors تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. Memory Review feature: `4f1709cd927b77627c4532ec396f572f3bbedb2c`; docs-close: `04e49b1590fe7df529636e8c721f5b57b86d439f`; audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. Memory Review feature: `4f1709cd927b77627c4532ec396f572f3bbedb2c`; docs-close: `04e49b1590fe7df529636e8c721f5b57b86d439f`; audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` وdocs-close `f0c3d86c329f45335cd22cc1465ba673435fea87` متحققان local==remote. Agent Catalog feature `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

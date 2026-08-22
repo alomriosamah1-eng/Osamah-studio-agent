@@ -14,6 +14,7 @@
 
 - `pnpm check`: `172/172` اختبارًا ناجحًا؛ `node --check prototypes/studio/workspace.js` ناجح.
 - `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ الأداء ضمن low-memory policy، وSQLite/JSON/diff/secret checks PASS.
+- feature commit `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد.
 
 ### Boundaries
 

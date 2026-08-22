@@ -26,10 +26,11 @@
       "optional-sqlite-composition",
       "production-studio-sources-content-assets-manifest-render-policy",
       "second-brain-memory-capture-review",
-      "comprehensive-audit-documentation"
+      "comprehensive-audit-documentation",
+      "agent-definition-contract-and-catalog"
     ],
-    "tests": "167/167",
-    "next_phase": "agent-definition-contract-and-catalog",
+    "tests": "172/172",
+    "next_phase": "report-document-or-preview-shareport-or-bounded-local-links",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

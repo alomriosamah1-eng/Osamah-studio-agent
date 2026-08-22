@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Comprehensive Project Audit وArchitecture Gaps |
-| الحالة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. Audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد |
+| المرحلة | Agent Definition Contract وBounded Agent Catalog |
+| الحالة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. Audit documentation feature/docs-close متحققان عند `7ede715dfbd8f9e4d030848573b11e94790ba580` و`f0c3d86c329f45335cd22cc1465ba673435fea87`. Agent Catalog feature `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -15,7 +15,7 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | full gate ناجح؛ `pnpm check` و`pnpm test` بـ`167/167`، build وdesktop/performance smoke وSQLite/JSON/diff/secret validation PASS |
+| آخر فحص | full gate ناجح؛ `pnpm check` بـ`172/172`، build وdesktop/performance smoke وSQLite/JSON/diff/secret validation وAgent Catalog IPC/Electron smoke PASS |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | Git Read-only feature `6a0db8a180298030fe77ad53f8fc54667de4258f` ثم docs-close `0db944f48fed37ae54c3ec8f5fca400c0bbdd7d4`؛ verified |
@@ -122,4 +122,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` وdocs-close `f0c3d86c329f45335cd22cc1465ba673435fea87` متحققان؛ Agent Catalog feature `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

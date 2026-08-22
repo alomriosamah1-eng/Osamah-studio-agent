@@ -4,6 +4,8 @@
 
 تحتاج منظومة Osamah Studio Agents إلى عقد موحد يصف الوكيل قبل إنشاء orchestrator أو pool أو tool execution. لذلك أضيف `AgentDefinition` و`AgentCatalogPort` كطبقة Application bounded، مع `InMemoryAgentCatalog` كتنفيذ محلي deterministic. هذا العقد لا يشغّل وكيلًا، ولا يكتشف provider، ولا ينشئ approval ticket، ولا يغير filesystem.
 
+**Feature commit:** `56eebb97267c1e5979ea2e53c9f3fa9ec988d192`؛ دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد. تحديث ملفات الحالة سيُغلق في docs-close مستقل.
+
 > **تعريف لا يعني تنفيذًا:** وجود تعريف في الكتالوج يصف الدور والحدود والتبعيات المقترحة، لكنه لا يثبت أن الوكيل منفذ أو قادر على الاستقلال.
 
 ## حقول العقد
