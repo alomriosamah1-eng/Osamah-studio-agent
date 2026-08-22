@@ -53,7 +53,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `0b5acbf136d168fb43312379f44846c1075c802f`؛ Audit Export وRetention Policy قيد commit/push.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `5cf3d03605215ee2160473afee4c77585f0e9f61`؛ `GITHUB_PUSH_VERIFIED=true` مثبت.
 
 ## ما يزال مؤجلًا
 
@@ -70,4 +70,4 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `0b5acbf136d168fb43312379f44846c1075c802f`؛ Audit Export وRetention Policy قيد commit/push.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `5cf3d03605215ee2160473afee4c77585f0e9f61`؛ `GITHUB_PUSH_VERIFIED=true`.
