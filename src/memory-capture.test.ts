@@ -61,6 +61,26 @@ test("memory entries accept bounded directed links only to existing entries", ()
   assert.throws(() => memory.capture({ kind: "note", title: "Wider link", content: "Would widen access.", visibility: "workspace", links: [{ entryId: target.entryId, relation: "related_to" }] }), /widen access/);
 });
 
+test("memory search enforces trusted agent scope without widening visibility or retention", () => {
+  let sequence = 0;
+  const memory = new InMemoryMemoryCapture(new InMemorySourceRegistry(), {
+    now: () => `2026-08-22T14:0${sequence++}:00.000Z`,
+    nextId: (prefix) => `${prefix}-${sequence}`,
+    agentScope: { get: (agentId) => agentId === "workspace-agent" ? { visibility: "workspace", retention: "project", providerAccess: "never" } : undefined },
+  });
+  const sessionPrivate = memory.capture({ kind: "note", title: "Scope session", content: "shared scope phrase", retention: "session", visibility: "private" });
+  const projectWorkspace = memory.capture({ kind: "note", title: "Scope workspace", content: "shared scope phrase", retention: "project", visibility: "workspace" });
+  const durableWorkspace = memory.capture({ kind: "note", title: "Scope durable", content: "shared scope phrase", retention: "until_deleted", visibility: "workspace" });
+  const explicitWorkspace = memory.capture({ kind: "note", title: "Scope explicit", content: "shared scope phrase", retention: "project", visibility: "workspace", providerAccess: "explicit_only" });
+  assert.deepEqual(memory.searchLocal("shared scope phrase", 8, { agentId: "workspace-agent" }).map((entry) => entry.entryId), [projectWorkspace.entryId, sessionPrivate.entryId]);
+  assert.deepEqual(memory.searchLocal("shared scope phrase", 8, { agentId: "workspace-agent", visibility: "private" }).map((entry) => entry.entryId), [sessionPrivate.entryId]);
+  assert.throws(() => memory.searchLocal("shared scope phrase", 8, { agentId: "workspace-agent", visibility: "project" }), /exceeds agent scope/);
+  assert.throws(() => memory.searchLocal("shared scope phrase", 8, { agentId: "unknown-agent" }), /unknown or unavailable/);
+  assert.throws(() => memory.searchLocal("shared scope phrase", 8, { agentId: "bad_agent" }), /agentId is invalid/);
+  assert.equal(memory.get(durableWorkspace.entryId)?.entryId, durableWorkspace.entryId);
+  assert.equal(memory.get(explicitWorkspace.entryId)?.entryId, explicitWorkspace.entryId);
+});
+
 test("memory capture rejects unknown source provenance and unsafe or duplicate references", () => {
   const sources = new InMemorySourceRegistry();
   const memory = new InMemoryMemoryCapture(sources);

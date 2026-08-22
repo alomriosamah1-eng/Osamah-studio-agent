@@ -59,6 +59,17 @@ export interface MemoryReviewDecision {
 
 export interface MemorySearchOptions {
   readonly visibility?: MemoryVisibility;
+  readonly agentId?: string;
+}
+
+export interface MemoryAgentScope {
+  readonly visibility: MemoryVisibility;
+  readonly retention: MemoryRetention;
+  readonly providerAccess: MemoryProviderAccess;
+}
+
+export interface MemoryAgentScopePort {
+  get(agentId: string): MemoryAgentScope | undefined;
 }
 
 export interface MemoryCapturePort {
@@ -84,6 +95,7 @@ export interface MemoryCaptureOptions {
   readonly maxEntries?: number;
   readonly maxContentLength?: number;
   readonly persistence?: MemoryEntryPersistencePort;
+  readonly agentScope?: MemoryAgentScopePort;
 }
 
 export class MemoryCaptureError extends Error {
@@ -140,6 +152,11 @@ const cleanSearchVisibility = (value: MemorySearchOptions | undefined): MemoryVi
   if (!visibilities.includes(value.visibility)) throw new MemoryCaptureError("visibility filter is invalid.");
   return value.visibility;
 };
+const cleanSearchAgentId = (value: MemorySearchOptions | undefined): string | undefined => {
+  if (value === undefined || value.agentId === undefined) return undefined;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.agentId) || value.agentId.length > 128) throw new MemoryCaptureError("agentId is invalid.");
+  return value.agentId;
+};
 
 const searchScore = (entry: MemoryEntry, tokens: readonly string[]): number => {
   const title = normalizeSearchText(entry.title);
@@ -150,7 +167,7 @@ const searchScore = (entry: MemoryEntry, tokens: readonly string[]): number => {
 };
 
 const visibilityRank = (visibility: MemoryVisibility): number => ({ private: 0, workspace: 1, project: 2 })[visibility];
-
+const retentionRank = (retention: MemoryRetention): number => ({ session: 0, project: 1, until_deleted: 2 })[retention];
 const cleanLinks = (values: readonly MemoryEntryLink[] | undefined, currentEntryId: string | undefined, sourceVisibility: MemoryVisibility, entries: ReadonlyMap<string, MemoryEntry>): readonly MemoryEntryLink[] => {
   if (values === undefined) return [];
   if (values.length > maxLinks) throw new MemoryCaptureError("links exceed bounded limits.");
@@ -193,6 +210,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
   private readonly maxEntries: number;
   private readonly maxContentLength: number;
   private readonly persistence?: MemoryEntryPersistencePort;
+  private readonly agentScope?: MemoryAgentScopePort;
 
   public constructor(sourceRegistry: Pick<SourceRegistryPort, "getSource">, options: MemoryCaptureOptions = {}) {
     this.sourceRegistry = sourceRegistry;
@@ -201,6 +219,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
     this.maxEntries = options.maxEntries ?? maxEntriesDefault;
     this.maxContentLength = options.maxContentLength ?? maxContentDefault;
     this.persistence = options.persistence;
+    this.agentScope = options.agentScope;
     if (!Number.isSafeInteger(this.maxEntries) || this.maxEntries < 1 || this.maxEntries > maxEntriesDefault) throw new MemoryCaptureError("maxEntries is invalid.");
     if (!Number.isSafeInteger(this.maxContentLength) || this.maxContentLength < 1 || this.maxContentLength > maxContentDefault) throw new MemoryCaptureError("maxContentLength is invalid.");
     const persistedEntries = this.persistence?.list(this.maxEntries) ?? [];
@@ -278,11 +297,18 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
 
   public searchLocal(query: string, limit = 32, options?: MemorySearchOptions): readonly MemoryEntry[] {
     const visibility = cleanSearchVisibility(options);
+    const agentId = cleanSearchAgentId(options);
+    const scope = agentId === undefined ? undefined : this.agentScope?.get(agentId);
+    if (agentId !== undefined && (scope === undefined || !visibilities.includes(scope.visibility) || !retentions.includes(scope.retention) || !providerAccessModes.includes(scope.providerAccess))) throw new MemoryCaptureError("agent scope is unknown or unavailable.");
+    if (visibility !== undefined && scope !== undefined && visibilityRank(visibility) > visibilityRank(scope.visibility)) throw new MemoryCaptureError("visibility exceeds agent scope.");
     const normalized = normalizeSearchText(cleanText(query, "query", 512));
     const tokens = normalized.split(" ").filter(Boolean);
     if (tokens.length === 0) throw new MemoryCaptureError("query is invalid.");
     const safeLimit = this.limit(limit);
     return [...this.entries.values()]
+      .filter((entry) => scope === undefined || visibilityRank(entry.visibility) <= visibilityRank(scope.visibility))
+      .filter((entry) => scope === undefined || retentionRank(entry.retention) <= retentionRank(scope.retention))
+      .filter((entry) => scope === undefined || scope.providerAccess === "explicit_only" || entry.providerAccess === "never")
       .filter((entry) => visibility === undefined || entry.visibility === visibility)
       .map((entry) => ({ entry, score: searchScore(entry, tokens) }))
       .filter((result) => result.score >= 0)

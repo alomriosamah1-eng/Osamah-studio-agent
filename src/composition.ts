@@ -191,12 +191,13 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   }));
   const taskPreview = new AgentTaskPreviewService(projectContextIndex, new DeterministicPlannerCritic());
   const sourceRegistry = new InMemorySourceRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
+  const agentCatalog = new InMemoryAgentCatalog();
+  const memoryAgentScope = { get: (agentId: string) => agentCatalog.get(agentId)?.memoryRequirements };
   const contentPlan = new InMemoryContentPlanService(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const assetCatalog = new InMemoryAssetCatalog(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const artifactAssembly = new InMemoryArtifactAssembly(contentPlan, assetCatalog, assetCatalog, sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const renderPolicy = new InMemoryRenderPolicy(artifactAssembly);
-  const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now(), persistence: persistence.sqlite?.memoryEntries });
-  const agentCatalog = new InMemoryAgentCatalog();
+  const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now(), persistence: persistence.sqlite?.memoryEntries, agentScope: memoryAgentScope });
   const reportDocument = new InMemoryReportDocumentService(sourceRegistry, contentPlan, artifactAssembly, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const applicationSettings = new InMemoryApplicationSettings();
   const externalAccounts = new InMemoryExternalAccountRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });

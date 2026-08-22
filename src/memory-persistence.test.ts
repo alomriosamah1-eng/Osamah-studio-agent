@@ -19,7 +19,7 @@ test("embedded sqlite application reloads memory entries and candidates across r
   let linkedEntryId = "";
   let candidateId = "";
   try {
-    const captured = await first.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-capture", correlationId: "persist-memory", method: "brain.memory.capture", payload: { kind: "learning", title: "Persistent learning", content: "تعلم محلي bounded.", tags: ["restart"], providerAccess: "never", visibility: "private", retention: "until_deleted" } } as const) as IpcResponse<MemoryEntry>;
+    const captured = await first.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-capture", correlationId: "persist-memory", method: "brain.memory.capture", payload: { kind: "learning", title: "Persistent learning", content: "تعلم محلي bounded.", tags: ["restart"], providerAccess: "never", visibility: "private", retention: "session" } } as const) as IpcResponse<MemoryEntry>;
     assert.equal(captured.ok, true);
     if (!captured.ok) return;
     entryId = captured.result.entryId;
@@ -52,6 +52,12 @@ test("embedded sqlite application reloads memory entries and candidates across r
     assert.equal(matches.ok, true);
     if (!matches.ok) return;
     assert.equal(matches.result.some((entry) => entry.entryId === entryId), true);
+    const scopedMatches = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-agent-scope", correlationId: "persist-memory-restart", method: "brain.memory.searchLocal", payload: { query: "تعلم محلي", limit: 8, agentId: "qa-testing" } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(scopedMatches.ok, true);
+    if (!scopedMatches.ok) return;
+    assert.equal(scopedMatches.result.some((entry) => entry.entryId === entryId), true);
+    const invalidAgentId = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-invalid-agent", correlationId: "persist-memory-restart", method: "brain.memory.searchLocal", payload: { query: "تعلم", agentId: "bad_agent" as never } } as const);
+    assert.equal(invalidAgentId.ok, false);
     const invalidFilter = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-invalid-filter", correlationId: "persist-memory-restart", method: "brain.memory.searchLocal", payload: { query: "تعلم", visibility: "shared" as never } } as const);
     assert.equal(invalidFilter.ok, false);
     const candidates = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-candidate-list", correlationId: "persist-memory-restart", method: "memory-candidate.list", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryCandidate[]>;
