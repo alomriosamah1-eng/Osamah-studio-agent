@@ -1,6 +1,6 @@
 # Production Studio: Source Registry وProvenance
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ لا توجد في هذه الوثيقة دعوى بأن التوقيع أو التحقق الإعلامي الكامل منفذ.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c`؛ docs-close مستقل ويحدّث summaries فقط. لا توجد دعوى بأن التوقيع أو التحقق الإعلامي الكامل منفذ.
 
 ## القرار
 
