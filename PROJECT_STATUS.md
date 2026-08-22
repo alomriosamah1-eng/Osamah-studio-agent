@@ -7,8 +7,9 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
-| حالة الشجرة | تغييرات توثيق حالة الدفع الحالية ستُثبت في commit توثيقي تالٍ |
+| آخر commit تنفيذي للشريحة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| آخر commit توثيقي مدفوع | `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` (`docs: finalize sqlite delivery state`) |
+| حالة الشجرة | نظيفة؛ code وdocumentation commits مدفوعان ومتحققان على `origin/main` |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm check` ناجح، `31/31` اختبارًا في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |

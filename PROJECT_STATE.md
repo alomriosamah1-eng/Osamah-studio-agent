@@ -4,14 +4,14 @@
 
 | الحقل | القيمة |
 |---|---|
-| الإصدار | `0.6.0`؛ شريحة SQLite/observability منفذة محليًا دون bump release |
+| الإصدار | `0.6.0`؛ شريحة SQLite/observability منفذة ومدفوعة دون bump release |
 | المرحلة | SQLite Adapter + Observability + Backup/Restore |
 | الحالة | adapter وmigration 002 وrepositories وevent bus وobservability وbackup/restore منفذة ومدفوعة ومتحقق منها على `origin/main` |
 | آخر commit للشريحة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر فحص | `pnpm check` ناجح، `31/31` اختبارًا، في 2026-08-22 |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
-| حالة push لهذه الشريحة | `GITHUB_PUSH_VERIFIED=true`؛ local و`origin/main` متطابقان عند `0c51c1e00726afa798182ade0e6dc16ab627eba7` |
+| حالة push لهذه الشريحة | code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation state عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83`؛ `GITHUB_FINAL_SHA_MATCH=true` |
 
 ## المكتمل
 
