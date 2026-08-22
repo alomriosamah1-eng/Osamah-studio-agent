@@ -689,6 +689,88 @@
     await loadSourceCitations(response.result.sourceId);
   };
 
+  let activeContentPlan;
+  const renderContentPlan = (plan) => {
+    activeContentPlan = plan;
+    $('contentPlanStatus').textContent = `Plan ${plan.planId} · review-only · no generation/render/export`;
+    $('contentPlanSections').textContent = String(plan.sections.length);
+    $('contentPlanClaims').textContent = String(plan.integrity.totalClaims);
+    $('contentPlanSupported').textContent = String(plan.integrity.supportedClaims);
+    $('contentPlanUnresolved').textContent = String(plan.integrity.unresolvedClaims);
+    $('contentPlanConflicted').textContent = String(plan.integrity.conflictedClaims);
+    const list = $('contentPlanClaimList');
+    list.replaceChildren();
+    if (!plan.claims.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No claims in preview.';
+      list.append(empty);
+      return;
+    }
+    plan.claims.slice(0, 128).forEach((claim) => {
+      const item = document.createElement('div');
+      item.className = `content-plan-item ${claim.verificationState}`;
+      item.textContent = `${claim.verificationState.toUpperCase()} · ${claim.text}\nCitations: ${claim.citationIds.length ? claim.citationIds.join(', ') : 'none'}${claim.warnings.length ? `\nWarnings: ${claim.warnings.join(', ')}` : ''}`;
+      list.append(item);
+    });
+  };
+  const createContentPlanPreview = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('contentPlanStatus').textContent = 'Desktop IPC unavailable; no plan was created.';
+      log('production.plan.create_unavailable', 'warn');
+      return;
+    }
+    const button = $('createContentPlan');
+    button.disabled = true;
+    $('contentPlanStatus').textContent = 'Building bounded plan preview…';
+    try {
+      const created = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-plan-create'),
+        correlationId: nextRequest('production-plan-correlation'),
+        method: 'production.plan.create',
+        payload: { brief: $('contentBrief').value.trim() },
+      });
+      if (!created.ok) {
+        $('contentPlanStatus').textContent = `Plan rejected: ${created.error.message}`;
+        log(`production.plan.create_rejected ${created.error.message}`, 'warn');
+        return;
+      }
+      const section = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-plan-section'),
+        correlationId: nextRequest('production-plan-correlation'),
+        method: 'production.plan.section.add',
+        payload: { planId: created.result.planId, title: 'Review', summary: 'Bounded review section; generated copy is not enabled.' },
+      });
+      if (!section.ok) {
+        $('contentPlanStatus').textContent = `Section rejected: ${section.error.message}`;
+        log(`production.plan.section_rejected ${section.error.message}`, 'warn');
+        return;
+      }
+      const claim = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-plan-claim'),
+        correlationId: nextRequest('production-plan-correlation'),
+        method: 'production.plan.claim.add',
+        payload: { planId: created.result.planId, sectionId: section.result.sections[0].sectionId, text: 'This plan requires citation review before any final copy.', confidence: 0.5 },
+      });
+      if (!claim.ok) {
+        $('contentPlanStatus').textContent = `Claim rejected: ${claim.error.message}`;
+        log(`production.plan.claim_rejected ${claim.error.message}`, 'warn');
+        return;
+      }
+      renderContentPlan(claim.result);
+      $('rightStatus').textContent = `Content plan ${claim.result.integrity.unresolvedClaims ? 'needs citations' : 'ready'}`;
+      log(`production.plan.preview_ready ${claim.result.integrity.totalClaims} claim(s) · no generation`, 'ok');
+    } catch (error) {
+      $('contentPlanStatus').textContent = `Plan failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('production.plan.failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   const previewCurrentTask = async () => {
     if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
       $('taskReviewStatus').textContent = 'Select a project root in Electron before requesting task review.';
@@ -801,6 +883,7 @@
   $('reviewTask').onclick = () => { void previewCurrentTask(); };
   $('registerCurrentSource').onclick = () => { void registerCurrentSource(); };
   $('refreshSources').onclick = () => { void loadSources(); };
+  $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
     if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
@@ -915,6 +998,34 @@
       correlationId: 'desktop-smoke-production-source',
       method: 'production.provenance.list',
       payload: { entityId: sourceRegisterResponse.result.sourceId, limit: 8 },
+    }) : { ok: false };
+    const contentPlanCreateResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-plan-create',
+      correlationId: 'desktop-smoke-production-plan',
+      method: 'production.plan.create',
+      payload: { brief: 'Desktop smoke content review' },
+    });
+    const contentPlanSectionResponse = contentPlanCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-plan-section',
+      correlationId: 'desktop-smoke-production-plan',
+      method: 'production.plan.section.add',
+      payload: { planId: contentPlanCreateResponse.result.planId, title: 'Review', summary: 'Smoke section; no generation.' },
+    }) : { ok: false };
+    const contentPlanClaimResponse = contentPlanCreateResponse.ok && contentPlanSectionResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-plan-claim',
+      correlationId: 'desktop-smoke-production-plan',
+      method: 'production.plan.claim.add',
+      payload: { planId: contentPlanCreateResponse.result.planId, sectionId: contentPlanSectionResponse.result.sections[0].sectionId, text: 'This claim requires citation review.', confidence: 0.5 },
+    }) : { ok: false };
+    const contentPlanGetResponse = contentPlanCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-plan-get',
+      correlationId: 'desktop-smoke-production-plan',
+      method: 'production.plan.get',
+      payload: { planId: contentPlanCreateResponse.result.planId },
     }) : { ok: false };
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -1045,7 +1156,9 @@
     const taskPreviewNoApprovalPassed = taskPreviewResponse.ok && approvalResponse.ok && approvalResponse.result.length === 1;
     const sourceRegistryPassed = sourceRegisterResponse.ok && sourceListResponse.ok && sourceListResponse.result.length === 1 && sourceRegisterResponse.result.verificationState === 'content_validated' && citationResponse.ok && citationListResponse.ok && citationListResponse.result.length === 1 && provenanceListResponse.ok && provenanceListResponse.result.length === 0;
     const sourceRegistryNoMutationPassed = sourceRegistryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const contentPlanPassed = contentPlanCreateResponse.ok && contentPlanSectionResponse.ok && contentPlanClaimResponse.ok && contentPlanGetResponse.ok && contentPlanClaimResponse.result.integrity.unresolvedClaims === 1 && contentPlanClaimResponse.result.claims[0]?.citationIds.length === 0;
+    const contentPlanNoMutationPassed = contentPlanPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

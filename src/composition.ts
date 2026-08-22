@@ -34,6 +34,7 @@ import { FilesystemGitReadOnlyAdapter } from "./infrastructure/git-read-only.js"
 import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
 import { LocalProviderDoctor } from "./infrastructure/local-provider-doctor.js";
 import { InMemorySourceRegistry } from "./application/source-registry.js";
+import { InMemoryContentPlanService } from "./application/content-plan.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -179,6 +180,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   }));
   const taskPreview = new AgentTaskPreviewService(projectContextIndex, new DeterministicPlannerCritic());
   const sourceRegistry = new InMemorySourceRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
+  const contentPlan = new InMemoryContentPlanService(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,
@@ -197,7 +199,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -223,6 +225,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     plannerCritic,
     taskPreview,
     sourceRegistry,
+    contentPlan,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,

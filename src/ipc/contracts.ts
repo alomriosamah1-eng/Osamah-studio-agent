@@ -13,6 +13,7 @@ import type { ApprovalTicket } from "../application/agent-contracts.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 import type { AgentTaskPreviewRequest, AgentTaskPreviewResult } from "../application/agent-task-preview.js";
 import type { AddCitationRequest, CitationRecord, RegisterSourceRequest, SourceRecord, SourceRegistryPort, ProvenanceLink } from "../application/source-registry.js";
+import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequest, ContentPlan, CreateContentPlanRequest } from "../application/content-plan.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -58,6 +59,11 @@ export interface IpcMethodMap {
   "production.citation.add": { payload: AddCitationRequest; result: CitationRecord };
   "production.citation.list": { payload: { sourceId: string; limit?: number }; result: readonly CitationRecord[] };
   "production.provenance.list": { payload: { entityId: string; limit?: number }; result: readonly ProvenanceLink[] };
+  "production.plan.create": { payload: CreateContentPlanRequest; result: ContentPlan };
+  "production.plan.get": { payload: { planId: string }; result: ContentPlan | undefined };
+  "production.plan.section.add": { payload: AddContentSectionRequest; result: ContentPlan };
+  "production.plan.claim.add": { payload: AddClaimRequest; result: ContentPlan };
+  "production.plan.citation.attach": { payload: AttachClaimCitationRequest; result: ContentPlan };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -242,6 +248,22 @@ const isCitationListPayload = (value: unknown): boolean => isRecord(value)
 const isProvenanceListPayload = (value: unknown): boolean => isRecord(value)
   && isString(value.entityId, 256)
   && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit > 0 && value.limit <= 256));
+const isSingleLineString = (value: unknown, maxLength: number): value is string => typeof value === "string" && value.length > 0 && value.length <= maxLength && !value.includes("\u0000") && !value.includes("\r") && !value.includes("\n");
+const isPlanCreatePayload = (value: unknown): boolean => isRecord(value) && isSingleLineString(value.brief, 4_000);
+const isPlanGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.planId, 256);
+const isPlanSectionAddPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.planId, 256)
+  && isSingleLineString(value.title, 512)
+  && (value.summary === undefined || isSingleLineString(value.summary, 2_000));
+const isPlanClaimAddPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.planId, 256)
+  && isString(value.sectionId, 256)
+  && isSingleLineString(value.text, 2_000)
+  && (value.confidence === undefined || (typeof value.confidence === "number" && Number.isFinite(value.confidence) && value.confidence >= 0 && value.confidence <= 1));
+const isPlanCitationAttachPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.planId, 256)
+  && isString(value.claimId, 256)
+  && isString(value.citationId, 256);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -271,6 +293,11 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.citation.add") return isCitationAddPayload(payload);
   if (method === "production.citation.list") return isCitationListPayload(payload);
   if (method === "production.provenance.list") return isProvenanceListPayload(payload);
+  if (method === "production.plan.create") return isPlanCreatePayload(payload);
+  if (method === "production.plan.get") return isPlanGetPayload(payload);
+  if (method === "production.plan.section.add") return isPlanSectionAddPayload(payload);
+  if (method === "production.plan.claim.add") return isPlanClaimAddPayload(payload);
+  if (method === "production.plan.citation.attach") return isPlanCitationAttachPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

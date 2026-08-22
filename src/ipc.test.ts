@@ -127,6 +127,41 @@ test("typed IPC registers and lists production sources without network or filesy
   }
 });
 
+test("typed IPC builds a review-only content plan and preserves citation integrity", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const created = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-create-1", correlationId: "plan-1", method: "production.plan.create", payload: { brief: "Prepare a bounded content review" } } as const) as IpcResponse<import("./application/content-plan.js").ContentPlan>;
+    assert.equal(created.ok, true);
+    if (!created.ok) return;
+    const section = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-section-1", correlationId: "plan-1", method: "production.plan.section.add", payload: { planId: created.result.planId, title: "Findings" } } as const) as IpcResponse<import("./application/content-plan.js").ContentPlan>;
+    assert.equal(section.ok, true);
+    if (!section.ok) return;
+    const claim = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-claim-1", correlationId: "plan-1", method: "production.plan.claim.add", payload: { planId: created.result.planId, sectionId: section.result.sections[0]!.sectionId, text: "This claim needs a citation.", confidence: 0.5 } } as const) as IpcResponse<import("./application/content-plan.js").ContentPlan>;
+    assert.equal(claim.ok, true);
+    if (!claim.ok) return;
+    assert.equal(claim.result.integrity.unresolvedClaims, 1);
+    const source = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-source-1", correlationId: "plan-1", method: "production.source.register", payload: { kind: "user_url", locator: "https://example.test/plan", verificationState: "metadata_validated" } } as const) as IpcResponse<SourceRecord>;
+    assert.equal(source.ok, true);
+    if (!source.ok) return;
+    const citation = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-citation-1", correlationId: "plan-1", method: "production.citation.add", payload: { sourceId: source.result.sourceId, label: "Plan evidence", verificationState: "unverified" } } as const) as IpcResponse<CitationRecord>;
+    assert.equal(citation.ok, true);
+    if (!citation.ok) return;
+    const attached = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-attach-1", correlationId: "plan-1", method: "production.plan.citation.attach", payload: { planId: created.result.planId, claimId: claim.result.claims[0]!.claimId, citationId: citation.result.citationId } } as const) as IpcResponse<import("./application/content-plan.js").ContentPlan>;
+    assert.equal(attached.ok, true);
+    if (attached.ok) {
+      assert.equal(attached.result.integrity.supportedClaims, 1);
+      assert.equal(attached.result.claims[0]?.verificationState, "supported");
+      assert.ok(attached.result.integrity.warnings.includes("citation_or_source_unverified"));
+    }
+    const stored = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-get-1", correlationId: "plan-1", method: "production.plan.get", payload: { planId: created.result.planId } } as const) as IpcResponse<import("./application/content-plan.js").ContentPlan | undefined>;
+    assert.equal(stored.ok, true);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "plan-malformed-1", correlationId: "plan-1", method: "production.plan.create", payload: { brief: "line\nbreak" } } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC lists a bounded project tree and opens text through the safe reader", async () => {
   const root = await mkdtemp(join(tmpdir(), "osamah-ipc-explorer-"));
   const app = createEmbeddedApplication();

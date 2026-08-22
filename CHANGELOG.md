@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Studio: Content Plan وClaim/Citation Integrity
+
+### Added
+
+- `ContentPlan` و`ContentSection` و`ClaimRecord` و`ContentPlanPort` مع `InMemoryContentPlanService` bounded فوق `SourceRegistryPort`.
+- typed IPC methods `production.plan.create` و`production.plan.get` و`production.plan.section.add` و`production.plan.claim.add` و`production.plan.citation.attach` مع validators للـbrief/IDs/sections/claims/confidence.
+- Workspace Content Plan panel يعرض sections وclaims وsupported/unresolved/conflicted counts عبر DOM آمن، مع preview محلي لا يولد نصًا ولا ينفذ render أو export.
+- claim/citation integrity deterministic: claim بلا citation يبقى `unresolved`، وcitation/source غير الصالحين يسببان `conflicted`، والـunverified يظهر كتحذير صريح.
+- اختبارات Application وIPC وElectron smoke تثبت رفض citation المجهولة وduplicate attachment وmalformed payload وno-network/no-mutation.
+- توثيق القرار في `docs/70-production-content-plan-citation-integrity.md`.
+
+### Verified
+
+- `pnpm check`: `146/146` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ Content Plan unresolved integrity وno-mutation smoke PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- Content Plan الحالي in-memory وreview-only؛ لا provider generation أو browser/network discovery أو converter/render/export أو SQLite persistence.
+- `supported` تعني اكتمال ربط citation بمصدر معروف مع بقاء warnings، ولا تعني صحة claim علميًا أو قانونيًا.
+
 ## [Unreleased] — Production Studio: Source Registry وProvenance
 
 ### Added

@@ -10,13 +10,15 @@ import type { GitReadOnlyPort } from "../application/git-read-only.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { AgentTaskPreviewService } from "../application/agent-task-preview.js";
 import type { SourceRegistryPort } from "../application/source-registry.js";
+import type { ContentPlanPort } from "../application/content-plan.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
 export interface AgentIpcDependencies {
   readonly context: Pick<FilesystemProjectContextIndex, "build">;
   readonly taskPreview: Pick<AgentTaskPreviewService, "preview">;
-  readonly sourceRegistry: Pick<SourceRegistryPort, "registerSource" | "listSources" | "addCitation" | "listCitations" | "listProvenanceLinks">;
+  readonly sourceRegistry: Pick<SourceRegistryPort, "registerSource" | "listSources" | "addCitation" | "getCitation" | "listCitations" | "listProvenanceLinks">;
+  readonly contentPlan: Pick<ContentPlanPort, "createPlan" | "getPlan" | "addSection" | "addClaim" | "attachCitation">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -82,6 +84,11 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("production.citation.add", async (request) => agentDependencies.sourceRegistry.addCitation(request.payload));
     transport.register("production.citation.list", async (request) => agentDependencies.sourceRegistry.listCitations(request.payload.sourceId, request.payload.limit));
     transport.register("production.provenance.list", async (request) => agentDependencies.sourceRegistry.listProvenanceLinks(request.payload.entityId, request.payload.limit));
+    transport.register("production.plan.create", async (request) => agentDependencies.contentPlan.createPlan(request.payload));
+    transport.register("production.plan.get", async (request) => agentDependencies.contentPlan.getPlan(request.payload.planId));
+    transport.register("production.plan.section.add", async (request) => agentDependencies.contentPlan.addSection(request.payload));
+    transport.register("production.plan.claim.add", async (request) => agentDependencies.contentPlan.addClaim(request.payload));
+    transport.register("production.plan.citation.attach", async (request) => agentDependencies.contentPlan.attachCitation(request.payload));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

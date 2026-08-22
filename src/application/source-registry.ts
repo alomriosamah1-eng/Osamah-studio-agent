@@ -73,6 +73,7 @@ export interface SourceRegistryPort {
   getSource(sourceId: string): SourceRecord | undefined;
   listSources(limit?: number): readonly SourceRecord[];
   addCitation(request: AddCitationRequest): CitationRecord;
+  getCitation(citationId: string): CitationRecord | undefined;
   listCitations(sourceId: string, limit?: number): readonly CitationRecord[];
   addProvenanceLink(request: AddProvenanceLinkRequest): ProvenanceLink;
   listProvenanceLinks(entityId: string, limit?: number): readonly ProvenanceLink[];
@@ -215,6 +216,10 @@ export class InMemorySourceRegistry implements SourceRegistryPort {
     };
     this.citations.set(citation.citationId, citation);
     return citation;
+  }
+
+  public getCitation(citationId: string): CitationRecord | undefined {
+    return this.citations.get(cleanId(citationId, "citationId"));
   }
 
   public listCitations(sourceId: string, limit = 64): readonly CitationRecord[] {
