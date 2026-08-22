@@ -15,7 +15,7 @@
 | TTS عربي | ArTST/Klaam/نماذج عربية | بحث وتجارب ومقارنة جودة | RESEARCH/LEGAL CHECK |
 | voice cloning | OpenVoice | تجربة opt-in فقط | خارج MVP، مراجعة موافقة وحقوق |
 
-المشاريع المذكورة متاحة في GitHub، لكن وجود مستودع لا يعني جودة صوت أو حق استخدام تجاري. تحفظ كل تجربة مع model card وlicense وlanguage/dialect وWER/MOS أو مقياس بديل. [1] [2] [3] [4]
+المشاريع المذكورة متاحة في GitHub، لكن وجود مستودع لا يعني جودة صوت أو حق استخدام تجاري. تحفظ كل تجربة مع model card وlicense وlanguage/dialect وWER/MOS أو مقياس بديل. [1] [2] [3] [4]. ترتبط هذه القواعد بدراسة Virtual Human المؤجلة في `docs/84-virtual-human-research-and-comparison.md` و`docs/85-virtual-human-architecture-and-contracts.md`؛ لا يوجد Audio Runtime أو TTS أو STT أو Wake Word منفذ في الشريحة الحالية.
 
 ## العربية واللهجات
 
@@ -47,4 +47,4 @@
 [6]: https://github.com/ARBML/klaam "Klaam repository"
 [7]: https://github.com/myshell-ai/OpenVoice "OpenVoice repository"
 
-إعداد: Manus AI. تاريخ الفحص: 2026-08-21.
+إعداد: Manus AI. تاريخ الفحص: 2026-08-21. تحديث توثيقي: 2026-08-22؛ دراسة Avatar 84–86 مرجع مؤجل فقط ولا تضيف dependencies أو runtime.

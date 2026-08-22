@@ -39,4 +39,8 @@
 
 يجب أن تتضمن CI smoke benchmarks، ونتائجها artifact JSON. تُقارن النتائج بالـ baseline لا بالحدس. عند تراجع p95 أو RSS بنسبة 20%، يفتح regression issue.
 
-إعداد: Manus AI. تاريخ الفحص: 2026-08-21.
+## Avatar future track
+
+تضيف دراسة Virtual Human في `docs/84-virtual-human-research-and-comparison.md` و`docs/85-virtual-human-architecture-and-contracts.md` ميزانية قبول مقترحة ومسار degradation خاصًا بـAvatar. هذه أهداف مستقبلية وليست قياسات منفذة: لا model أو renderer أو audio worker يُحمّل عند startup، ولا يسمح Avatar بتجاوز resource governor أو تجميد Workspace. يبدأ الاختبار من static/text ثم low-poly WebGL، ويظل high-realism portrait service اختياريًا ومعزولًا. لا تُقبل أي مرحلة تنفيذ قبل قياس RSS/CPU/GPU/frame time وfallback على Ubuntu 8GB.
+
+إعداد: Manus AI. تاريخ الفحص: 2026-08-21. تحديث توثيقي: 2026-08-22؛ مسار Avatar مؤجل وميزانيته المقترحة في docs 84–86 وليست قياسات فعلية.

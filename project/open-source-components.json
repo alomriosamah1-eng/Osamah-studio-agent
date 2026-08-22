@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of": "2026-08-21",
+  "as_of": "2026-08-22",
   "source_snapshot": "research/ecosystem-github-metadata.ndjson",
   "components": [
     {"project":"anomalyco/opencode","url":"https://github.com/anomalyco/opencode","license":"MIT","classification":"ADAPT/WRAP","role":"coding-agent and desktop patterns","status":"research"},
@@ -25,7 +25,13 @@
     {"project":"gitleaks/gitleaks","url":"https://github.com/gitleaks/gitleaks","license":"MIT","classification":"USE in CI","role":"secret scanning","status":"candidate"},
     {"project":"aquasecurity/trivy","url":"https://github.com/aquasecurity/trivy","license":"Apache-2.0","classification":"USE in CI","role":"dependency/container scanning","status":"candidate"},
     {"project":"ollama/ollama","url":"https://github.com/ollama/ollama","license":"MIT","classification":"WRAP optional","role":"local model management","status":"candidate"},
-    {"project":"ggml-org/llama.cpp","url":"https://github.com/ggml-org/llama.cpp","license":"MIT","classification":"WRAP optional","role":"local inference","status":"candidate"}
+    {"project":"ggml-org/llama.cpp","url":"https://github.com/ggml-org/llama.cpp","license":"MIT","classification":"WRAP optional","role":"local inference","status":"candidate"},
+    {"project":"pixiv/three-vrm","url":"https://github.com/pixiv/three-vrm","license":"MIT","classification":"REFERENCE/FUTURE","role":"VRM avatar runtime/loader","status":"benchmark-later"},
+    {"project":"met4citizen/TalkingHead","url":"https://github.com/met4citizen/talkinghead","license":"MIT","classification":"REFERENCE/FUTURE","role":"browser 3D avatar and lip-sync prototype","status":"benchmark-later"},
+    {"project":"k2-fsa/sherpa-onnx","url":"https://github.com/k2-fsa/sherpa-onnx","license":"Apache-2.0","classification":"OPTIONAL WRAP","role":"local ASR/TTS/VAD/keyword process adapter","status":"model-license-check-required"},
+    {"project":"ggml-org/whisper.cpp","url":"https://github.com/ggml-org/whisper.cpp","license":"MIT","classification":"OPTIONAL WRAP","role":"local STT worker","status":"post-MVP-benchmark"},
+    {"project":"dscripka/openWakeWord","url":"https://github.com/dscripka/openWakeWord","license":"Apache-2.0 code; CC BY-NC-SA 4.0 included models","classification":"REFERENCE ONLY","role":"wake-word framework research","status":"pretrained-models-noncommercial"},
+    {"project":"M3-org/CharacterStudio","url":"https://github.com/M3-org/CharacterStudio","license":"MIT","classification":"REFERENCE ONLY","role":"VRM character creation/optimization","status":"security-review-required"}
   ],
-  "legal_review_required": ["AGPL/GPL components", "NOASSERTION licenses", "model weights and voice assets", "FFmpeg build configuration", "third-party transitive dependencies"]
+  "legal_review_required": ["AGPL/GPL components", "NOASSERTION licenses", "model weights and voice assets", "Avatar character/animation assets", "CC BY-NC-SA wake-word models", "CPML/unclear TTS models", "FFmpeg build configuration", "third-party transitive dependencies"]
 }

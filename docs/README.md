@@ -49,6 +49,9 @@
 | `81-report-document-contract.md` | عقد التقرير المحلي وprovenance وclaims والمراجعة وحدود عدم التصدير |
 | `82-application-settings-control-center.md` | عقد إعدادات التطبيق واللغة والمظهر ومركز التحكم والإدارات |
 | `83-control-center-external-storage-self-development.md` | إدارة الحسابات الخارجية والتخزين والتطوير الذاتي وقواعد consent وHuman Gate |
+| `84-virtual-human-research-and-comparison.md` | البحث الحديث والمقارنة وTop-5 scoring لنظام Virtual Human / AI Avatar |
+| `85-virtual-human-architecture-and-contracts.md` | المعمارية المقترحة، state machine، العقود، الخصوصية، الأداء، والـOverlay |
+| `86-virtual-human-licensing-roadmap-and-decisions.md` | License Matrix وDecision Log وخارطة Avatar المستقبلية 0–11 |
 
 ## ملفات الحالة خارج هذا المجلد
 
@@ -60,6 +63,6 @@
 
 ## بروتوكول تحديث مختصر
 
-عند اكتشاف معلومة جديدة، سجّل المصدر وتاريخ الفحص وتصنيف الثقة، ثم حدّث الوثيقة المتأثرة وملف الحالة وملف البيانات إن كان القرار قابلًا للآلة. عند تغيير قرار معماري، أضف ADR لا تعدّل التاريخ بصمت. قبل الدفع، شغّل تدقيق الروابط و`git diff --check` وتحقق من عدم وجود أسرار.
+عند اكتشاف معلومة جديدة، سجّل المصدر وتاريخ الفحص وتصنيف الثقة، ثم حدّث الوثيقة المتأثرة وملف الحالة وملف البيانات إن كان القرار قابلًا للآلة. عند تغيير قرار معماري، أضف ADR لا تعدّل التاريخ بصمت. وثائق Avatar 84–86 دراسة مؤجلة فقط ولا تمنح إذنًا لتعديل runtime أو تثبيت حزم. قبل الدفع، شغّل تدقيق الروابط و`git diff --check` وتحقق من عدم وجود أسرار.
 
 إعداد: Manus AI.

@@ -1,5 +1,24 @@
 # سجل التغييرات
 
+## [Unreleased] — Virtual Human Assistant / AI Avatar Research
+
+### Added
+
+- `docs/84-virtual-human-research-and-comparison.md` للمصادر الأولية والمقارنة التقنية وTop-5 scoring بالأوزان المحددة.
+- `docs/85-virtual-human-architecture-and-contracts.md` لفصل الطبقات، state machine، typed event/API contracts، VoiceProfile، الخصوصية، الأداء، والـDesktop Overlay.
+- `docs/86-virtual-human-licensing-roadmap-and-decisions.md` لـLicense Matrix وDecision Log وRoadmap phases 0–11 ومعايير القبول.
+- سجلات البحث `research/avatar-*` و`research/github-metadata-2026-08-22.md` و`research/voice-metadata-2026-08-22.md`، وتسجيل المرشحين في `project/open-source-components.json` بحالات research/deferred.
+
+### Verified
+
+- جرد `package.json` و`src` وElectron/typed IPC/Agent Runtime/Second Brain يؤكد عدم وجود Avatar/Audio/TTS/STT/Wake Word/Overlay runtime قبل هذه الشريحة.
+- فُحصت مصادر GitHub والوثائق الرسمية والمعلومات الترخيصية حتى 2026-08-22، مع تصنيف `CONFIRMED` و`STRONG INFERENCE` و`UNKNOWN/NOT VERIFIED` وعدم تحويل model/voice license إلى افتراض تجاري.
+
+### Boundaries
+
+- هذه الشريحة **RESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION ONLY**؛ لم تُضف حزمة أو model أو voice أو asset أو native toolchain، ولم يُعدّل runtime أو typed IPC أو Electron shell لأجل Avatar.
+- Avatar planned/deferred داخل Second Brain، والميكروفون وwake word والـoverlay معطلة افتراضيًا في التصميم؛ Human Gate وtext fallback وUbuntu 8GB degradation إلزامية لأي تنفيذ لاحق.
+
 ## [Unreleased] — Arabic-first Application Settings وControl Center
 
 ### Added

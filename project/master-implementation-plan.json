@@ -262,8 +262,41 @@
     "PPTX/media expansion",
     "semantic embeddings and optional vector services",
     "voice",
+    "avatar virtual-human track (documentation complete; implementation deferred)",
     "automation and external integrations",
     "multi-user cloud deployment",
     "OpenTo integration until official evidence"
-  ]
+  ],
+  "planned_deferred_tracks": {
+    "virtual_human_avatar": {
+      "status": "documented-only",
+      "owner_decision_required": true,
+      "product_section": "second-brain",
+      "roadmap_reference": "docs/86-virtual-human-licensing-roadmap-and-decisions.md",
+      "architecture_reference": "docs/85-virtual-human-architecture-and-contracts.md",
+      "research_reference": "docs/84-virtual-human-research-and-comparison.md",
+      "constraints": [
+        "no implementation in current slice",
+        "no dependency/model/voice/toolchain added",
+        "preserve Electron/TypeScript/typed IPC runtime",
+        "offline-first and microphone/wake/overlay opt-in",
+        "Human Gate remains authoritative",
+        "Ubuntu 8GB low-memory degradation is mandatory"
+      ],
+      "phases": [
+        "research",
+        "prototype",
+        "avatar-runtime",
+        "tts",
+        "lip-sync",
+        "agent-integration",
+        "second-brain-integration",
+        "wake-word",
+        "desktop-overlay",
+        "performance-optimization",
+        "cross-platform-testing",
+        "production-hardening"
+      ]
+    }
+  }
 }

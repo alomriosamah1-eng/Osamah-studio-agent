@@ -39,7 +39,7 @@ Mobile subsystem له LightweightPreview وFixturePreview في compatibility mod
 
 كل feature تحتاج architecture وinterface وdata model وdependencies وrisks وacceptance criteria وimplementation وtests وdocs وcommit وpush وverification. لا تدخل الأفعال الحساسة إلى Agent Runtime عبر المسار غير المحمي؛ استخدم `submitGuarded()` مع `AgentActionRequest` وapproval matching.
 
-في SQLite، لا تعدّل migration منشورة؛ أضف ملفًا جديدًا. يفشل runner مغلقًا عند checksum mismatch. لا يستبدل restore profile الحي. Redaction recursive للـlogs/events ليست بديلًا عن secret provider وسياسة أسرار كاملة.
+في SQLite، لا تعدّل migration منشورة؛ أضف ملفًا جديدًا. يفشل runner مغلقًا عند checksum mismatch. لا يستبدل restore profile الحي. Redaction recursive للـlogs/events ليست بديلًا عن secret provider وسياسة أسرار كاملة. ينطبق المبدأ نفسه على Avatar: لا raw audio أو voice data أو model weights أو tokens داخل Git أو logs أو prompts.
 
 ## الأوامر الحالية
 
@@ -64,11 +64,13 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-بعد إغلاق Arabic-first Application Settings، تكون الخطوة التقنية المقترحة إكمال localization resources أو `PreviewSharePort`، ثم metadata-only External Accounts وStorage Settings وSelf-development Candidate Review؛ لا تُضاف persistence أو OAuth/MCP أو embeddings أو skill activation تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
+أُغلقت شريحة Arabic-first Application Settings وControl Center. أُنجزت دراسة Virtual Human / AI Avatar في docs `84–86` وresearch metadata كـRESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION فقط؛ لا Avatar implementation، ولا Audio/TTS/STT/Wake Word/Overlay runtime، ولا packages/models/assets/native toolchains أضيفت. المسار planned/deferred داخل Second Brain ويحتاج قرار مالك مستقل؛ يحافظ على Electron/TypeScript/typed IPC وHuman Gate وUbuntu 8GB degradation.
+
+بعد إغلاق هذه الدراسة، تكون الخطوة التقنية المقترحة إكمال localization resources أو `PreviewSharePort`، ثم metadata-only External Accounts وStorage Settings وSelf-development Candidate Review؛ لا تُضاف persistence أو OAuth/MCP أو embeddings أو skill activation تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` متحقق local==remote؛ docs-close توثيقي مستقل لهذه التسليمة. آخر gate: `181/181` وdesktop/performance/security PASS. Memory Review feature/docs-close وaudit documentation feature/docs-close وAgent Catalog feature/docs-close مثبتة في الفقرة أعلاه ومتحققة local==remote.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. Avatar study docs `84–86` وresearch metadata مكتملة توثيقيًا فقط، ونتيجة التسليم المطلوبة commit docs feature ثم docs-close منفصل؛ يجب التوقف بعدهما بانتظار قرار تنفيذ Avatar. Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` متحقق local==remote؛ docs-close توثيقي مستقل لهذه التسليمة. آخر gate: `181/181` وdesktop/performance/security PASS. Memory Review feature/docs-close وaudit documentation feature/docs-close وAgent Catalog feature/docs-close مثبتة في الفقرة أعلاه ومتحققة local==remote.

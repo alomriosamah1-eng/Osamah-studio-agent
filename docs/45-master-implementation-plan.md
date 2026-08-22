@@ -290,6 +290,14 @@ src/
 
 **معيار القبول:** جلسة صوتية قابلة للحذف، permission واضحة، text fallback يعمل offline، ولا يرسل التسجيل إلى provider دون policy وconsent.
 
+### مسار Avatar المؤجل — Virtual Human داخل Second Brain
+
+هذا المسار **planned/deferred وdocumentation-only** في الوقت الحالي، ولا يغير ترتيب مراحل MVP أو يضيف dependency إلى runtime الحالي. بعد ثبات Voice Layer وSecond Brain وPerformance Governance، يمر التنفيذ المستقبلي بالمراحل المحددة في `docs/86-virtual-human-licensing-roadmap-and-decisions.md`: Research، Prototype، Avatar Runtime، TTS، Lip Sync، Agent Integration، Second Brain Integration، Wake Word، Desktop Overlay، Performance Optimization، Cross-platform Testing، ثم Production Hardening.
+
+القرار المعماري هو فصل Character Model وAvatar Runtime وAnimation وFacial Rig وLip Sync وTTS وSTT وWake Word وAgent Brain وDesktop Overlay. يبدأ المسار المستقبلي بـstatic/text أو low-poly WebGL مع degradation ladder، ويمنع microphone وwake word وoverlay افتراضيًا. لا يُعلن دعم العربية/اللهجة اليمنية أو الاستخدام التجاري لأي model/voice قبل benchmark وprovenance وlicense review. لا توجد Avatar files أو packages أو models ضمن الشريحة الحالية.
+
+**معيار القبول للدراسة:** توجد مقارنة Top-5، License Matrix، state machine، typed event/API design، privacy/security policy، performance budget، وroadmap 0–11 موثقة مع مصادر أولية؛ وتظل الدراسة منفصلة عن أي implementation.
+
 ### المرحلة 12 — Automation وJobs وScheduling
 
 **الهدف:** إنشاء محرك workflows محلي محدود قابل للإيقاف والاستئناف، لا microservice دائم في MVP.

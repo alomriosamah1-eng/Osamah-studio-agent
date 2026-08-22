@@ -1,0 +1,975 @@
+DATE=2026-08-22
+CHECK
+Already up to date
+Done in 424ms using pnpm v11.20.0
+$ pnpm typecheck && pnpm test
+$ tsc -p tsconfig.json --noEmit
+$ tsx --test src/*.test.ts src/**/*.test.ts
+TAP version 13
+# Subtest: default agent catalog exposes the 46 roles with explicit execution status
+ok 1 - default agent catalog exposes the 46 roles with explicit execution status
+  ---
+  duration_ms: 1.542098
+  ...
+# Subtest: agent definitions carry bounded mission, handoff, privacy, and approval fields
+ok 2 - agent definitions carry bounded mission, handoff, privacy, and approval fields
+  ---
+  duration_ms: 2.017152
+  ...
+# Subtest: catalog list is bounded and get fails closed for unsafe identifiers
+ok 3 - catalog list is bounded and get fails closed for unsafe identifiers
+  ---
+  duration_ms: 0.952909
+  ...
+# Subtest: catalog rejects duplicate IDs and invalid definition fields before storage
+ok 4 - catalog rejects duplicate IDs and invalid definition fields before storage
+  ---
+  duration_ms: 0.262047
+  ...
+# Subtest: bounded agent runtime runs one job at a time and preserves result ordering
+ok 5 - bounded agent runtime runs one job at a time and preserves result ordering
+  ---
+  duration_ms: 1.917276
+  ...
+# Subtest: bounded agent runtime cancels queued work without starting it
+ok 6 - bounded agent runtime cancels queued work without starting it
+  ---
+  duration_ms: 0.673266
+  ...
+# Subtest: bounded agent runtime aborts cooperative work on timeout
+ok 7 - bounded agent runtime aborts cooperative work on timeout
+  ---
+  duration_ms: 5.98886
+  ...
+# Subtest: bounded agent runtime keeps only low-memory history
+ok 8 - bounded agent runtime keeps only low-memory history
+  ---
+  duration_ms: 1.758444
+  ...
+# Subtest: agent task preview returns context, plan, critique, and no-mutation contract
+ok 9 - agent task preview returns context, plan, critique, and no-mutation contract
+  ---
+  duration_ms: 2.600267
+  ...
+# Subtest: agent task preview propagates bounded context warnings without mutation
+ok 10 - agent task preview propagates bounded context warnings without mutation
+  ---
+  duration_ms: 0.500608
+  ...
+# Subtest: agent task preview rejects unsafe paths before context or planner access
+ok 11 - agent task preview rejects unsafe paths before context or planner access
+  ---
+  duration_ms: 0.64535
+  ...
+# Subtest: agent task preview rejects oversized bounded request
+ok 12 - agent task preview rejects oversized bounded request
+  ---
+  duration_ms: 0.260436
+  ...
+# (node:141503) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: agent work cycle waits for approval, checkpoints, applies, and emits lifecycle events
+ok 13 - agent work cycle waits for approval, checkpoints, applies, and emits lifecycle events
+  ---
+  duration_ms: 35.407601
+  ...
+# Subtest: work cycle resume rejects provider selection changes after approval
+ok 14 - work cycle resume rejects provider selection changes after approval
+  ---
+  duration_ms: 10.968361
+  ...
+# Subtest: denied work cycle never applies its patch
+ok 15 - denied work cycle never applies its patch
+  ---
+  duration_ms: 16.809948
+  ...
+# Subtest: planner critique rejects a malformed plan before approval or filesystem mutation
+ok 16 - planner critique rejects a malformed plan before approval or filesystem mutation
+  ---
+  duration_ms: 14.690454
+  ...
+# Subtest: patch conflict fails before approval and traversal never reaches the filesystem
+ok 17 - patch conflict fails before approval and traversal never reaches the filesystem
+  ---
+  duration_ms: 14.610401
+  ...
+# Subtest: an empty patch creates a checkpoint without entering the approval path
+ok 18 - an empty patch creates a checkpoint without entering the approval path
+  ---
+  duration_ms: 16.744479
+  ...
+# Subtest: application settings default to Arabic RTL dark comfortable local preferences
+ok 19 - application settings default to Arabic RTL dark comfortable local preferences
+  ---
+  duration_ms: 1.212285
+  ...
+# Subtest: application settings update derives direction and preserves unspecified fields
+ok 20 - application settings update derives direction and preserves unspecified fields
+  ---
+  duration_ms: 0.426613
+  ...
+# Subtest: application settings reject unsupported values and keep last valid snapshot
+ok 21 - application settings reject unsupported values and keep last valid snapshot
+  ---
+  duration_ms: 0.383023
+  ...
+# (node:141555) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: approval workflow allows low-risk reads and audits the decision
+ok 22 - approval workflow allows low-risk reads and audits the decision
+  ---
+  duration_ms: 1.136708
+  ...
+# Subtest: approval workflow creates a typed ticket, persists it, and resumes only after approval
+ok 23 - approval workflow creates a typed ticket, persists it, and resumes only after approval
+  ---
+  duration_ms: 0.534118
+  ...
+# Subtest: approval workflow denies mismatched and already denied actions
+ok 24 - approval workflow denies mismatched and already denied actions
+  ---
+  duration_ms: 0.527905
+  ...
+# Subtest: human gate lists pending tickets and records an explicit decision
+ok 25 - human gate lists pending tickets and records an explicit decision
+  ---
+  duration_ms: 0.34126
+  ...
+# Subtest: human gate rejects invalid decisions and unknown approvals fail closed
+ok 26 - human gate rejects invalid decisions and unknown approvals fail closed
+  ---
+  duration_ms: 0.150049
+  ...
+# Subtest: submitGuarded blocks before queueing and runs after the matching approval
+ok 27 - submitGuarded blocks before queueing and runs after the matching approval
+  ---
+  duration_ms: 1.030435
+  ...
+# Subtest: guarded actions fail closed when no authorization port is configured
+ok 28 - guarded actions fail closed when no authorization port is configured
+  ---
+  duration_ms: 0.150296
+  ...
+# Subtest: artifact assembly builds deterministic manifest from supported claims and linked assets
+ok 29 - artifact assembly builds deterministic manifest from supported claims and linked assets
+  ---
+  duration_ms: 3.616686
+  ...
+# Subtest: artifact assembly blocks unresolved claims and preserves review warnings
+ok 30 - artifact assembly blocks unresolved claims and preserves review warnings
+  ---
+  duration_ms: 0.343875
+  ...
+# Subtest: artifact assembly blocks blocked assets and rejects unknown or duplicate ids
+ok 31 - artifact assembly blocks blocked assets and rejects unknown or duplicate ids
+  ---
+  duration_ms: 0.592526
+  ...
+# Subtest: artifact assembly rejects unbounded references and unknown brief
+ok 32 - artifact assembly rejects unbounded references and unknown brief
+  ---
+  duration_ms: 0.212753
+  ...
+# Subtest: asset catalog registers bounded metadata and deduplicates the same locator/hash
+ok 33 - asset catalog registers bounded metadata and deduplicates the same locator/hash
+  ---
+  duration_ms: 2.314768
+  ...
+# Subtest: asset catalog rejects unknown source, invalid hash/bytes, unsafe locator, and oversized metadata
+ok 34 - asset catalog rejects unknown source, invalid hash/bytes, unsafe locator, and oversized metadata
+  ---
+  duration_ms: 0.528035
+  ...
+# Subtest: creative brief attaches allowed assets with explicit license/provenance warnings
+ok 35 - creative brief attaches allowed assets with explicit license/provenance warnings
+  ---
+  duration_ms: 1.213545
+  ...
+# Subtest: creative brief blocks blocked assets and duplicate attachments
+ok 36 - creative brief blocks blocked assets and duplicate attachments
+  ---
+  duration_ms: 0.328012
+  ...
+# (node:141573) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: composition keeps the lightweight in-memory backend as the default
+ok 37 - composition keeps the lightweight in-memory backend as the default
+  ---
+  duration_ms: 3.449901
+  ...
+# Subtest: composition registers explicitly provided local providers without probing them at startup
+ok 38 - composition registers explicitly provided local providers without probing them at startup
+  ---
+  duration_ms: 2.525443
+  ...
+# Subtest: composition routes a plan-less WorkCycle through the selected local provider and stops at Human Gate
+ok 39 - composition routes a plan-less WorkCycle through the selected local provider and stops at Human Gate
+  ---
+  duration_ms: 16.937741
+  ...
+# Subtest: composition opts into SQLite and preserves workspace data across restart
+ok 40 - composition opts into SQLite and preserves workspace data across restart
+  ---
+  duration_ms: 19.306824
+  ...
+# Subtest: composition hydrates pending approval tickets after SQLite restart
+ok 41 - composition hydrates pending approval tickets after SQLite restart
+  ---
+  duration_ms: 14.664572
+  ...
+# Subtest: composition uses a standard profile path and releases its exclusive lock
+ok 42 - composition uses a standard profile path and releases its exclusive lock
+  ---
+  duration_ms: 14.405302
+  ...
+# Subtest: composition falls back to memory only when explicitly allowed
+ok 43 - composition falls back to memory only when explicitly allowed
+  ---
+  duration_ms: 1.651321
+  ...
+# Subtest: content plan keeps claims unresolved until a known citation is attached
+ok 44 - content plan keeps claims unresolved until a known citation is attached
+  ---
+  duration_ms: 1.331759
+  ...
+# Subtest: content plan marks a claim supported by a known citation and preserves unverified warning
+ok 45 - content plan marks a claim supported by a known citation and preserves unverified warning
+  ---
+  duration_ms: 0.906295
+  ...
+# Subtest: content plan marks invalid citation evidence conflicted and rejects duplicate attachment
+ok 46 - content plan marks invalid citation evidence conflicted and rejects duplicate attachment
+  ---
+  duration_ms: 0.594854
+  ...
+# Subtest: content plan rejects unknown sections/citations and unbounded input
+ok 47 - content plan rejects unknown sections/citations and unbounded input
+  ---
+  duration_ms: 0.325068
+  ...
+# Subtest: desktop security policy allows only same file workspace URL
+ok 48 - desktop security policy allows only same file workspace URL
+  ---
+  duration_ms: 0.829021
+  ...
+# Subtest: desktop IPC trusts only the expected renderer sender and URL
+ok 49 - desktop IPC trusts only the expected renderer sender and URL
+  ---
+  duration_ms: 0.143512
+  ...
+# Subtest: bounded diff is deterministic and includes line metadata
+ok 50 - bounded diff is deterministic and includes line metadata
+  ---
+  duration_ms: 1.550417
+  ...
+# Subtest: bounded diff refuses to pretend completeness after line cap
+ok 51 - bounded diff refuses to pretend completeness after line cap
+  ---
+  duration_ms: 0.156091
+  ...
+# Subtest: editor store opens and proposes an in-memory edit without mutating the file
+ok 52 - editor store opens and proposes an in-memory edit without mutating the file
+  ---
+  duration_ms: 18.110734
+  ...
+# Subtest: editor store rejects stale source before producing a proposal
+ok 53 - editor store rejects stale source before producing a proposal
+  ---
+  duration_ms: 3.801498
+  ...
+# Subtest: editor store rejects unsafe paths, NUL content, and oversized content
+ok 54 - editor store rejects unsafe paths, NUL content, and oversized content
+  ---
+  duration_ms: 4.516562
+  ...
+# (node:141646) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: embedded simulator runs inside the application controller lifecycle
+ok 55 - embedded simulator runs inside the application controller lifecycle
+  ---
+  duration_ms: 2.714784
+  ...
+# Subtest: lightweight embedded controller refuses native transports and enforces one preview session
+ok 56 - lightweight embedded controller refuses native transports and enforces one preview session
+  ---
+  duration_ms: 1.5295
+  ...
+# Subtest: missing lightweight preview profile does not consume the resource admission slot
+ok 57 - missing lightweight preview profile does not consume the resource admission slot
+  ---
+  duration_ms: 0.190301
+  ...
+# Subtest: filesystem patch adapter previews and applies create/update operations atomically
+ok 58 - filesystem patch adapter previews and applies create/update operations atomically
+  ---
+  duration_ms: 9.928754
+  ...
+# Subtest: filesystem patch adapter refuses stale hashes, traversal, and symlink targets
+ok 59 - filesystem patch adapter refuses stale hashes, traversal, and symlink targets
+  ---
+  duration_ms: 5.634397
+  ...
+# Subtest: filesystem scanner reads fixture files and manifest without executing scripts
+ok 60 - filesystem scanner reads fixture files and manifest without executing scripts
+  ---
+  duration_ms: 4.230643
+  ...
+# Subtest: filesystem scanner rejects unsafe paths
+ok 61 - filesystem scanner rejects unsafe paths
+  ---
+  duration_ms: 1.472814
+  ...
+# (node:141687) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: opens a workspace, creates a session, and records domain events
+ok 62 - opens a workspace, creates a session, and records domain events
+  ---
+  duration_ms: 2.061072
+  ...
+# Subtest: requires approval for a sensitive action and resumes after approval
+ok 63 - requires approval for a sensitive action and resumes after approval
+  ---
+  duration_ms: 0.362122
+  ...
+# Subtest: rejects an invalid preview state transition
+ok 64 - rejects an invalid preview state transition
+  ---
+  duration_ms: 0.649778
+  ...
+# Subtest: supports lightweight preview geometry and ready lifecycle
+ok 65 - supports lightweight preview geometry and ready lifecycle
+  ---
+  duration_ms: 0.197508
+  ...
+# Subtest: Git read-only adapter parses branch and staged/unstaged/untracked state
+ok 66 - Git read-only adapter parses branch and staged/unstaged/untracked state
+  ---
+  duration_ms: 59.205665
+  ...
+# Subtest: Git read-only adapter returns bounded diff for the whole tree and selected file
+ok 67 - Git read-only adapter returns bounded diff for the whole tree and selected file
+  ---
+  duration_ms: 28.319945
+  ...
+# Subtest: Git read-only adapter marks oversized diff as truncated without changing files
+ok 68 - Git read-only adapter marks oversized diff as truncated without changing files
+  ---
+  duration_ms: 25.967243
+  ...
+# Subtest: Git read-only adapter fails closed for non-repository roots and unsafe paths
+ok 69 - Git read-only adapter fails closed for non-repository roots and unsafe paths
+  ---
+  duration_ms: 9.877072
+  ...
+# Subtest: Git read-only adapter rejects invalid construction bounds
+ok 70 - Git read-only adapter rejects invalid construction bounds
+  ---
+  duration_ms: 0.285772
+  ...
+# (node:141711) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: typed IPC starts and inspects embedded preview
+ok 71 - typed IPC starts and inspects embedded preview
+  ---
+  duration_ms: 3.250745
+  ...
+# Subtest: typed IPC opens a filesystem project and starts the embedded preview
+ok 72 - typed IPC opens a filesystem project and starts the embedded preview
+  ---
+  duration_ms: 17.8322
+  ...
+# Subtest: typed IPC registers and lists production sources without network or filesystem mutation
+ok 73 - typed IPC registers and lists production sources without network or filesystem mutation
+  ---
+  duration_ms: 6.719084
+  ...
+# Subtest: typed IPC builds a review-only content plan and preserves citation integrity
+ok 74 - typed IPC builds a review-only content plan and preserves citation integrity
+  ---
+  duration_ms: 2.087775
+  ...
+# Subtest: typed IPC lists a bounded project tree and opens text through the safe reader
+ok 75 - typed IPC lists a bounded project tree and opens text through the safe reader
+  ---
+  duration_ms: 8.659478
+  ...
+# Subtest: typed IPC opens and proposes editor documents without mutating the filesystem
+ok 76 - typed IPC opens and proposes editor documents without mutating the filesystem
+  ---
+  duration_ms: 6.06176
+  ...
+# Subtest: typed IPC rejects project entries that escape the selected root
+ok 77 - typed IPC rejects project entries that escape the selected root
+  ---
+  duration_ms: 2.44171
+  ...
+# Subtest: typed IPC inspects terminal commands without starting a process
+ok 78 - typed IPC inspects terminal commands without starting a process
+  ---
+  duration_ms: 2.831707
+  ...
+# Subtest: typed IPC exposes read-only Git status and diff without mutations
+ok 79 - typed IPC exposes read-only Git status and diff without mutations
+  ---
+  duration_ms: 12.736302
+  ...
+# Subtest: typed IPC exposes project context and a full guarded work cycle
+ok 80 - typed IPC exposes project context and a full guarded work cycle
+  ---
+  duration_ms: 59.727213
+  ...
+# Subtest: typed IPC starts a plan-less WorkCycle with provider/model selection and preserves Human Gate
+ok 81 - typed IPC starts a plan-less WorkCycle with provider/model selection and preserves Human Gate
+  ---
+  duration_ms: 11.204645
+  ...
+# Subtest: typed IPC can cancel a waiting work cycle before approval
+ok 82 - typed IPC can cancel a waiting work cycle before approval
+  ---
+  duration_ms: 8.063019
+  ...
+# Subtest: typed approval events accept safe ticket payloads and reject malformed payloads
+ok 83 - typed approval events accept safe ticket payloads and reject malformed payloads
+  ---
+  duration_ms: 0.278136
+  ...
+# Subtest: typed IPC lists providers, configures disabled local providers, and runs explicit doctor
+ok 84 - typed IPC lists providers, configures disabled local providers, and runs explicit doctor
+  ---
+  duration_ms: 1.453103
+  ...
+# Subtest: typed IPC rejects malformed, unknown, and duplicate requests
+ok 85 - typed IPC rejects malformed, unknown, and duplicate requests
+  ---
+  duration_ms: 0.219234
+  ...
+# Subtest: typed IPC previews context and task plan without mutation or approval ticket
+ok 86 - typed IPC previews context and task plan without mutation or approval ticket
+  ---
+  duration_ms: 5.748668
+  ...
+# Subtest: typed IPC rejects malformed task.preview paths before application access
+ok 87 - typed IPC rejects malformed task.preview paths before application access
+  ---
+  duration_ms: 0.478122
+  ...
+# Subtest: typed IPC captures and searches review-only memory without provider or approval
+ok 88 - typed IPC captures and searches review-only memory without provider or approval
+  ---
+  duration_ms: 1.405467
+  ...
+# Subtest: typed IPC reviews memory explicitly and keeps confirmed entries local-only
+ok 89 - typed IPC reviews memory explicitly and keeps confirmed entries local-only
+  ---
+  duration_ms: 0.832673
+  ...
+# Subtest: typed IPC exposes the bounded agent catalog without execution or approval
+ok 90 - typed IPC exposes the bounded agent catalog without execution or approval
+  ---
+  duration_ms: 0.742598
+  ...
+# Subtest: typed IPC exposes bounded report documents with provenance and explicit review
+ok 91 - typed IPC exposes bounded report documents with provenance and explicit review
+  ---
+  duration_ms: 5.677655
+  ...
+# Subtest: typed IPC exposes Arabic-first application settings with bounded updates
+ok 92 - typed IPC exposes Arabic-first application settings with bounded updates
+  ---
+  duration_ms: 0.653369
+  ...
+# Subtest: typed IPC exposes render policy preview without starting a renderer
+ok 93 - typed IPC exposes render policy preview without starting a renderer
+  ---
+  duration_ms: 0.685384
+  ...
+# Subtest: typed IPC assembles a review-only artifact manifest without render or approval
+ok 94 - typed IPC assembles a review-only artifact manifest without render or approval
+  ---
+  duration_ms: 1.511906
+  ...
+# Subtest: Ollama adapter is inert at construction and maps generate responses
+ok 95 - Ollama adapter is inert at construction and maps generate responses
+  ---
+  duration_ms: 38.233029
+  ...
+# Subtest: llama.cpp adapter maps OpenAI-compatible chat responses and health
+ok 96 - llama.cpp adapter maps OpenAI-compatible chat responses and health
+  ---
+  duration_ms: 1.032173
+  ...
+# Subtest: local HTTP adapters reject non-loopback URLs, credentials, and model mismatches
+ok 97 - local HTTP adapters reject non-loopback URLs, credentials, and model mismatches
+  ---
+  duration_ms: 1.25807
+  ...
+# Subtest: local HTTP adapters convert malformed output and HTTP failures to typed errors
+ok 98 - local HTTP adapters convert malformed output and HTTP failures to typed errors
+  ---
+  duration_ms: 0.992195
+  ...
+# Subtest: local HTTP adapters enforce cancellation and timeout without hanging
+ok 99 - local HTTP adapters enforce cancellation and timeout without hanging
+  ---
+  duration_ms: 6.398138
+  ...
+# Subtest: memory capture creates a review-required redacted entry with explicit privacy defaults
+ok 100 - memory capture creates a review-required redacted entry with explicit privacy defaults
+  ---
+  duration_ms: 1.489769
+  ...
+# Subtest: memory capture searches bounded local entries and deduplicates identical captures
+ok 101 - memory capture searches bounded local entries and deduplicates identical captures
+  ---
+  duration_ms: 1.203215
+  ...
+# Subtest: memory capture rejects unknown source provenance and unsafe or duplicate references
+ok 102 - memory capture rejects unknown source provenance and unsafe or duplicate references
+  ---
+  duration_ms: 0.489986
+  ...
+# Subtest: memory capture preserves review-only state and enforces bounded limits
+ok 103 - memory capture preserves review-only state and enforces bounded limits
+  ---
+  duration_ms: 0.293915
+  ...
+# Subtest: memory review explicitly confirms or archives entries without changing provider access
+ok 104 - memory review explicitly confirms or archives entries without changing provider access
+  ---
+  duration_ms: 0.413031
+  ...
+# Subtest: detects an Expo project without executing project scripts
+ok 105 - detects an Expo project without executing project scripts
+  ---
+  duration_ms: 1.173844
+  ...
+# Subtest: detects bare React Native project and native folders
+ok 106 - detects bare React Native project and native folders
+  ---
+  duration_ms: 0.346194
+  ...
+# Subtest: classifies general React workspaces without starting a project process
+ok 107 - classifies general React workspaces without starting a project process
+  ---
+  duration_ms: 0.555682
+  ...
+# Subtest: never exposes native iOS simulator on Windows/Linux
+ok 108 - never exposes native iOS simulator on Windows/Linux
+  ---
+  duration_ms: 0.186662
+  ...
+# Subtest: deterministic planner creates a bounded reviewable plan
+ok 109 - deterministic planner creates a bounded reviewable plan
+  ---
+  duration_ms: 1.169676
+  ...
+# Subtest: critic keeps truncated context reviewable with a warning
+ok 110 - critic keeps truncated context reviewable with a warning
+  ---
+  duration_ms: 1.027348
+  ...
+# Subtest: critic rejects unsafe targeted paths and mismatched byte counts
+ok 111 - critic rejects unsafe targeted paths and mismatched byte counts
+  ---
+  duration_ms: 0.613098
+  ...
+# Subtest: LLM planner routes the bounded prompt to the selected offline provider and parses strict JSON
+ok 112 - LLM planner routes the bounded prompt to the selected offline provider and parses strict JSON
+  ---
+  duration_ms: 1.186981
+  ...
+# Subtest: LLM planner rejects malformed or fenced output before WorkCycle can mutate
+ok 113 - LLM planner rejects malformed or fenced output before WorkCycle can mutate
+  ---
+  duration_ms: 0.343219
+  ...
+# Subtest: provider-backed planner critic reviews generated plans without granting mutation authorization
+ok 114 - provider-backed planner critic reviews generated plans without granting mutation authorization
+  ---
+  duration_ms: 0.336836
+  ...
+# Subtest: critic rejects duplicate plan steps and never treats blocking issues as accepted
+ok 115 - critic rejects duplicate plan steps and never treats blocking issues as accepted
+  ---
+  duration_ms: 0.246402
+  ...
+# Subtest: lightweight preview exposes device frame, orientation, and screenshot contract
+ok 116 - lightweight preview exposes device frame, orientation, and screenshot contract
+  ---
+  duration_ms: 1.104108
+  ...
+# Subtest: presentation renderer mounts a PreviewRenderNode tree with safe escaped markup
+ok 117 - presentation renderer mounts a PreviewRenderNode tree with safe escaped markup
+  ---
+  duration_ms: 7.508871
+  ...
+# Subtest: presentation renderer maps semantic node types and enforces render depth
+ok 118 - presentation renderer maps semantic node types and enforces render depth
+  ---
+  duration_ms: 0.463049
+  ...
+# Subtest: builds a deterministic preview bundle from project fixture files
+ok 119 - builds a deterministic preview bundle from project fixture files
+  ---
+  duration_ms: 7.727151
+  ...
+# Subtest: preview rejects module and asset budgets before creating a render tree
+ok 120 - preview rejects module and asset budgets before creating a render tree
+  ---
+  duration_ms: 4.284287
+  ...
+# Subtest: fixture runtime loads content, receives input, and refreshes with diagnostics
+ok 121 - fixture runtime loads content, receives input, and refreshes with diagnostics
+  ---
+  duration_ms: 0.410659
+  ...
+# Subtest: blocked imports fail before preview execution
+ok 122 - blocked imports fail before preview execution
+  ---
+  duration_ms: 0.246585
+  ...
+# Subtest: profile paths are deterministic and reject unsafe profile IDs
+ok 123 - profile paths are deterministic and reject unsafe profile IDs
+  ---
+  duration_ms: 6.770776
+  ...
+# Subtest: profile lock is exclusive and release is idempotent
+ok 124 - profile lock is exclusive and release is idempotent
+  ---
+  duration_ms: 6.565082
+  ...
+# Subtest: context index summarizes package manifest, files, and a non-repository root
+ok 125 - context index summarizes package manifest, files, and a non-repository root
+  ---
+  duration_ms: 21.219795
+  ...
+# Subtest: context index rejects traversal and oversized targeted context
+ok 126 - context index rejects traversal and oversized targeted context
+  ---
+  duration_ms: 5.075073
+  ...
+# Subtest: project tree is deterministic, directories precede files, and unsafe entries are skipped
+ok 127 - project tree is deterministic, directories precede files, and unsafe entries are skipped
+  ---
+  duration_ms: 6.9883
+  ...
+# Subtest: workspace file content exposes bounded UTF-8 bytes and deterministic sha256
+ok 128 - workspace file content exposes bounded UTF-8 bytes and deterministic sha256
+  ---
+  duration_ms: 0.298626
+  ...
+# Subtest: filesystem explorer ignores heavy directories, symlinks, and bounds tree output
+ok 129 - filesystem explorer ignores heavy directories, symlinks, and bounds tree output
+  ---
+  duration_ms: 6.727303
+  ...
+# Subtest: filesystem reader reads text with hash and rejects traversal, symlink, binary, and oversized files
+ok 130 - filesystem reader reads text with hash and rejects traversal, symlink, binary, and oversized files
+  ---
+  duration_ms: 7.743694
+  ...
+# Subtest: filesystem explorer surfaces invalid roots as bounded domain errors
+ok 131 - filesystem explorer surfaces invalid roots as bounded domain errors
+  ---
+  duration_ms: 0.537145
+  ...
+# Subtest: project preview service builds bundle from the fixture root
+ok 132 - project preview service builds bundle from the fixture root
+  ---
+  duration_ms: 10.984668
+  ...
+# Subtest: provider gateway chooses local provider before a faster remote provider
+ok 133 - provider gateway chooses local provider before a faster remote provider
+  ---
+  duration_ms: 1.860548
+  ...
+# Subtest: explicit provider selection excludes every other provider
+ok 134 - explicit provider selection excludes every other provider
+  ---
+  duration_ms: 0.845411
+  ...
+# Subtest: offline mode excludes remote providers and returns a clear no-provider error
+ok 135 - offline mode excludes remote providers and returns a clear no-provider error
+  ---
+  duration_ms: 0.269692
+  ...
+# Subtest: retryable provider failure falls back without duplicating a mutation
+ok 136 - retryable provider failure falls back without duplicating a mutation
+  ---
+  duration_ms: 0.329554
+  ...
+# Subtest: malformed provider output is bounded and can fall back to a second provider
+ok 137 - malformed provider output is bounded and can fall back to a second provider
+  ---
+  duration_ms: 0.314046
+  ...
+# Subtest: unavailable providers are skipped and explicit model mismatches fail before dispatch
+ok 138 - unavailable providers are skipped and explicit model mismatches fail before dispatch
+  ---
+  duration_ms: 0.318477
+  ...
+# Subtest: provider configuration validates loopback and low-memory bounds
+ok 139 - provider configuration validates loopback and low-memory bounds
+  ---
+  duration_ms: 1.502472
+  ...
+# Subtest: provider execution policy enforces one in-flight request and a bounded rate window
+ok 140 - provider execution policy enforces one in-flight request and a bounded rate window
+  ---
+  duration_ms: 1.118983
+  ...
+# Subtest: provider circuit opens after bounded failures and closes after cooldown success
+ok 141 - provider circuit opens after bounded failures and closes after cooldown success
+  ---
+  duration_ms: 0.249552
+  ...
+# Subtest: local provider doctor is explicit and reports disabled or blocked states without probes
+ok 142 - local provider doctor is explicit and reports disabled or blocked states without probes
+  ---
+  duration_ms: 0.594542
+  ...
+# Subtest: ProviderGateway applies execution policy before invoking an explicitly registered adapter
+ok 143 - ProviderGateway applies execution policy before invoking an explicitly registered adapter
+  ---
+  duration_ms: 0.929923
+  ...
+# Subtest: render policy allows a bounded preview without starting execution
+ok 144 - render policy allows a bounded preview without starting execution
+  ---
+  duration_ms: 1.826899
+  ...
+# Subtest: render policy requires review for an artifact with warnings and blocks missing artifacts
+ok 145 - render policy requires review for an artifact with warnings and blocks missing artifacts
+  ---
+  duration_ms: 0.24739
+  ...
+# Subtest: render policy blocks incompatible formats and blocked artifacts
+ok 146 - render policy blocks incompatible formats and blocked artifacts
+  ---
+  duration_ms: 0.209228
+  ...
+# Subtest: render policy rejects unsafe destination and oversized low-memory budgets
+ok 147 - render policy rejects unsafe destination and oversized low-memory budgets
+  ---
+  duration_ms: 0.521341
+  ...
+# Subtest: report document links supported evidence and allows explicit local approval
+ok 148 - report document links supported evidence and allows explicit local approval
+  ---
+  duration_ms: 2.976596
+  ...
+# Subtest: report document keeps claims unresolved without evidence and blocks invalid evidence
+ok 149 - report document keeps claims unresolved without evidence and blocks invalid evidence
+  ---
+  duration_ms: 0.587401
+  ...
+# Subtest: report document derives evidence from a content plan and redacts secret-shaped text
+ok 150 - report document derives evidence from a content plan and redacts secret-shaped text
+  ---
+  duration_ms: 0.844735
+  ...
+# Subtest: report document enforces bounded list and review decision inputs
+ok 151 - report document enforces bounded list and review decision inputs
+  ---
+  duration_ms: 0.290411
+  ...
+# Subtest: 8GB hosts select low-memory policy with one preview and one agent job
+ok 152 - 8GB hosts select low-memory policy with one preview and one agent job
+  ---
+  duration_ms: 1.408324
+  ...
+# Subtest: resource policy rejects oversized preview budgets before execution
+ok 153 - resource policy rejects oversized preview budgets before execution
+  ---
+  duration_ms: 0.265813
+  ...
+# Subtest: latest-only queue supersedes pending work while allowing the running task to finish
+ok 154 - latest-only queue supersedes pending work while allowing the running task to finish
+  ---
+  duration_ms: 0.641616
+  ...
+# Subtest: project classifier routes React Native and React to lightweight Web preview
+ok 155 - project classifier routes React Native and React to lightweight Web preview
+  ---
+  duration_ms: 0.433541
+  ...
+# Subtest: non-UI projects remain available to the general Workspace without preview processes
+ok 156 - non-UI projects remain available to the general Workspace without preview processes
+  ---
+  duration_ms: 0.444092
+  ...
+# Subtest: root picker requests a directory and returns its canonical path
+ok 157 - root picker requests a directory and returns its canonical path
+  ---
+  duration_ms: 4.41395
+  ...
+# Subtest: root picker preserves cancellation and reports empty selections
+ok 158 - root picker preserves cancellation and reports empty selections
+  ---
+  duration_ms: 0.235056
+  ...
+# Subtest: root picker rejects non-directory and missing roots without throwing to the renderer
+ok 159 - root picker rejects non-directory and missing roots without throwing to the renderer
+  ---
+  duration_ms: 3.435573
+  ...
+# Subtest: source registry registers bounded metadata and deduplicates the same source
+ok 160 - source registry registers bounded metadata and deduplicates the same source
+  ---
+  duration_ms: 1.03254
+  ...
+# Subtest: source registry requires hash and bytes for content validation
+ok 161 - source registry requires hash and bytes for content validation
+  ---
+  duration_ms: 0.640212
+  ...
+# Subtest: source registry links citations and provenance only to known entities
+ok 162 - source registry links citations and provenance only to known entities
+  ---
+  duration_ms: 0.445153
+  ...
+# Subtest: source registry rejects invalid spans, pages, and unbounded warnings
+ok 163 - source registry rejects invalid spans, pages, and unbounded warnings
+  ---
+  duration_ms: 0.313012
+  ...
+# (node:141968) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: SQLite applies migrations in order and persists the latest schema version
+ok 164 - SQLite applies migrations in order and persists the latest schema version
+  ---
+  duration_ms: 9.152006
+  ...
+# Subtest: SQLite rejects a changed checksum for an applied migration
+ok 165 - SQLite rejects a changed checksum for an applied migration
+  ---
+  duration_ms: 5.437372
+  ...
+# Subtest: SQLite repositories round-trip all current persisted entities across restart
+ok 166 - SQLite repositories round-trip all current persisted entities across restart
+  ---
+  duration_ms: 7.051937
+  ...
+# Subtest: SQLite event bus persists redacted domain events and notifies subscribers
+ok 167 - SQLite event bus persists redacted domain events and notifies subscribers
+  ---
+  duration_ms: 7.191421
+  ...
+# Subtest: SQLite observability sink stores redacted payloads and returns bounded newest-first records
+ok 168 - SQLite observability sink stores redacted payloads and returns bounded newest-first records
+  ---
+  duration_ms: 5.01416
+  ...
+# Subtest: SQLite approval store persists full tickets across restart
+ok 169 - SQLite approval store persists full tickets across restart
+  ---
+  duration_ms: 6.204279
+  ...
+# Subtest: SQLite audit trail persists redacted decision fields across restart
+ok 170 - SQLite audit trail persists redacted decision fields across restart
+  ---
+  duration_ms: 6.236281
+  ...
+# Subtest: audit export writes bounded redacted NDJSON and rejects live profile destinations
+ok 171 - audit export writes bounded redacted NDJSON and rejects live profile destinations
+  ---
+  duration_ms: 15.639289
+  ...
+# Subtest: audit retention deletes only records outside the bounded age and count policy
+ok 172 - audit retention deletes only records outside the bounded age and count policy
+  ---
+  duration_ms: 6.211741
+  ...
+# Subtest: redaction and transaction contracts are deterministic
+ok 173 - redaction and transaction contracts are deterministic
+  ---
+  duration_ms: 5.131922
+  ...
+# Subtest: SQLite backup creates a verifiable snapshot and restores into a separate profile
+ok 174 - SQLite backup creates a verifiable snapshot and restores into a separate profile
+  ---
+  duration_ms: 25.137543
+  ...
+# Subtest: in-memory observability sink remains available for fast application tests
+ok 175 - in-memory observability sink remains available for fast application tests
+  ---
+  duration_ms: 0.272057
+  ...
+# Subtest: read-only commands require Human Gate without implying execution
+ok 176 - read-only commands require Human Gate without implying execution
+  ---
+  duration_ms: 1.837553
+  ...
+# Subtest: mutating, toolchain, native, privileged, and unknown commands are denied
+ok 177 - mutating, toolchain, native, privileged, and unknown commands are denied
+  ---
+  duration_ms: 0.704743
+  ...
+# Subtest: display command redacts secret-shaped values and digest remains deterministic
+ok 178 - display command redacts secret-shaped values and digest remains deterministic
+  ---
+  duration_ms: 0.487834
+  ...
+# Subtest: shell wrappers and shell syntax fail closed instead of being escaped for execution
+ok 179 - shell wrappers and shell syntax fail closed instead of being escaped for execution
+  ---
+  duration_ms: 0.578557
+  ...
+# Subtest: cwd and request fields stay bounded and relative
+ok 180 - cwd and request fields stay bounded and relative
+  ---
+  duration_ms: 0.331512
+  ...
+# Subtest: explicit resource bounds are reflected in the decision
+ok 181 - explicit resource bounds are reflected in the decision
+  ---
+  duration_ms: 0.176393
+  ...
+1..181
+# tests 181
+# suites 0
+# pass 181
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2278.78263
+BUILD
+Already up to date
+Done in 409ms using pnpm v11.20.0
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+DESKTOP_SMOKE
+Already up to date
+Done in 414ms using pnpm v11.20.0
+$ pnpm build && node scripts/desktop-smoke.mjs
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+Osamah Studio Agent desktop shell ready.
+DESKTOP_RENDERER_CONSOLE=DESKTOP_ROOT_PICKER_SMOKE=PASS
+DESKTOP_RENDERER_CONSOLE=DESKTOP_IPC_SMOKE=PASS
+Osamah Studio Agent preload and IPC bridge ready.
+DESKTOP_IPC_SMOKE=PASS
+DESKTOP_WINDOW_CLOSED
+DESKTOP_SMOKE=PASS
+PERFORMANCE_SMOKE
+Already up to date
+Done in 396ms using pnpm v11.20.0
+$ pnpm build && node --max-old-space-size=768 scripts/performance-smoke.mjs
+$ tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs
+(node:142233) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PERF_PROFILE=low_memory
+PERF_CLASSIFICATION=react_native:lightweight_web
+PERF_PREVIEW_MS=14.06
+PERF_HEAP_DELTA_BYTES=707800
+PERF_RSS_DELTA_BYTES=3670016
+PERF_MODULES=2
+PERF_ASSETS=0
+PERF_MEMORY_TARGET_BYTES=1073741824
+PERF_SMOKE=PASS
+SQLITE_JSON_DIFF_SECRET
+SQLITE_MIGRATION_VALID=true
+MIGRATION_COUNT=4
+SCHEMA_VERSION=004
+TABLE_COUNT=12
+INDEX_COUNT=24
+SECRET_SCAN=PASS
