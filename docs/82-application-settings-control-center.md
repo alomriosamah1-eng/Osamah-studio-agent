@@ -46,6 +46,8 @@
 
 يُعرَّف `ApplicationSettings` ككائن صغير versioned ومحدود، ويُحدَّث عبر `settings.get` و`settings.update` فقط. التحديث يعيد snapshot canonical، ويرفض الحقول الزائدة والقيم خارج allowlist، ولا ينشئ approval ticket لأنه يغير تفضيلات العرض المحلية فقط. إعدادات الحسابات والتخزين والتطوير الذاتي لا تدخل في هذا العقد الأول؛ لكل منها port وpolicy وشريحة مستقلة.
 
+**حالة التنفيذ:** feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` دُفع وتحقق تطابقه مع `origin/main`. شملت الشريحة عقد الإعدادات والـtyped IPC وWorkspace Control Center وdesktop smoke؛ لا تعني أن التكاملات الخارجية أو التخزين أو التطوير الذاتي أصبحت منفذة.
+
 يكون `locale=ar` و`theme=dark` و`fontScale=1` و`density=comfortable` defaults صريحة في composition. يرسل core snapshot إلى Workspace عبر typed IPC، وتستعمل الواجهة `textContent` وattributes محدودة. عند فشل تحديث غير متوقع يحتفظ التطبيق بآخر snapshot صالح ولا يطبق half-state.
 
 ## الاختبارات المطلوبة

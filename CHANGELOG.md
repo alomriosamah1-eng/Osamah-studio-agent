@@ -14,7 +14,7 @@
 
 - `pnpm check`: `181/181` اختبارًا ناجحًا؛ syntax وbuild وdesktop smoke وperformance smoke وSQLite/JSON/diff/secret gates: PASS.
 - Electron settings smoke تحقق من Arabic-first defaults، English/LTR update، light theme، 125% font scale، compact density، ورفض extra keys دون approval ticket أو network call.
-- feature commit وdocs-close سيُثبتان بعد الدفع والتحقق المنفصل.
+- feature commit `d9a746c7deecb38488a5f632599be16c48c8e8cb` دُفع وتحقق local==remote؛ docs-close التوثيقي مستقل لهذه التسليمة.
 
 ### Boundaries
 

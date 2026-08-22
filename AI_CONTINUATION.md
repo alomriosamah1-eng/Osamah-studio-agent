@@ -54,7 +54,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو ReportDocument عند `24144c4f2495354b5d2d8a5a880192dc251173ff`، وdocs-close التوثيقي مستقل لهذه التسليمة. Memory Review feature/docs-close `4f1709cd927b77627c4532ec396f572f3bbedb2c`/`04e49b1590fe7df529636e8c721f5b57b86d439f`، وaudit documentation feature/docs-close `7ede715dfbd8f9e4d030848573b11e94790ba580`/`f0c3d86c329f45335cd22cc1465ba673435fea87`، وAgent Catalog feature/docs-close `56eebb97267c1e5979ea2e53c9f3fa9ec988d192`/`bc6c9ea3bf430e9586307390e0843fa5fe7c0b5d` متحققون local==remote.
+بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو Arabic-first Application Settings عند `d9a746c7deecb38488a5f632599be16c48c8e8cb`، وdocs-close التوثيقي مستقل لهذه التسليمة. ReportDocument feature/docs-close `24144c4f2495354b5d2d8a5a880192dc251173ff`/`56db328b51b42b64ea59830979df3e262d126237` متحققان local==remote. Memory Review feature/docs-close `4f1709cd927b77627c4532ec396f572f3bbedb2c`/`04e49b1590fe7df529636e8c721f5b57b86d439f`، وaudit documentation feature/docs-close `7ede715dfbd8f9e4d030848573b11e94790ba580`/`f0c3d86c329f45335cd22cc1465ba673435fea87`، وAgent Catalog feature/docs-close `56eebb97267c1e5979ea2e53c9f3fa9ec988d192`/`bc6c9ea3bf430e9586307390e0843fa5fe7c0b5d` متحققون local==remote.
 
 ## ما يزال مؤجلًا
 
@@ -64,11 +64,11 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-بعد إغلاق ReportDocument، تكون الخطوة التقنية المقترحة `PreviewSharePort` أو `bounded local memory links` حسب قرار المالك؛ لا تُضاف Markdown/PDF export أو persistence أو embeddings أو external connectors تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
+بعد إغلاق Arabic-first Application Settings، تكون الخطوة التقنية المقترحة إكمال localization resources أو `PreviewSharePort`، ثم metadata-only External Accounts وStorage Settings وSelf-development Candidate Review؛ لا تُضاف persistence أو OAuth/MCP أو embeddings أو skill activation تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. ReportDocument feature `24144c4f2495354b5d2d8a5a880192dc251173ff` متحقق local==remote؛ docs-close توثيقي مستقل لهذه التسليمة. Memory Review feature/docs-close وaudit documentation feature/docs-close وAgent Catalog feature/docs-close مثبتة في الفقرة أعلاه ومتحققة local==remote.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` متحقق local==remote؛ docs-close توثيقي مستقل لهذه التسليمة. آخر gate: `181/181` وdesktop/performance/security PASS. Memory Review feature/docs-close وaudit documentation feature/docs-close وAgent Catalog feature/docs-close مثبتة في الفقرة أعلاه ومتحققة local==remote.
