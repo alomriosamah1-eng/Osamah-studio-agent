@@ -27,10 +27,11 @@
       "production-studio-sources-content-assets-manifest-render-policy",
       "second-brain-memory-capture-review",
       "comprehensive-audit-documentation",
-      "agent-definition-contract-and-catalog"
+      "agent-definition-contract-and-catalog",
+      "report-document-bounded-reporting"
     ],
-    "tests": "172/172",
-    "next_phase": "report-document-or-preview-shareport-or-bounded-local-links",
+    "tests": "177/177",
+    "next_phase": "preview-shareport-or-bounded-local-links",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

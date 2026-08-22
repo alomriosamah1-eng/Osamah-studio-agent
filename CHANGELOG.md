@@ -15,7 +15,7 @@
 
 - `pnpm check`: `177/177` اختبارًا ناجحًا؛ syntax وbuild وdesktop smoke وperformance smoke وSQLite/JSON/diff/secret gates: PASS.
 - ReportDocument desktop smoke: `review_required` للتقرير ذي claim غير المدعوم، واستعادة list/get ناجحة، ولا renderer/export أو approval ticket تلقائي.
-- feature commit وdocs-close سيُثبتان بعد الدفع والتحقق المنفصل.
+- feature commit `24144c4f2495354b5d2d8a5a880192dc251173ff` دُفع وتحقق local==remote؛ docs-close التوثيقي مستقل لهذه التسليمة.
 
 ### Boundaries
 

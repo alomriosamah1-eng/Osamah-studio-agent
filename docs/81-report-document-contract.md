@@ -46,4 +46,4 @@
 
 تغطي الاختبارات إنشاء تقرير مدعوم، claim بلا evidence، evidence invalid، الاشتقاق من Content Plan، redaction، الحدود، المراجعة، IPC malformed payload، وElectron desktop smoke. تظل `reportDocumentContract.factualVerificationIsNotImplied=true` قاعدة صريحة.
 
-**Feature implementation:** `ReportDocument` وtyped IPC وWorkspace integration؛ SHA سيُثبت بعد feature push. **Docs-close:** سيُنشأ بعد تحديث ملفات الحالة والتحقق من البوابة النهائية.
+**Feature implementation:** `ReportDocument` وtyped IPC وWorkspace integration؛ feature `24144c4f2495354b5d2d8a5a880192dc251173ff` دُفع وتحقق تطابقه مع `origin/main`. **Docs-close:** commit توثيقي مستقل لهذه التسليمة، ويُعلن SHA بعد دفعه والتحقق من GitHub.
