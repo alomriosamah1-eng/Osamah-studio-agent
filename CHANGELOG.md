@@ -1053,3 +1053,15 @@
 - Hermes UI/TUI وDeepSeek Web UI وOpenCode UI ليست جزءًا من المنتج؛ واجهة Osamah الموحدة فقط تُعرض للمستخدم. upstream يستخدم كـruntime capability خلف adapter/worker وDTOs خاصة بالمشروع.
 - هذا bridge لا يتيح skill activation أو subagents أو browser/network أو terminal أو filesystem mutation تلقائيًا، ولا يمنح Hermes صلاحية مباشرة إلى live profile أو secrets.
 - DeepSeek Harness يبقى المرشح المختار لطبقة plugin/event spine بعد compatibility gate، وOpenCode يبقى coding-agent provider bridge الأساسي؛ لا تُشغّل agent loops متعددة لنفس الطلب.
+
+## [Unreleased] — DeepSeek Harness Bridge Decision
+
+### Decision
+
+- أضيفت `docs/100-deepseek-harness-bridge-decision.md` لتثبيت أن DeepSeek Harness لا يُضاف الآن إلى dependency graph ولا يُشغّل كـagent loop ثالث؛ OpenCode هو coding/provider bridge وHermes هو skills/worker bridge، و`ProviderGateway` و`AgentWorkCycle` هما الحدود المالكة للتوجيه والدورة التنفيذية.
+- حُدّد DeepSeek كمرشح مؤجل لطبقة event-only plugin spine فقط، ويُعاد فتحه عند ظهور capability gap موثق مع compatibility وNode/peer graph وprocess isolation وresource وlicense وUI boundary gates.
+- حُدث `project/open-source-components.json` إلى `deferred-not-selected` مع `duplicate_policy` و`reopen_gate`، كما عُيّن Monaco Editor كمسار الدمج المستقل التالي بدل إضافة runtime ثالث للوكلاء.
+
+### Boundaries
+
+لا تُضاف حزمة `@deepseek-ai/dsh` أو `dsh-agent` أو `dsh-agent-loop`، ولا تُشغّل `npx` أو install script أو Web UI داخل التطبيق. لا يحذف القرار أي عقد أو adapter سابق، ولا يغير واجهة Osamah الموحدة، ولا يفتح Avatar أو Voice أو semantic/vector memory.

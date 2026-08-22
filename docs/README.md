@@ -65,6 +65,7 @@
 | `97-production-markdown-destination-review.md` | destination review/ write الآمنة لـMarkdown مع relative-path/live-profile/no-overwrite/manifest guards وreport review وHuman Gate |
 | `98-open-source-integration-and-migration-plan.md` | خطة دمج المشاريع مفتوحة المصدر فعليًا عبر dependencies وSDKs وworkers وadapters، مع ترحيل OpenCode وDeepSeek وHermes وواجهة fallback |
 | `99-unified-ui-and-capability-deduplication.md` | قاعدة الواجهة الموحدة الخاصة بـOsamah، وownership واحد لكل قدرة، ومنع تسريب upstream UI أو تكرار agent loops/renderers |
+| `100-deepseek-harness-bridge-decision.md` | قرار إبقاء DeepSeek Harness كمرشح plugin/event spine مؤجلًا، ومنع agent loop ثالث أو dependency graph مكرر قبل بوابة توافق مستقلة |
 
 ## ملفات الحالة خارج هذا المجلد
 

@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | Desktop host | Electron | dependency فعلية | Main/BrowserWindow/Preload وprocess boundary | مستخدم فعليًا |
 | Agent coding harness | OpenCode | `@opencode-ai/sdk` adapter ثم local runtime worker | sessions، agents، prompts، provider/model selection، coding workflow | أول حزمة دمج فعلية |
-| Agent/plugin spine | DeepSeek Harness وCordis | packages أو host worker بعد compatibility gate | plugin registration، session/agent/capability events، durable event model | مخطط لدمج فعلي؛ لا يُنسخ core ولا تُعرض DSH UI |
+| Agent/plugin spine | DeepSeek Harness وCordis | event-only package أو host worker بعد capability-gap وcompatibility gates | plugin registration، session/agent/capability events، durable event model | deferred-not-selected في `docs/100-deepseek-harness-bridge-decision.md`؛ لا dependency ولا DSH UI ولا agent loop ثالث |
 | Skills/memory/automation | Hermes Agent | ACP/JSONL stdio worker adapter | skills on demand، profiles، subagents، automation وmemory integrations، مع Osamah-owned UI | bridge فعلي bounded؛ read-only filesystem فقط، mutation/terminal/permission مرفوضة، وبدون startup spawn |
 | Provider routing | ProviderGateway الخاص بـOsamah | `ProviderAdapter`/HTTP worker خلف ProviderGateway | routing/fallback/provider health، مع local-only mode | Gateway هو المالك الوحيد؛ OmniRoute fallback-only، وllama.cpp مرشح inference لا routing |
 | Frontend editor | Monaco Editor | lazy renderer dependency خلف `EditorSurfacePort` | code editing وlanguage services | بعد agent bridge؛ fallback الحالي لا يُحذف |
@@ -40,9 +40,9 @@
 
 ## DeepSeek Harness: العقل التشغيلي القابل للتوسعة
 
-يُعتمد DeepSeek Harness بوصفه مرشحًا فعليًا لطبقة plugin/event spine، لأن وثيقته تصف session events durable وagent events live وcapability seams من service definition/provider/consumer. لكن حزم `dsh-agent` و`dsh-agent-loop` الحالية تتطلب مجموعة peer packages وCordis وإصدارات RC متداخلة، بينما المشروع الحالي يعمل على Node 22.13 وDeepSeek root يحدد Node أحدث؛ لذلك لا تُضاف الحزم عشوائيًا إلى dependency graph الآن.
+يُحفظ DeepSeek Harness كمرشح upstream لطبقة plugin/event spine، لأن وثيقته تصف session events durable وagent events live وcapability seams من service definition/provider/consumer. لكن حزم `dsh-agent` و`dsh-agent-loop` الحالية تتطلب مجموعة peer packages وCordis وإصدارات RC متداخلة، بينما المشروع الحالي يعمل على Node 22.13؛ لذلك صدر القرار `docs/100-deepseek-harness-bridge-decision.md` بعدم إضافته الآن إلى dependency graph وعدم تشغيل agent loop ثالث.
 
-المسار الصحيح هو بناء `DeepSeekHarnessBridge` خلف `AgentHarnessPort` ثم اختبار أحد خيارين: حزم npm متوافقة بعد matrix تثبت Node/dependency/license/RSS، أو host worker مستقل يتواصل عبر JSONL/ACP typed. عند قبول bridge، يصبح DeepSeek هو plugin/event spine الفعلي لمسارات agent sessions وcapabilities، بينما تبقى approval وpolicy وaudit في Osamah. لا يُسمح للحزمة الخارجية بكتابة الملفات أو تشغيل shell مباشرة من renderer.
+المسار الصحيح هو بناء `DeepSeekHarnessBridge` خلف `AgentHarnessPort` ثم اختبار أحد خيارين: حزم npm متوافقة بعد matrix تثبت Node/dependency/license/RSS، أو host worker مستقل يتواصل عبر JSONL/ACP typed. إذا اجتازت إعادة الفتح بوابات capability gap وcompatibility وisolation وevents وresource وsupply-chain وUI boundary، يمكن بناء event-only bridge ضيق يجعل DeepSeek plugin/event spine فعليًا لمسارات مستقلة، بينما تبقى approval وpolicy وaudit في Osamah. لا يُسمح للحزمة الخارجية بكتابة الملفات أو تشغيل shell مباشرة من renderer، ولا يُسمح بتكرار OpenCode أو Hermes loops.
 
 ## Hermes Agent: المهارات والذاكرة والأتمتة
 
@@ -55,7 +55,7 @@
 | المرحلة | التنفيذ | معيار النجاح |
 |---|---|---|
 | A | إضافة OpenCode SDK adapter lazy، dependency/lockfile، health/session/prompt contract، fake loopback server test، وعدم تشغيله عند startup | round-trip typed ينجح، malformed output والremote URL وmissing server تفشل مغلقًا، وperformance smoke لا يتغير |
-| B | إضافة `AgentHarnessPort` وDeepSeek bridge design، ثم compatibility matrix للحزم المنشورة أو worker | bridge لا يسرّب SDK إلى Domain، session events قابلة للتتبع، Node/RAM/license gates ناجحة |
+| B | قرار DeepSeek bridge deferred-not-selected مع إبقاء event-only seam موثقًا | لا dependency ولا worker ولا DSH UI؛ لا يُعاد الفتح إلا مع capability gap وNode/RAM/license/isolation matrix ناجحة؛ القرار في docs/100 |
 | C | Hermes Agent ACP worker bridge وunified UI boundary | `@agentclientprotocol/sdk@1.4.0` و`HermesAcpProviderAdapter`؛ جلسات ACP تُترجم إلى Provider DTOs، read-only workspace، ورفض mutation/terminal/permission | subprocess stdio round-trip، session reuse، bounded file reads، path guard، no-startup-spawn، وواجهة Osamah فقط؛ feature `dca05e047c0a67e34ccc6e62abb9af65afa32578` |
 | D | Monaco ثم xterm.js بتحميل lazy | editor/terminal UI فعليان، لا زيادة startup غير مقبولة، والfallback الحالي يعمل عند تعذر الحزمة |
 | E | Metro/React Native Web preview worker | RN Web compatibility test وunsupported-native labeling وworker cancellation |
