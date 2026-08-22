@@ -20,11 +20,11 @@ test("SQLite applies migrations in order and persists the latest schema version"
   const databasePath = join(root, "studio.sqlite");
   const database = new SqliteDatabase({ databasePath, migrationsPath });
   try {
-    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "002" });
+    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "003" });
     const tables = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((row) => row.name);
-    assert.deepEqual(tables, ["approvals", "artifacts", "device_profiles", "domain_events", "jobs", "observability_logs", "preview_sessions", "schema_meta", "sessions", "workspaces"]);
+    assert.deepEqual(tables, ["agent_audit_records", "approvals", "artifacts", "device_profiles", "domain_events", "jobs", "observability_logs", "preview_sessions", "schema_meta", "sessions", "workspaces"]);
     const indexes = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_autoindex_%' ORDER BY name").map((row) => row.name);
-    assert.deepEqual(indexes, ["idx_approvals_session", "idx_events_aggregate", "idx_observability_correlation", "idx_observability_time", "idx_preview_device", "idx_sessions_workspace"]);
+    assert.deepEqual(indexes, ["idx_agent_audit_approval", "idx_agent_audit_correlation", "idx_agent_audit_session", "idx_agent_audit_time", "idx_approvals_session", "idx_events_aggregate", "idx_observability_correlation", "idx_observability_time", "idx_preview_device", "idx_sessions_workspace"]);
   } finally {
     database.close();
     rmSync(root, { recursive: true, force: true });
@@ -37,6 +37,7 @@ test("SQLite rejects a changed checksum for an applied migration", () => {
   mkdirSync(temporaryMigrations);
   copyFileSync(join(migrationsPath, "001_initial.sql"), join(temporaryMigrations, "001_initial.sql"));
   copyFileSync(join(migrationsPath, "002_observability.sql"), join(temporaryMigrations, "002_observability.sql"));
+  copyFileSync(join(migrationsPath, "003_agent_audit.sql"), join(temporaryMigrations, "003_agent_audit.sql"));
   const databasePath = join(root, "studio.sqlite");
   const first = new SqliteDatabase({ databasePath, migrationsPath: temporaryMigrations });
   first.close();
@@ -124,6 +125,32 @@ test("SQLite observability sink stores redacted payloads and returns bounded new
   }
 });
 
+test("SQLite audit trail persists redacted decision fields across restart", () => {
+  const root = makeTempRoot();
+  const databasePath = join(root, "studio.sqlite");
+  const storage = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
+  try {
+    storage.audit.append({ id: "audit-1", occurredAt: "2026-08-22T10:05:00.000Z", correlationId: "corr-audit", actionId: "action-write", sessionId: "session-audit", kind: "filesystem.write", risk: "high", decision: "approval_required", approvalId: "approval-audit", scope: "root=/tmp prompt=do-not-store token=do-not-store", reason: "prompt=do-not-store authorization=do-not-store" });
+    const record = storage.audit.list(1)[0];
+    assert.equal(record?.decision, "approval_required");
+    assert.equal(record?.scope, "root=/tmp prompt=[REDACTED] token=[REDACTED]");
+    assert.equal(record?.reason, "prompt=[REDACTED] authorization=[REDACTED]");
+  } finally {
+    storage.database.close();
+  }
+
+  const reopened = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
+  try {
+    const record = reopened.audit.list(1)[0];
+    assert.equal(record?.id, "audit-1");
+    assert.equal(record?.scope.includes("do-not-store"), false);
+    assert.equal(record?.reason.includes("do-not-store"), false);
+  } finally {
+    reopened.database.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("redaction and transaction contracts are deterministic", () => {
   assert.equal(redactJson({ token: "secret", nested: { privateKey: "secret", value: 3 } }), JSON.stringify({ token: "[REDACTED]", nested: { privateKey: "[REDACTED]", value: 3 } }));
   assert.equal(migrationChecksum("abc").length, 64);
@@ -153,7 +180,7 @@ test("SQLite backup creates a verifiable snapshot and restores into a separate p
     storage.observability.record({ id: "backup-log", occurredAt: "2026-08-22T10:08:00.000Z", level: "info", eventType: "backup.fixture", payload: { apiKey: "never-export-raw" } });
     const manifest = await provider.create(backupRoot);
     assert.equal(manifest.formatVersion, 1);
-    assert.equal(manifest.schemaVersion, "002");
+    assert.equal(manifest.schemaVersion, "003");
     assert.equal(manifest.files[0]?.relativePath, "studio.sqlite");
     assert.deepEqual(await provider.verify(backupRoot), manifest);
     const restoredManifest = await provider.restore(backupRoot, restoredRoot);

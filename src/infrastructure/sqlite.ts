@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { DomainEvent, EventBus } from "../domain/events.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
+import { sanitizeAuditText, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
 import type { ApprovalId, DeviceProfileId, PreviewSessionId, SessionId, WorkspaceId } from "../domain/primitives.js";
 import type {
   ApprovalRepository,
@@ -20,7 +21,7 @@ import type {
   WorkspaceRepository,
 } from "../application/ports.js";
 
-const migrationFilePattern = /^\d{3}_[a-z0-9-]+\.sql$/;
+const migrationFilePattern = /^\d{3}_[a-z0-9_-]+\.sql$/;
 const sensitiveKeyPattern = /(token|secret|password|api[-_]?key|authorization|prompt|private[-_]?key)/i;
 
 type SqlRow = Record<string, unknown>;
@@ -320,11 +321,41 @@ export class SqliteObservabilitySink implements ObservabilitySink {
   }
 }
 
+export class SqliteAuditTrail implements AuditTrail {
+  public constructor(private readonly database: SqlExecutor) {}
+
+  public append(record: AuditRecord): void {
+    this.database.run(`INSERT INTO agent_audit_records(id, occurred_at, correlation_id, action_id, session_id, kind, risk, decision, approval_id, scope, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [record.id, record.occurredAt, record.correlationId, record.actionId, record.sessionId, record.kind, record.risk, record.decision, record.approvalId ?? null, sanitizeAuditText(record.scope, 512), sanitizeAuditText(record.reason, 1024)]);
+  }
+
+  public list(limit = 256): readonly AuditRecord[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
+    const rows = this.database.all<SqlRow>(`SELECT id, occurred_at, correlation_id, action_id, session_id, kind, risk, decision, approval_id, scope, reason
+      FROM agent_audit_records ORDER BY occurred_at DESC, id DESC LIMIT ?`, [boundedLimit]);
+    return rows.map((row) => ({
+      id: asString(row.id, "id"),
+      occurredAt: asString(row.occurred_at, "occurred_at"),
+      correlationId: asString(row.correlation_id, "correlation_id"),
+      actionId: asString(row.action_id, "action_id"),
+      sessionId: asString(row.session_id, "session_id"),
+      kind: asString(row.kind, "kind") as AuditRecord["kind"],
+      risk: asString(row.risk, "risk") as AuditRecord["risk"],
+      decision: asString(row.decision, "decision") as AuditRecord["decision"],
+      ...(row.approval_id === null ? {} : { approvalId: asString(row.approval_id, "approval_id") }),
+      scope: asString(row.scope, "scope"),
+      reason: asString(row.reason, "reason"),
+    }));
+  }
+}
+
 export interface SqliteApplicationStorage {
   readonly database: SqliteDatabase;
   readonly repositories: SqliteRepositories;
   readonly events: SqliteEventBus;
   readonly observability: SqliteObservabilitySink;
+  readonly audit: SqliteAuditTrail;
 }
 
 export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, ids: IdGenerator): SqliteApplicationStorage => {
@@ -332,5 +363,6 @@ export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, i
   const repositories = new SqliteRepositories(database);
   const events = new SqliteEventBus(database, ids);
   const observability = new SqliteObservabilitySink(database);
-  return { database, repositories, events, observability };
+  const audit = new SqliteAuditTrail(database);
+  return { database, repositories, events, observability, audit };
 };

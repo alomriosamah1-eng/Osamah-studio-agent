@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Persistent Audit وHuman Gate
+
+### Added
+
+- migration `003_agent_audit.sql` بجدول `agent_audit_records` وفهارس bounded للوقت وcorrelation وsession وapproval، مع تحديث validator إلى schema `003`.
+- `SqliteAuditTrail` persistent adapter متوافق مع `AuditTrail`، وإعادة استخدام `InMemoryAuditTrail` لمسار memory الافتراضي.
+- `sanitizeAuditText` مشترك يزيل token/secret/password/api-key/authorization/prompt/private-key من scope وreason قبل التخزين.
+- `HumanGatePort` و`InMemoryHumanGate` مع `listPending` و`get` و`decide` وسياسة fail-closed للـIDs والقرارات المجهولة أو المعاد حلها.
+- IPC methods typed جديدة: `approval.listPending` و`approval.decide`، مع tests لتدفق pending → decision → WorkCycle resume.
+- `docs/55-persistent-audit-human-gate.md` واختبارات SQLite restart/redaction وHuman Gate policy.
+
+### Verified
+
+- `pnpm check`: `76/76` اختبارًا ناجحًا.
+- SQLite migration validator: `MIGRATION_COUNT=3` و`SCHEMA_VERSION=003` و11 جدولًا و21 index entry.
+- persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
+
+### Boundaries
+
+- approval ticket hydration بعد restart وHuman Gate UI وevent streaming وaudit export/retention policy وmulti-user identity ما زالت مؤجلة؛ لا تُدّعى crash-resumability للموافقات في هذه الشريحة.
+
 ## [Unreleased] — Typed Agent WorkCycle IPC Boundary
 
 ### Added

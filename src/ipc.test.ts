@@ -125,7 +125,12 @@ test("typed IPC exposes project context and a full guarded work cycle", async ()
     if (!waiting.ok) return;
     assert.equal(waiting.result.cycle.stage, "waiting_approval");
     assert.ok(waiting.result.cycle.approvalId);
-    app.approvalWorkflow.resolve(waiting.result.cycle.approvalId!, "approved");
+    const pendingApprovals = await app.ipc.dispatch({ protocolVersion: 1, requestId: "approval-list-1", correlationId: "ipc-cycle", method: "approval.listPending", payload: { limit: 10 } } as const);
+    assert.equal(pendingApprovals.ok, true);
+    if (pendingApprovals.ok) assert.equal(pendingApprovals.result.length, 1);
+    const decision = await app.ipc.dispatch({ protocolVersion: 1, requestId: "approval-decide-1", correlationId: "ipc-cycle", method: "approval.decide", payload: { approvalId: waiting.result.cycle.approvalId, decision: "approved" } } as const);
+    assert.equal(decision.ok, true);
+    if (decision.ok) assert.equal(decision.result.status, "approved");
     const resumed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "cycle-start-2", correlationId: "ipc-cycle", method: "workCycle.start", payload: { ...startPayload, approvalId: waiting.result.cycle.approvalId } } as const) as IpcResponse<WorkCycleResult>;
     assert.equal(resumed.ok, true);
     if (!resumed.ok) return;
@@ -180,6 +185,9 @@ test("typed IPC rejects malformed, unknown, and duplicate requests", async () =>
   const malformedCycle = await transport.dispatch({ protocolVersion: 1, requestId: "cycle-invalid-1", correlationId: "c-2", method: "workCycle.start", payload: { cycleId: "missing-fields" } });
   assert.equal(malformedCycle.ok, false);
   if (!malformedCycle.ok) assert.equal(malformedCycle.error.code, "INVALID_REQUEST");
+  const malformedApproval = await transport.dispatch({ protocolVersion: 1, requestId: "approval-invalid-1", correlationId: "c-2", method: "approval.decide", payload: { approvalId: "approval-1", decision: "unknown" } });
+  assert.equal(malformedApproval.ok, false);
+  if (!malformedApproval.ok) assert.equal(malformedApproval.error.code, "INVALID_REQUEST");
   const first = await transport.dispatch({ protocolVersion: 1, requestId: "health-duplicate", correlationId: "c-3", method: "health.get", payload: {} });
   assert.equal(first.ok, true);
   const duplicate = await transport.dispatch({ protocolVersion: 1, requestId: "health-duplicate", correlationId: "c-3", method: "health.get", payload: {} });

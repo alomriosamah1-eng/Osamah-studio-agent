@@ -1,5 +1,5 @@
 import type { DomainEvent, EventBus } from "../domain/events.js";
-import type { AuditRecord, AuditTrail } from "../application/agent-contracts.js";
+import { sanitizeAuditText, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
 import type { ProviderRouteAudit, ProviderRouteAuditRecord } from "../application/provider-contracts.js";
 import type { Checkpoint, CheckpointStore } from "../application/agent-work-cycle.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
@@ -89,7 +89,7 @@ export class InMemoryAuditTrail implements AuditTrail {
   private readonly records: AuditRecord[] = [];
 
   public append(record: AuditRecord): void {
-    this.records.push(record);
+    this.records.push({ ...record, scope: sanitizeAuditText(record.scope, 512), reason: sanitizeAuditText(record.reason, 1024) });
     while (this.records.length > 256) this.records.shift();
   }
 

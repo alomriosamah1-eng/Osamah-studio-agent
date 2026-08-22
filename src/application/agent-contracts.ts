@@ -52,10 +52,15 @@ export interface ApprovalTicket {
 
 export interface ApprovalWorkflowPort extends AgentAuthorizationPort {
   get(approvalId: string): ApprovalTicket | undefined;
+  listPending(limit?: number): readonly ApprovalTicket[];
   resolve(approvalId: string, decision: "approved" | "denied"): ApprovalTicket;
 }
 
 export type AuditDecision = "allowed" | "approval_required" | "approved" | "denied";
+
+const sensitiveAuditAssignment = /\b(token|secret|password|api[-_]?key|authorization|prompt|private[-_]?key)\s*[:=]\s*[^\s,;]+/gi;
+
+export const sanitizeAuditText = (value: string, maxLength: number): string => value.replace(sensitiveAuditAssignment, (_match, key: string) => `${key}=[REDACTED]`).slice(0, maxLength);
 
 export interface AuditRecord {
   readonly id: string;

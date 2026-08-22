@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { AgentAuthorizationError, BoundedAgentRuntime } from "./application/agent-runtime.js";
 import { InMemoryApprovalWorkflow } from "./application/approval-workflow.js";
+import { HumanGatePolicyError, InMemoryHumanGate } from "./application/human-gate.js";
 import { createFoundation } from "./composition.js";
 import { InMemoryAuditTrail, type InMemoryEventBus } from "./infrastructure/in-memory.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
@@ -70,6 +71,30 @@ test("approval workflow denies mismatched and already denied actions", () => {
   assert.equal(denied.decision, "denied");
   assert.equal(denied.approvalId, requested.approvalId);
   assert.throws(() => workflow.resolve(requested.approvalId, "approved"), /already denied/);
+});
+
+test("human gate lists pending tickets and records an explicit decision", () => {
+  const foundation = createFoundation();
+  const audit = new InMemoryAuditTrail();
+  const workflow = new InMemoryApprovalWorkflow(foundation.dependencies, audit);
+  const gate = new InMemoryHumanGate(workflow);
+  const requested = workflow.authorize(highRiskAction);
+  assert.equal(requested.decision, "approval_required");
+  if (requested.decision !== "approval_required") return;
+  assert.equal(gate.listPending(10).length, 1);
+  assert.equal(gate.get(requested.approvalId)?.status, "requested");
+  assert.equal(gate.decide(requested.approvalId, "approved").status, "approved");
+  assert.equal(gate.listPending(10).length, 0);
+  assert.throws(() => gate.decide(requested.approvalId, "denied"), HumanGatePolicyError);
+});
+
+test("human gate rejects invalid decisions and unknown approvals fail closed", () => {
+  const foundation = createFoundation();
+  const audit = new InMemoryAuditTrail();
+  const gate = new InMemoryHumanGate(new InMemoryApprovalWorkflow(foundation.dependencies, audit));
+  assert.throws(() => gate.get("\u0000"), /approvalId is invalid/);
+  assert.throws(() => gate.decide("missing", "approved"), /was not found/);
+  assert.throws(() => gate.decide("missing", "invalid" as never), HumanGatePolicyError);
 });
 
 test("submitGuarded blocks before queueing and runs after the matching approval", async () => {

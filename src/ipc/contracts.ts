@@ -5,6 +5,7 @@ import type { DeviceProfileId, PreviewSessionId } from "../domain/primitives.js"
 import type { ProjectPreviewBundle, PreviewRenderNode } from "../mobile/preview-runtime.js";
 import type { AgentPlan, PatchProposal, WorkCycleResult, WorkCycleSnapshot } from "../application/agent-work-cycle.js";
 import type { ProjectContextSnapshot } from "../application/project-context.js";
+import type { ApprovalTicket } from "../application/agent-contracts.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -50,6 +51,8 @@ export interface IpcMethodMap {
   };
   "workCycle.inspect": { payload: { cycleId: string }; result: WorkCycleSnapshot | undefined };
   "workCycle.cancel": { payload: { cycleId: string }; result: { cancelled: boolean; cycle?: WorkCycleSnapshot } };
+  "approval.listPending": { payload: { limit?: number }; result: readonly ApprovalTicket[] };
+  "approval.decide": { payload: { approvalId: string; decision: "approved" | "denied" }; result: ApprovalTicket };
 }
 
 export interface IpcRequest<M extends IpcMethod = IpcMethod> {
@@ -116,12 +119,16 @@ const isWorkCycleStartPayload = (value: unknown): boolean => {
 };
 
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
+const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
+const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
 
 const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (!isRecord(payload)) return false;
   if (method === "context.index") return isString(payload.rootPath, 4096);
   if (method === "workCycle.start") return isWorkCycleStartPayload(payload);
   if (method === "workCycle.inspect" || method === "workCycle.cancel") return isWorkCycleIdPayload(payload);
+  if (method === "approval.listPending") return isApprovalListPayload(payload);
+  if (method === "approval.decide") return isApprovalDecisionPayload(payload);
   return true;
 };
 

@@ -143,6 +143,11 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
     return this.tickets.get(approvalIdValue);
   }
 
+  public listPending(limit = 64): readonly ApprovalTicket[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 64));
+    return [...this.tickets.values()].filter((ticket) => ticket.status === "requested").slice(-boundedLimit).reverse();
+  }
+
   public resolve(approvalIdValue: string, decision: "approved" | "denied"): ApprovalTicket {
     const current = this.tickets.get(approvalIdValue);
     if (!current) throw new ApprovalPolicyError(`Approval ${approvalIdValue} was not found.`);

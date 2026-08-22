@@ -1,19 +1,21 @@
 import type { AgentWorkCycleService } from "../application/agent-work-cycle.js";
+import type { HumanGatePort } from "../application/human-gate.js";
 import type { FilesystemProjectContextIndex } from "../application/project-context.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
-export interface WorkCycleIpcDependencies {
+export interface AgentIpcDependencies {
   readonly context: Pick<FilesystemProjectContextIndex, "build">;
   readonly workCycle: Pick<AgentWorkCycleService, "start" | "inspect" | "cancel">;
+  readonly humanGate: Pick<HumanGatePort, "listPending" | "decide">;
 }
 
 export const registerEmbeddedSimulatorHandlers = (
   transport: InMemoryIpcTransport,
   controller: InMemoryEmbeddedSimulatorController,
   projectPreviewService: ProjectPreviewService,
-  workCycleDependencies?: WorkCycleIpcDependencies,
+  agentDependencies?: AgentIpcDependencies,
 ): void => {
   transport.register("health.get", async () => ({ status: "ok", version: "0.4.0-presentation-renderer" }));
   transport.register("device.get", async (request) => {
@@ -52,10 +54,12 @@ export const registerEmbeddedSimulatorHandlers = (
     await controller.stop(request.payload.sessionId);
     return { stopped: true as const };
   });
-  if (workCycleDependencies) {
-    transport.register("context.index", (request) => workCycleDependencies.context.build(request.payload.rootPath));
-    transport.register("workCycle.start", (request) => workCycleDependencies.workCycle.start(request.payload));
-    transport.register("workCycle.inspect", (request) => Promise.resolve(workCycleDependencies.workCycle.inspect(request.payload.cycleId)));
-    transport.register("workCycle.cancel", (request) => Promise.resolve(workCycleDependencies.workCycle.cancel(request.payload.cycleId)));
+  if (agentDependencies) {
+    transport.register("context.index", (request) => agentDependencies.context.build(request.payload.rootPath));
+    transport.register("workCycle.start", (request) => agentDependencies.workCycle.start(request.payload));
+    transport.register("workCycle.inspect", (request) => Promise.resolve(agentDependencies.workCycle.inspect(request.payload.cycleId)));
+    transport.register("workCycle.cancel", (request) => Promise.resolve(agentDependencies.workCycle.cancel(request.payload.cycleId)));
+    transport.register("approval.listPending", (request) => Promise.resolve(agentDependencies.humanGate.listPending(request.payload.limit)));
+    transport.register("approval.decide", (request) => Promise.resolve(agentDependencies.humanGate.decide(request.payload.approvalId, request.payload.decision)));
   }
 };

@@ -5,6 +5,7 @@ import { InMemoryApprovalWorkflow } from "./application/approval-workflow.js";
 import { ProviderGateway } from "./application/provider-gateway.js";
 import { FilesystemProjectContextIndex } from "./application/project-context.js";
 import { AgentWorkCycleService } from "./application/agent-work-cycle.js";
+import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
@@ -96,8 +97,9 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const persistence = createPersistence(options);
   const foundation = createFoundationFromStorage(persistence.repositories, persistence.events);
   const resourcePolicy = new ResourcePolicy("low_memory");
-  const auditTrail = new InMemoryAuditTrail();
+  const auditTrail = persistence.sqlite?.audit ?? new InMemoryAuditTrail();
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail);
+  const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
   const providerGateway = new ProviderGateway([], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });
   const agentRuntime = new BoundedAgentRuntime(resourcePolicy, approvalWorkflow);
@@ -124,7 +126,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, workCycle: agentWorkCycle });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, workCycle: agentWorkCycle, humanGate });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -145,6 +147,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,
+    humanGate,
     auditTrail,
     providerGateway,
     providerRouteAudit,

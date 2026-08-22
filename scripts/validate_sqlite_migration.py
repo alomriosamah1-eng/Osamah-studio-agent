@@ -3,7 +3,7 @@ import sqlite3
 
 migrations_dir = Path(__file__).parents[1] / "db" / "migrations"
 migrations = sorted(migrations_dir.glob("[0-9][0-9][0-9]_*.sql"))
-expected_migrations = ["001_initial.sql", "002_observability.sql"]
+expected_migrations = ["001_initial.sql", "002_observability.sql", "003_agent_audit.sql"]
 if [migration.name for migration in migrations] != expected_migrations:
     raise SystemExit(f"Unexpected migrations: {[migration.name for migration in migrations]!r}")
 
@@ -23,6 +23,7 @@ required_tables = {
     "device_profiles",
     "preview_sessions",
     "observability_logs",
+    "agent_audit_records",
 }
 actual_tables = {
     row[0]
@@ -35,7 +36,7 @@ if missing:
 schema_version = conn.execute(
     "SELECT value FROM schema_meta WHERE key='schema_version'"
 ).fetchone()
-if schema_version != ("002",):
+if schema_version != ("003",):
     raise SystemExit(f"Unexpected schema version: {schema_version!r}")
 
 indexes = {
@@ -49,6 +50,10 @@ required_indexes = {
     "idx_preview_device",
     "idx_observability_time",
     "idx_observability_correlation",
+    "idx_agent_audit_time",
+    "idx_agent_audit_correlation",
+    "idx_agent_audit_session",
+    "idx_agent_audit_approval",
 }
 missing_indexes = required_indexes - indexes
 if missing_indexes:
