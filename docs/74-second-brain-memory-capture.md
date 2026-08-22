@@ -44,11 +44,11 @@ export interface MemoryCapturePort {
   capture(request: CaptureMemoryRequest): MemoryEntry;
   get(entryId: string): MemoryEntry | undefined;
   list(limit?: number): readonly MemoryEntry[];
-  searchLocal(query: string, limit?: number): readonly MemoryEntry[];
+  searchLocal(query: string, limit?: number, options?: { visibility?: MemoryVisibility }): readonly MemoryEntry[];
 }
 ```
 
-الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محلي bounded في الذاكرة؛ يطبع العربية والإنجليزية، يشترط تطابق جميع كلمات الاستعلام، ويرتب title/tag/content ترتيبًا deterministic. لا يستدعي provider أو vector database، ولا تمثل هذه الإضافة FTS أو semantic retrieval. التفاصيل في `docs/92-memory-local-retrieval-bounded.md`.
+الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محلي bounded في الذاكرة؛ يطبع العربية والإنجليزية، يشترط تطابق جميع كلمات الاستعلام، ويرتب title/tag/content ترتيبًا deterministic، ويقبل مرشح `visibility` اختياريًا من `private` أو `workspace` أو `project`. لا يستدعي provider أو vector database، ولا تمثل هذه الإضافة FTS أو semantic retrieval. التفاصيل في `docs/92-memory-local-retrieval-bounded.md`.
 
 ## Provenance ودرجة اليقين
 

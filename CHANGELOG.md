@@ -44,6 +44,25 @@
 - هذه الشريحة **lexical bounded** وليست FTS أو semantic retrieval؛ لا stemming أو embeddings أو vector services أو provider sharing أو automatic consolidation.
 - لا يرسل البحث query أو content إلى network/provider، ولا يغير scope أو privacy أو Human Gate. FTS5 يبقى مشروطًا بتوفر runtime مدعوم ومراجعة build/legal/security وقياس Ubuntu 8GB.
 
+## [Unreleased] — Second Brain Visibility-filtered Local Retrieval
+
+### Added
+
+- مرشح `visibility` اختياري في `MemoryCapturePort.searchLocal` و`brain.memory.searchLocal` للقيم `private` و`workspace` و`project` فقط.
+- validation typed IPC وApplication fail-closed ترفض القيم غير المسموحة ولا توسّع الوصول؛ السلوك الافتراضي للبحث المحلي بقي دون تغيير.
+- اختبارات exact-match تثبت عدم اختلاط النتائج الخاصة وworkspace، واختبار restart يثبت رفض `shared` قبل تنفيذ handler.
+
+### Verified
+
+- `pnpm check`: `206/206` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: schema `005` و14 جدولًا و30 فهرسًا؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `cf3227331384ab2f5b5b126fb0cf381c6ea8b8f1` دُفع وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- visibility filter ليس authorization system كاملًا ولا agent scope evaluator؛ لا relational links جديدة ولا provider retrieval ولا embeddings/vector services ولا FTS5.
+- تبقى `providerAccess` و`visibility` و`retention` وprovenance immutable من منظور البحث، ولا تنشئ العملية approval ticket أو network call أو filesystem mutation.
+
 
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 

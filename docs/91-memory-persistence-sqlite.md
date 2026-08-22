@@ -1,6 +1,6 @@
 # Second Brain: SQLite Memory Persistence bounded
 
-**الحالة:** منفذة ومتحقق منها في feature commit `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`. تضيف هذه الشريحة persistence اختيارية ومحدودة لـ`MemoryEntry` و`MemoryCandidate` عبر SQLite profile، مع إبقاء الذاكرة in-memory هي المسار الافتراضي عند عدم اختيار SQLite.
+**الحالة:** منفذة ومتحقق منها في feature/docs-close `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`/`939a7e07078a0a14d743f3e2e5d23435d2906150`؛ وتعمل مع local lexical retrieval وvisibility filter في feature `cf3227331384ab2f5b5b126fb0cf381c6ea8b8f1`. تضيف هذه الشريحة persistence اختيارية ومحدودة لـ`MemoryEntry` و`MemoryCandidate` عبر SQLite profile، مع إبقاء الذاكرة in-memory هي المسار الافتراضي عند عدم اختيار SQLite.
 
 ## الهدف والحدود
 
@@ -16,7 +16,7 @@
 | الاستعادة | hydration bounded عند إنشاء application، ثم العمل من Map محلية |
 | الاتساق | repository يحفظ إلى SQLite قبل تحديث Map عند capture/review/create/consolidate |
 | الحماية | redaction قبل الكتابة وvalidation fail-closed عند hydration |
-| البحث | local text search الحالي فقط داخل Map؛ لا FTS ولا embeddings ولا vector retrieval |
+| البحث | local lexical search داخل Map مع visibility filter exact-match؛ لا FTS ولا embeddings ولا vector retrieval |
 | التزامن الخارجي | لا مزامنة، لا provider sharing، ولا External Accounts integration |
 
 ## المعمارية ومسار البيانات
@@ -37,7 +37,7 @@ SQLite repositories ◄────────┘
 SQLite profile: memory_entries + memory_candidates
 ```
 
-عند بدء profile SQLite، يطبق `SqliteDatabase` migrations append-only داخل transaction، ثم تنشئ الخدمات Maps محلية من قوائم bounded. بعد ذلك تكون قراءات `get` و`list` و`searchLocal` من الذاكرة، بينما تكتب العمليات المقبولة إلى repository قبل تثبيت النسخة الجديدة في Map. إذا تعذر إنشاء SQLite وكان `allowFallback` مفعّلًا، يظل التطبيق على backend in-memory وفق سياسة التخزين القائمة، ولا يدّعي persistence.
+عند بدء profile SQLite، يطبق `SqliteDatabase` migrations append-only داخل transaction، ثم تنشئ الخدمات Maps محلية من قوائم bounded. بعد ذلك تكون قراءات `get` و`list` و`searchLocal` من الذاكرة، ويستطيع `searchLocal` تطبيق مرشح visibility exact-match، بينما تكتب العمليات المقبولة إلى repository قبل تثبيت النسخة الجديدة في Map. إذا تعذر إنشاء SQLite وكان `allowFallback` مفعّلًا، يظل التطبيق على backend in-memory وفق سياسة التخزين القائمة، ولا يدّعي persistence.
 
 ## نموذج البيانات وmigration 005
 
@@ -79,11 +79,12 @@ SQLite profile: memory_entries + memory_candidates
 | redaction وعدم تخزين raw secret-shaped values | متحقق واختُبر عبر raw SQLite assertion |
 | hydration غير السليم fail-closed | متحقق لاختبارات JSON والمصادر غير المتسقة |
 | migration append-only مع schema 005 | متحقق؛ validator وmigration tests ناجحان |
+| visibility filter لا يوسع الوصول ولا يرفع provider access | متحقق؛ القيم غير المسموحة مرفوضة عبر IPC وApplication |
 | لا embeddings أو vector/FTS أو provider sharing أو automatic consolidation | متحقق كحدود تصميم وتنفيذ |
 
 ## بوابة التحقق
 
-نجحت البوابة في 2026-08-22: `pnpm check` بـ`204/204`، ثم `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`. نجح `scripts/validate_sqlite_migration.py` مع `SQLITE_MIGRATION_VALID=true` و`MIGRATION_COUNT=5` و`SCHEMA_VERSION=005` و`TABLE_COUNT=14` و`INDEX_COUNT=30`. كما نجحت JSON validation وNode syntax validation و`git diff --check` وhigh-confidence secret scan. سجل البوابة الكامل محفوظ في [research/memory-persistence-full-gate-output-2026-08-22.txt](../research/memory-persistence-full-gate-output-2026-08-22.txt).
+نجحت البوابة في 2026-08-22: `pnpm check` بـ`206/206`، ثم `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`. نجح `scripts/validate_sqlite_migration.py` مع `SQLITE_MIGRATION_VALID=true` و`MIGRATION_COUNT=5` و`SCHEMA_VERSION=005` و`TABLE_COUNT=14` و`INDEX_COUNT=30`. كما نجحت JSON validation وNode syntax validation و`git diff --check` وhigh-confidence secret scan. سجل البوابة الكامل محفوظ في [research/memory-persistence-full-gate-output-2026-08-22.txt](../research/memory-persistence-full-gate-output-2026-08-22.txt).
 
 ## الملفات الرئيسية
 
@@ -100,7 +101,7 @@ SQLite profile: memory_entries + memory_candidates
 
 ## ما يلي هذه الشريحة
 
-أُضيفت بعد هذه الشريحة شريحة **local lexical retrieval bounded** في feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`: تطبيع عربي/إنجليزي وترتيب deterministic داخل `searchLocal`، دون FTS أو semantic retrieval. أظهر capability check أن FTS5 غير متوفر في `node:sqlite` الحالي (`no such module: fts5`)، لذلك يبقى FTS/فهرس نصي دائم خيارًا مستقلًا مشروطًا بمراجعة runtime وbuild/legal/security. لا تبدأ embeddings أو vector database أو provider sharing. ويظل Virtual Human / AI Avatar موثقًا ومؤجلًا حتى مرحلته في الخطة الرئيسية؛ persistence الحالية لا تفتح voice أو avatar runtime.
+أُضيفت بعد هذه الشريحة شريحة **local lexical retrieval bounded** في feature `57376c3363b7d3b0670f7395bc61ea5e2613738b` ثم visibility filter في feature `cf3227331384ab2f5b5b126fb0cf381c6ea8b8f1`: تطبيع عربي/إنجليزي وترتيب deterministic داخل `searchLocal` ومرشح visibility exact-match، دون FTS أو semantic retrieval. أظهر capability check أن FTS5 غير متوفر في `node:sqlite` الحالي (`no such module: fts5`)، لذلك يبقى FTS/فهرس نصي دائم خيارًا مستقلًا مشروطًا بمراجعة runtime وbuild/legal/security. لا تبدأ embeddings أو vector database أو provider sharing. ويظل Virtual Human / AI Avatar موثقًا ومؤجلًا حتى مرحلته في الخطة الرئيسية؛ persistence الحالية لا تفتح voice أو avatar runtime.
 
 إعداد: Manus AI. تاريخ التحديث: 2026-08-22.
 
@@ -110,3 +111,4 @@ SQLite profile: memory_entries + memory_candidates
 [2]: ../src/infrastructure/sqlite-memory.ts "SQLite memory repositories"
 [3]: ../src/memory-persistence.test.ts "Memory persistence restart test"
 [4]: ../research/memory-persistence-full-gate-output-2026-08-22.txt "Memory persistence full gate output"
+[5]: ../research/memory-scope-full-gate-output-2026-08-22.txt "Visibility-filtered retrieval full gate output"
