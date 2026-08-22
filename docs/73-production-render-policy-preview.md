@@ -1,6 +1,6 @@
 # Production Studio: Render Job Policy وValidation Preview
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ هذه الشريحة تقرأ `ArtifactDraft` وتصدر قرارًا bounded فقط، ولا تشغّل renderer أو converter أو export.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`؛ docs-close مستقل ويحدّث summaries فقط. تقرأ الشريحة `ArtifactDraft` وتصدر قرارًا bounded فقط، ولا تشغّل renderer أو converter أو export.
 
 ## الغرض
 

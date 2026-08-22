@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Studio: Render Job Policy وValidation Preview
+
+### Added
+
+- `RenderPolicyPort` و`InMemoryRenderPolicy` لإصدار قرار bounded فوق `ArtifactDraft` مع format/adapter/budget/checks.
+- قرارات `blocked` و`review_required` و`allowed_preview` مع low-memory bounds للمهلة والذاكرة والحجم والصفحات، وrelative destination guards.
+- typed IPC method `production.render.policy.preview` مع fail-closed validation للصيغة والميزانية والوجهة، دون قبول command أو execute أو outputPath مطلق.
+- Workspace Render Readiness panel لعرض القرار والمسار والميزانية والفحوص، مع `executionStarted: false` ودون renderer أو converter أو export.
+- اختبارات Application وIPC وElectron smoke تثبت missing/blocked/incompatible/budget/destination handling وno-network/no-filesystem/no-mutation.
+- توثيق القرار في `docs/73-production-render-policy-preview.md`.
+
+### Verified
+
+- `pnpm check`: `160/160` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ Render Policy blocked/no-execution smoke PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- هذه الشريحة policy preview فقط؛ لا render worker أو converter أو FFmpeg/ComfyUI أو output file أو export أو Human Gate ticket.
+- `allowed_preview` يدل على اجتياز الفحص المحلي، ولا يعني نجاح render أو صلاحية artifact للنشر.
+
 ## [Unreleased] — Production Studio: Artifact Assembly وManifest Review
 
 ### Added
