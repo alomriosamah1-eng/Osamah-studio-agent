@@ -10,8 +10,8 @@
 | آخر commit تنفيذي سابق | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
-| حالة SQLite composition الحالية | opt-in wiring منفذة محليًا، مع restart persistence وfallback صريح |
-| حالة الشجرة | تغييرات SQLite composition والتوثيق الحالية قيد الدفع بعد الفحوص |
+| حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
+| حالة الشجرة | تغييرات الحالة التوثيقية الأخيرة قيد الدفع بعد التحقق البرمجي |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm check` ناجح، `50/50` اختبارًا، و`pnpm performance:smoke` وroot-picker desktop smoke ناجحان في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
@@ -61,17 +61,17 @@
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
 | desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
-| composition SQLite | opt-in/restart/fallback/close lifecycle PASS |
+| composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وProvider Gateway وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy موجودان كـapplication slice، لكن agent/provider integrations الكاملة ما زالت لاحقة. كذلك لم يُربط SQLite بعد lifecycle production داخل `createEmbeddedApplication`؛ wiring الكاملة تتطلب profile path وfallback policy.
+ما زال FTS5 وobject store وcontent hashing وProvider Gateway وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy موجودان كـapplication slice، لكن agent/provider integrations الكاملة ما زالت لاحقة. SQLite مربوط الآن اختياريًا داخل `createEmbeddedApplication`، بينما profile path policy وprofile locking وbackup UX والتشفير ما زالت لاحقة.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
 ## القرار والخطوة التالية
 
-بعد إغلاق root picker، تبدأ wiring اختيارية لـSQLite داخل composition root مع profile lifecycle وfallback policy. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
+بعد إغلاق SQLite composition wiring، تبدأ profile path policy وprofile locking وbackup UX والتشفير عند الحاجة. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

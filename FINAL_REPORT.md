@@ -75,9 +75,9 @@
 | SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
 | Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
 | Production Root Picker | main-process `dialog.showOpenDialog` بخاصية `openDirectory`، typed preload، trusted sender، canonical path validation، وroot-picker desktop smoke؛ delivery `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
-| Optional SQLite Composition | `createEmbeddedApplication({ storage })` مع memory default، SQLite opt-in، restart persistence، explicit fallback، idempotent close، وUUID event IDs؛ delivery pending final push |
+| Optional SQLite Composition | `createEmbeddedApplication({ storage })` مع memory default، SQLite opt-in، restart persistence، explicit fallback، idempotent close، وUUID event IDs؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 
-تم التحقق من `pnpm check` بـ50/50، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، بينما SQLite composition الحالية تحت بوابة الدفع النهائية.
+تم التحقق من `pnpm check` بـ50/50، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
 

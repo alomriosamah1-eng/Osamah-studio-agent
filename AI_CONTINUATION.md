@@ -49,7 +49,7 @@ git diff --check
 
 ## ما يزال مؤجلًا
 
-SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. أضيف optional SQLite composition wiring في `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، وينتظر دفع الشريحة الحالية.
+SQLite adapter لم يُربط بعد lifecycle production داخل `createEmbeddedApplication`، مع أن composition يحقن الآن low-memory ResourcePolicy وBoundedAgentRuntime وGeneralProjectDetector. Production root picker منفذ عبر typed preload وmain-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. أضيف optional SQLite composition wiring في `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، ودُفعت الشريحة عند `e9a892a42e394b92e4708847f01eafc9205b70ae` مع تطابق local وremote SHA.
  لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter.
 
 ## التسلسل التالي

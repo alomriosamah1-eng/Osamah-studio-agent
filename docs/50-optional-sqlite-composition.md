@@ -1,6 +1,6 @@
 # Optional SQLite Composition وProfile Lifecycle
 
-**الحالة:** منفذ محليًا واجتاز الاختبارات؛ pending final commit/push.
+**الحالة:** منفذ ومدفوع ومتحقق منه عند `e9a892a42e394b92e4708847f01eafc9205b70ae`.
 
 **النطاق:** ربط `SqliteApplicationStorage` داخل composition عند طلب صريح، مع إبقاء in-memory backend هو الافتراضي، ودعم fallback اختياري عند فشل تهيئة profile.
 
