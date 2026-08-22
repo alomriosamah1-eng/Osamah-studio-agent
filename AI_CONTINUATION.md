@@ -64,7 +64,7 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-أُغلقت شريحة Arabic-first Application Settings وControl Center. أُنجزت دراسة Virtual Human / AI Avatar في docs `84–86` وresearch metadata كـRESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION فقط؛ لا Avatar implementation، ولا Audio/TTS/STT/Wake Word/Overlay runtime، ولا packages/models/assets/native toolchains أضيفت. المسار planned/deferred داخل Second Brain ويحتاج قرار مالك مستقل؛ يحافظ على Electron/TypeScript/typed IPC وHuman Gate وUbuntu 8GB degradation.
+أُغلقت شريحة Arabic-first Application Settings وControl Center. أُنجزت دراسة Virtual Human / AI Avatar في docs `84–86` وresearch metadata كـRESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION فقط؛ لا Avatar implementation، ولا Audio/TTS/STT/Wake Word/Overlay runtime، ولا packages/models/assets/native toolchains أضيفت. commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` دُفع وتحقق local==remote. المسار planned/deferred داخل Second Brain ويحتاج قرار مالك مستقل؛ يحافظ على Electron/TypeScript/typed IPC وHuman Gate وUbuntu 8GB degradation.
 
 بعد إغلاق هذه الدراسة، تكون الخطوة التقنية المقترحة إكمال localization resources أو `PreviewSharePort`، ثم metadata-only External Accounts وStorage Settings وSelf-development Candidate Review؛ لا تُضاف persistence أو OAuth/MCP أو embeddings أو skill activation تلقائيًا. external integrations وPlaywright وOAuth وMCP تبقى خلف architecture/consent/security gates.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.

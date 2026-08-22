@@ -17,7 +17,7 @@
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
-| دراسة Virtual Human | docs `84–86` وresearch metadata؛ `DOCUMENTED ONLY / DEFERRED`، owner decision مطلوب |
+| دراسة Virtual Human | docs `84–86` وresearch metadata؛ `DOCUMENTED ONLY / DEFERRED`، commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` متحقق local==remote، owner decision مطلوب |
 | المحاكي المدمج | جزء من Workspace إلى جانب file tree/editor/Inspector/Console؛ compatibility/fixture mode فقط |
 | Android native | transport مستقبلي اختياري؛ يحتاج SDK/JDK/AVD/acceleration وdoctor contract |
 | iOS native | transport مستقبلي اختياري؛ macOS/Xcode فقط، ولا يظهر متاحًا أصليًا على Windows/Linux |
@@ -117,7 +117,7 @@
 
 ## القرار والخطوة التالية
 
-دراسة Virtual Human مكتملة توثيقيًا فقط: `docs/84-virtual-human-research-and-comparison.md` للمقارنة، `docs/85-virtual-human-architecture-and-contracts.md` للعقود والحالات والأداء والخصوصية، و`docs/86-virtual-human-licensing-roadmap-and-decisions.md` للتراخيص وroadmap 0–11. المسار deferred ويحتاج قرار مالك مستقل؛ لا يبدأ تنفيذ Avatar أو تثبيت حزم أو تغيير Electron/TypeScript/typed IPC قبل ذلك القرار.
+دراسة Virtual Human مكتملة توثيقيًا فقط: `docs/84-virtual-human-research-and-comparison.md` للمقارنة، `docs/85-virtual-human-architecture-and-contracts.md` للعقود والحالات والأداء والخصوصية، و`docs/86-virtual-human-licensing-roadmap-and-decisions.md` للتراخيص وroadmap 0–11. commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` متحقق local==remote؛ مسار docs-close منفصل مطلوب، ثم يتوقف العمل بانتظار قرار مالك مستقل. لا يبدأ تنفيذ Avatar أو تثبيت حزم أو تغيير Electron/TypeScript/typed IPC قبل ذلك القرار.
 
 بعد إغلاق الدراسة، تظل الشريحة التقنية التالية إكمال localization resources أو metadata-only External Accounts أو Storage Settings أو Self-development Candidate Review؛ تبقى OAuth/MCP/Playwright/tunnels خلف gates مستقلة، ولا تُضاف persistence أو embeddings أو skill activation تلقائيًا.
 

@@ -13,6 +13,7 @@
 
 - جرد `package.json` و`src` وElectron/typed IPC/Agent Runtime/Second Brain يؤكد عدم وجود Avatar/Audio/TTS/STT/Wake Word/Overlay runtime قبل هذه الشريحة.
 - فُحصت مصادر GitHub والوثائق الرسمية والمعلومات الترخيصية حتى 2026-08-22، مع تصنيف `CONFIRMED` و`STRONG INFERENCE` و`UNKNOWN/NOT VERIFIED` وعدم تحويل model/voice license إلى افتراض تجاري.
+- commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل ما زال مطلوبًا.
 
 ### Boundaries
 
