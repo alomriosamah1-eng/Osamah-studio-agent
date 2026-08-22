@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Git read-only status/diff وtyped IPC وWorkspace Git panel منفذة محليًا؛ full gate ناجح وقيد commit/push |
+| حالة الشجرة | Git read-only status/diff وtyped IPC وWorkspace Git panel منفذة ومدفوعة ومتحقق منها عند `6a0db8a180298030fe77ad53f8fc54667de4258f` |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `130/130` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `130/130` اختبارًا؛ full gate وGitHub verification للشريحة الحالية ناجحان في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -85,7 +85,7 @@
 | Development Environment: Project Explorer/File Reader | ProjectExplorerPort وWorkspaceFileReaderPort وtree/file IPC وWorkspace dynamic rendering وtraversal/symlink/secret-name guards وElectron smoke PASS؛ delivery `a72b2c7b85bf4abc934be638aa911577a20547ab`، local == `origin/main` |
 | Development Environment: Safe Editor Document Boundary | EditorDocumentPort وInMemoryEditorDocumentStore وeditor.open/propose وbounded diff وstale/path/NUL/size guards وElectron no-mutation smoke PASS؛ delivery `d989960112307b92185f18d1046506a620460887`، local == `origin/main` |
 | Development Environment: Terminal Policy Preview | TerminalPolicyPort وBoundedTerminalPolicy وterminal.inspect وclassification/deny-by-default/redaction/bounds وWorkspace Inspect-only وElectron no-process smoke PASS؛ delivery `18b980a4e3b76de01e919c959a5771e8a67475a9`، local == `origin/main` |
-| Development Environment: Git Read-only Integration | GitReadOnlyPort وFilesystemGitReadOnlyAdapter وgit.status/git.diff وbounded diff/truncation/path guards وWorkspace read-only panel وElectron smoke PASS؛ delivery pending commit |
+| Development Environment: Git Read-only Integration | GitReadOnlyPort وFilesystemGitReadOnlyAdapter وgit.status/git.diff وbounded diff/truncation/path guards وWorkspace read-only panel وElectron smoke PASS؛ delivery `6a0db8a180298030fe77ad53f8fc54667de4258f`، local == `origin/main` |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
@@ -101,4 +101,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `18b980a4e3b76de01e919c959a5771e8a67475a9`؛ Git Read-only Integration قيد commit/push.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `6a0db8a180298030fe77ad53f8fc54667de4258f`؛ Git Read-only Integration مدفوعة ومتحقق منها، local == `origin/main`.

@@ -1,6 +1,6 @@
 # Git Read-only Integration وRepository Boundary
 
-**الحالة:** منفذة محليًا، وfull gate ناجح، وقيد commit/push.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند `6a0db8a180298030fe77ad53f8fc54667de4258f`.
 
 ## الغرض والنطاق
 
@@ -105,7 +105,7 @@ export interface GitReadOnlyPort {
 | Workspace/Electron | Git panel وrefresh/status/diff read-only وdesktop smoke دون commit أو push: PASS |
 | Performance/security | low-memory profile، `PERF_SMOKE=PASS`، migration/JSON/diff/secret scans: PASS |
 
-لا يستخدم adapter shell أو hooks أو external diff، ولا توجد network calls أو model loading أو Git mutation عند startup أو أثناء القراءة. التنفيذ والتوثيق قيد commit/push قبل تثبيت SHA النهائي.
+لا يستخدم adapter shell أو hooks أو external diff، ولا توجد network calls أو model loading أو Git mutation عند startup أو أثناء القراءة. commit التنفيذ `6a0db8a180298030fe77ad53f8fc54667de4258f` مدفوع ومتحقق منه، وتحديثات الحالة النهائية تأتي في commit توثيق مستقل.
 
 ## الحدود المفتوحة
 
