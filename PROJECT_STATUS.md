@@ -7,8 +7,8 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `f1f67f0f54748c2f326f4750c6c0c87345ce6c5c` |
-| حالة الشجرة | تغييرات IPC project open محلية، جاهزة للفحوص النهائية والـ commit |
+| آخر commit مدفوع | `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` |
+| حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع IPC project open |
 | الإصدار المحلي | `0.5.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `21/21` اختبارًا ناجحًا |
@@ -48,6 +48,6 @@
 
 ## الإجراء التالي
 
-بعد دفع هذه الشريحة والتحقق من تطابق `git rev-parse HEAD` مع GitHub، يبدأ typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+بعد هذه الشريحة يبدأ typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

@@ -6,11 +6,11 @@
 |---|---|
 | الإصدار | `0.5.0-ipc-project-open` |
 | المرحلة | IPC Project Open + Presentation Renderer + Project Preview Runtime |
-| الحالة | تنفيذ محلي مكتمل؛ الفحوص النهائية والـ commit/push متبقية |
-| آخر commit مدفوع | `f1f67f0f54748c2f326f4750c6c0c87345ce6c5c` |
+| الحالة | IPC project open مدفوعة ومتحقق منها؛ الشجرة نظيفة |
+| آخر commit مدفوع | `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `21/21` اختبار Node/tsx ناجح في 2026-08-22 |
-| آخر push مؤكد | `origin/main` عند `f1f67f0f54748c2f326f4750c6c0c87345ce6c5c` |
+| آخر push مؤكد | `origin/main` عند `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`؛ local وGitHub متطابقان |
 
 ## المكتمل
 
@@ -44,6 +44,6 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد دفع هذه الشريحة والتحقق من hash، يبدأ commit مستقل واحد فقط لبناء typed Electron preload boundary أو adapter واجهة Workspace لـ `preview.openProject`. يجب أن يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts.
+بعد هذه الشريحة يبدأ commit مستقل واحد فقط لبناء typed Electron preload boundary أو adapter واجهة Workspace لـ `preview.openProject`. يجب أن يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. إعداد: Manus AI.

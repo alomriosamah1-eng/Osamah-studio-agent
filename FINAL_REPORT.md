@@ -64,9 +64,9 @@
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
 | Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
 | Presentation renderer | `df53c8cd32b5e35c25488171bdca5241770146b3`؛ final delivery state at `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
-| IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ pending commit/push |
+| IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ مدفوع ومتحقق في `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` |
 
-تم التحقق من `pnpm check` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` قبل شريحة IPC الحالية. شريحة IPC Project Open محلية وتحتاج commit/push والتحقق.
+تم التحقق من `pnpm check` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، ثم دُفعت شريحة IPC Project Open ووثيقتها، وتطابق `git rev-parse HEAD` مع GitHub API عند `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`، والشجرة نظيفة.
 
 ## الحدود الحالية
 
