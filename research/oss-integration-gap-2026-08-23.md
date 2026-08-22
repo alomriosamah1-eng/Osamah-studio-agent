@@ -48,3 +48,24 @@
 - لا تكفي هذه المراجع وحدها لإدخال كود OpenCode أو Hermes إلى runtime؛ يلزم فحص repository API وdependency graph وlicense notices وisolated execution وRAM/startup benchmark، ثم اختيار dependency أو subprocess/adapter أو fork موثق.
 
 - وثيقة [DeepSeek Harness architecture](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md) تصف events كنقاط extension، مع session events كحقائق durable، وagent events لمراقبة العمل الجاري، وcapability events لربط policy وadapters. وتعرّف seam على أنه service definition + service provider + consumer، وتوضح أن إضافة model/tool/shell/fs/sandbox أو UI تتم عبر registration points. هذا ينسجم مباشرة مع Ports وTyped IPC وHuman Gate الحالية؛ الدمج المقترح هو adapter/bridge للـharness أو event protocol، وليس نسخ loop جديد داخل Application.
+
+## DeepSeek Harness official architecture check — 2026-08-23
+
+- الصفحة الرسمية تصف DeepSeek Harness بأنه developer preview مفتوح المصدر، وتذكر أن كل capability plugin قابلة للاستبدال: models، tools، skills، sessions، sandboxes، storage، loops، scheduling، وUI.
+- الصفحة الرسمية تذكر أن Cordis kernel يدير mounting/unmounting/dependencies، وأن Cordis services/events تصل plugins ببعضها، مع profiles/bundles لتكوين runtime.
+- صفحة المعمارية الرسمية في GitHub تميز بين session events التي تمثل حقائق durable تُلحق بسجل session وتبث عبر `session/event`، وagent events الحية للمراقبة/التدخل أثناء العمل، وcapability events التي تربط policy وadapters عند seams مثل `fs/*` و`tools/*` و`telemetry/*` دون استيراد loop.
+- Quick start الرسمي يستخدم `npx @deepseek-ai/dsh web`، لكن لا يُعتمد التشغيل داخل Osamah الآن؛ يلزم worker/ACP أو package compatibility gate لأن monorepo وpeer graph وNode requirements مختلفة.
+- المراجع: https://deepseek.com/harness/en/ و https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md
+
+## DeepSeek Harness developer guide check — 2026-08-23
+
+- Quickstart الرسمي يوضح أن تشغيل Web UI يتم من root README وأن fresh Web UI لا يملك workspace حتى يختاره المستخدم؛ تشغيل المهمة يمكن أن يقرأ ويعدل الملفات ويشغل commands ويفوض subagents، مع approval وفق permission policy.
+- دليل أول plugin يحدد أن plugin TypeScript يصدّر `apply(ctx)`، ويمكنه التسجيل عبر `ctx`، وأن الموارد المسجلة تنظف عند unload، وأن dependencies تُعلن عبر `inject`. كما يوضح أن profile patch يضيف plugin path إلى runtime.
+- النتيجة: أفضل دمج أولي مع Osamah ليس نسخ DSH loop، بل worker أو package bridge يترجم lifecycle وsession/agent/capability events، ويعطي DSH workspace وpermissions بعد أن يمر الطلب في Osamah policy/Human Gate. المسار لا يزال يحتاج compatibility gate قبل code execution.
+- المراجع: https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart و https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/
+
+## DeepSeek Harness registry/package check — 2026-08-23
+
+- توجد حزمة تنفيذية منشورة `@deepseek-ai/dsh@0.1.1-rc.2` بترخيص MIT وbin باسم `dsh`، لكن manifest يسحب مجموعة واسعة من حزم core/host/client/tools/terminal/fs/web/session/skill والـplugins، وليس SDK صغيرًا مستقلًا.
+- حزم `@deepseek-ai/dsh-agent` و`@deepseek-ai/dsh-agent-loop` منشورة أيضًا MIT، لكنها تعتمد على peer graph واسع يشمل Cordis وdsh-llm وdsh-scope وdsh-session وdsh-system-prompt وdsh-tools وdsh-settings وdsh-session-persistence، مع اختلافات RC بين الحزم المنشورة.
+- القرار التنفيذي: لا تُضاف الحزمة التنفيذية الكاملة إلى core dependency graph الآن. تُستخدم فعليًا لاحقًا عبر `DeepSeekHarnessWorkerAdapter`/ACP أو worker manifest، أو بعد compatibility matrix تثبت Node/peer graph/RAM/startup/license. هذا يحافظ على خفة Ubuntu 8GB دون تحويل DSH إلى reference-only.

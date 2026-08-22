@@ -1030,3 +1030,26 @@
 - لم يُحسم OpenTo Desktop.
 
 إعداد: Manus AI.
+
+## [Unreleased] — Hermes ACP Worker وOsamah Unified UI Boundary
+
+### Added
+
+- أضيفت `@agentclientprotocol/sdk@1.4.0` كتَبعية Apache-2.0 لاستخدام ACP transport الرسمي، وأضيف `HermesAcpProviderAdapter` لتشغيل Hermes Agent الفعلي كـstdio child worker عند opt-in فقط.
+- يترجم bridge `session/new` و`session/prompt` و`session/update` إلى `ProviderInvocationRequest/Response` الخاصة بـOsamah، ويعيد استخدام session mappings bounded، ويدعم health check صريحًا عبر Hermes `--check` دون أي startup spawn.
+- يفرض bridge workspace root مطلقًا وcanonical read-only file access بحدود حجم/أسطر، ويرفض filesystem writes وterminal operations وpermission approvals في هذه الشريحة؛ mutation تحتاج mapping لاحقًا إلى ApprovalWorkflow وHuman Gate.
+- أضيف `unified-ui-boundary.test.ts` لإثبات عدم استيراد أو عرض OpenCode/Hermes/DeepSeek/Monaco/xterm/React Native upstream UI داخل Preload أو IPC أو Workspace prototype، مع بقاء `OsamahPreloadApi` الواجهة الوحيدة.
+- أضيفت `docs/99-unified-ui-and-capability-deduplication.md` وحدث سجل `project/open-source-components.json` بتعيين owner واحد لكل قدرة، ووضع البدائل كـfallback أو selected-later بدل تشغيل قدرات مكررة.
+
+### Verified
+
+- `pnpm check`: `222/222` اختبارًا ناجحًا؛ Hermes subprocess round-trip وhealth وsession reuse وworkspace read guard وmutation denial وno-startup-spawn وunified UI boundary PASS.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ low-memory profile، `PERF_SMOKE=PASS`، دون worker/model/provider loading عند startup.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `dca05e047c0a67e34ccc6e62abb9af65afa32578` دُفع إلى `origin/main` وتحقق تطابق `LOCAL_SHA` و`REMOTE_SHA` وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- Hermes UI/TUI وDeepSeek Web UI وOpenCode UI ليست جزءًا من المنتج؛ واجهة Osamah الموحدة فقط تُعرض للمستخدم. upstream يستخدم كـruntime capability خلف adapter/worker وDTOs خاصة بالمشروع.
+- هذا bridge لا يتيح skill activation أو subagents أو browser/network أو terminal أو filesystem mutation تلقائيًا، ولا يمنح Hermes صلاحية مباشرة إلى live profile أو secrets.
+- DeepSeek Harness يبقى المرشح المختار لطبقة plugin/event spine بعد compatibility gate، وOpenCode يبقى coding-agent provider bridge الأساسي؛ لا تُشغّل agent loops متعددة لنفس الطلب.

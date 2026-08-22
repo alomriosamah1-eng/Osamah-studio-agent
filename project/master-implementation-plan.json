@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "plan_id": "osamah-studio-agent-master-implementation-plan",
-  "as_of": "2026-08-22",
+  "as_of": "2026-08-23",
   "product": "Osamah Studio Agent",
   "architecture": "modular-desktop-monolith-with-process-isolation",
   "current_state": {
@@ -43,10 +43,13 @@
       "second-brain-semantic-memory-deferred-decision",
       "production-markdown-destination-review",
       "open-source-integration-policy",
-      "opencode-sdk-provider-adapter"
+      "opencode-sdk-provider-adapter",
+      "unified-osamah-ui-boundary",
+      "open-source-capability-deduplication",
+      "hermes-acp-worker-provider-adapter"
     ],
-    "tests": "217/217",
-    "next_phase": "deepseek-hermes-harness-bridge-review",
+    "tests": "222/222",
+    "next_phase": "deepseek-harness-plugin-event-bridge-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

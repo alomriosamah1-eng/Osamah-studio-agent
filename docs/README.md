@@ -64,6 +64,7 @@
 | `96-semantic-memory-deferred-decision.md` | قرار تصميمي مؤجل لـsemantic memory وFTS5 وembeddings وvector services، مع شروط فتح المرحلة دون تنفيذها |
 | `97-production-markdown-destination-review.md` | destination review/ write الآمنة لـMarkdown مع relative-path/live-profile/no-overwrite/manifest guards وreport review وHuman Gate |
 | `98-open-source-integration-and-migration-plan.md` | خطة دمج المشاريع مفتوحة المصدر فعليًا عبر dependencies وSDKs وworkers وadapters، مع ترحيل OpenCode وDeepSeek وHermes وواجهة fallback |
+| `99-unified-ui-and-capability-deduplication.md` | قاعدة الواجهة الموحدة الخاصة بـOsamah، وownership واحد لكل قدرة، ومنع تسريب upstream UI أو تكرار agent loops/renderers |
 
 ## ملفات الحالة خارج هذا المجلد
 

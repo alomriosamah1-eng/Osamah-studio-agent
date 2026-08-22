@@ -14,9 +14,9 @@
 |---|---|---|---|---|
 | Desktop host | Electron | dependency فعلية | Main/BrowserWindow/Preload وprocess boundary | مستخدم فعليًا |
 | Agent coding harness | OpenCode | `@opencode-ai/sdk` adapter ثم local runtime worker | sessions، agents، prompts، provider/model selection، coding workflow | أول حزمة دمج فعلية |
-| Agent/plugin spine | DeepSeek Harness وCordis | packages أو host worker بعد compatibility gate | plugin registration، session/agent/capability events، durable event model | مخطط لدمج فعلي؛ لا يُنسخ core |
-| Skills/memory/automation | Hermes Agent | Python worker أو ACP/JSONL adapter | skills on demand، profiles، subagents، automation وmemory integrations | مخطط لدمج فعلي مع عزل process |
-| Provider routing | OmniRoute + Ollama + llama.cpp | `ProviderAdapter`/HTTP worker خلف ProviderGateway | routing/fallback/provider health، مع local-only mode | Gateway الحالي يبقى policy boundary؛ OmniRoute هو routing implementation اختياري قادم |
+| Agent/plugin spine | DeepSeek Harness وCordis | packages أو host worker بعد compatibility gate | plugin registration، session/agent/capability events، durable event model | مخطط لدمج فعلي؛ لا يُنسخ core ولا تُعرض DSH UI |
+| Skills/memory/automation | Hermes Agent | ACP/JSONL stdio worker adapter | skills on demand، profiles، subagents، automation وmemory integrations، مع Osamah-owned UI | bridge فعلي bounded؛ read-only filesystem فقط، mutation/terminal/permission مرفوضة، وبدون startup spawn |
+| Provider routing | ProviderGateway الخاص بـOsamah | `ProviderAdapter`/HTTP worker خلف ProviderGateway | routing/fallback/provider health، مع local-only mode | Gateway هو المالك الوحيد؛ OmniRoute fallback-only، وllama.cpp مرشح inference لا routing |
 | Frontend editor | Monaco Editor | lazy renderer dependency خلف `EditorSurfacePort` | code editing وlanguage services | بعد agent bridge؛ fallback الحالي لا يُحذف |
 | Frontend terminal | xterm.js | lazy renderer dependency خلف `TerminalSurfacePort` | PTY display فقط؛ التنفيذ يبقى worker/policy | بعد editor slice |
 | Mobile preview | React Native Web + Metro + Expo | isolated preview worker/adapter | preview compatible مع RN، لا native emulator | بعد تثبيت editor/agent seams |
@@ -56,7 +56,7 @@
 |---|---|---|
 | A | إضافة OpenCode SDK adapter lazy، dependency/lockfile، health/session/prompt contract، fake loopback server test، وعدم تشغيله عند startup | round-trip typed ينجح، malformed output والremote URL وmissing server تفشل مغلقًا، وperformance smoke لا يتغير |
 | B | إضافة `AgentHarnessPort` وDeepSeek bridge design، ثم compatibility matrix للحزم المنشورة أو worker | bridge لا يسرّب SDK إلى Domain، session events قابلة للتتبع، Node/RAM/license gates ناجحة |
-| C | Hermes worker وskill catalog review | skills تُعرض وتُحمّل عند الطلب فقط، source/version/hash محفوظة، ولا mutation بلا Human Gate |
+| C | Hermes Agent ACP worker bridge وunified UI boundary | `@agentclientprotocol/sdk@1.4.0` و`HermesAcpProviderAdapter`؛ جلسات ACP تُترجم إلى Provider DTOs، read-only workspace، ورفض mutation/terminal/permission | subprocess stdio round-trip، session reuse، bounded file reads، path guard، no-startup-spawn، وواجهة Osamah فقط؛ feature `dca05e047c0a67e34ccc6e62abb9af65afa32578` |
 | D | Monaco ثم xterm.js بتحميل lazy | editor/terminal UI فعليان، لا زيادة startup غير مقبولة، والfallback الحالي يعمل عند تعذر الحزمة |
 | E | Metro/React Native Web preview worker | RN Web compatibility test وunsupported-native labeling وworker cancellation |
 | F | qpdf/pdfcpu/FFmpeg workers | artifacts reproducible من input hash، validators وmanifest وHuman Gate، وlicense notices مكتملة |
@@ -68,7 +68,7 @@
 
 ## ما لن يحدث في هذه الخطة
 
-لن تُضاف جميع المشاريع كحزم دفعة واحدة، ولن تُنسخ مستودعات كاملة إلى Git، ولن تُشغّل install scripts غير موثقة. لن يبدأ OpenCode أو Hermes أو DeepSeek عند startup، ولن تُمرر أسرار أو raw user files إلى prompts أو logs. لن تُضاف embeddings أو vector database أو FTS5 native extension في هذه الشريحة، ولن يبدأ Voice أو Avatar runtime؛ تلك قرارات منفصلة ومؤجلة.
+لن تُضاف جميع المشاريع كحزم دفعة واحدة، ولن تُنسخ مستودعات كاملة إلى Git، ولن تُشغّل install scripts غير موثقة. لن يبدأ OpenCode أو Hermes أو DeepSeek عند startup، ولن تُمرر أسرار أو raw user files إلى prompts أو logs. لن تُضاف embeddings أو vector database أو FTS5 native extension في هذه الشريحة، ولن يبدأ Voice أو Avatar runtime؛ تلك قرارات منفصلة ومؤجلة. واجهة المستخدم تبقى واجهة Osamah الموحدة، ولا تُعرض OpenCode أو Hermes أو DeepSeek UI؛ كل upstream capability تدخل خلف adapter أو worker وتُترجم إلى DTOs وpolicies خاصة بالمشروع.
 
 ## المراجع
 
