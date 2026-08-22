@@ -10,9 +10,9 @@
 
 ## 2. الوضع الحالي ونقطة الانطلاق
 
-حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، BoundedAgentRuntime slice، production root picker، وoptional SQLite composition wiring. آخر حالة موثقة هي الإصدار `0.6.0` مع **50/50 اختبارًا ناجحًا** وrestart persistence وexplicit fallback.
+حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، BoundedAgentRuntime slice، production root picker، optional SQLite composition wiring، Agent WorkCycle وHuman Gate، شرائح Development Environment وProduction Studio bounded، وSecond Brain Memory Capture/Review. آخر حالة موثقة هي الإصدار `0.6.0` مع **167/167 اختبارًا ناجحًا** وrestart persistence وexplicit fallback؛ external integrations وAgent Catalog الكامل ما زالا غير منفذين.
 
-لذلك لا تعيد الخطة بناء الأساس من الصفر. تبدأ الخطوة التنفيذية التالية من **typed Electron preload boundary** ثم تنتقل تدريجيًا إلى طبقة البيانات الفعلية وAgent Runtime وبقية البيئات. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
+لذلك لا تعيد الخطة بناء الأساس من الصفر. تبدأ الخطوة التنفيذية التالية من **Agent Definition Contract وAgent Catalog bounded** كتطبيق مباشر لنتيجة التدقيق، ثم تنتقل تدريجيًا إلى ReportDocument أو PreviewSharePort أو relational links حسب قرار المالك، مع إبقاء external providers خلف consent وpolicy. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
 
 ## 3. الرؤية الوظيفية للأقسام الثلاثة
 

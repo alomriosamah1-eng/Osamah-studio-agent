@@ -41,6 +41,10 @@
 | `33`–`44` | معمارية وتنفيذ Mobile Preview وEmbedded Simulator وRenderer وIPC Project Open |
 | `45-master-implementation-plan.md` | الخطة التنفيذية الشاملة للأقسام الثلاثة والمراحل والتكاملات وإعادة استخدام المصادر المفتوحة |
 | `46-electron-shell-and-preload-implementation.md` | تنفيذ Electron shell وtyped preload وCSP وdesktop smoke |
+| `76-comprehensive-project-audit-2026-08-22.md` | تدقيق شامل للمستودع والوكلاء ودورة lifecycle والتكاملات والفجوات |
+| `77-agent-organization-architecture.md` | عقد Agent Definition والهيكل التنظيمي والـhandoff والـquality gates |
+| `78-preview-browser-integrations-architecture.md` | Preview Sharing وPlaywright وOAuth/Google وMCP وحدود الأمان |
+| `79-documentation-traceability-reporting.md` | taxonomy التوثيق وخريطة التتبع وReportDocument وhandoff |
 
 ## ملفات الحالة خارج هذا المجلد
 

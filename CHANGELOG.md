@@ -1,5 +1,29 @@
 # سجل التغييرات
 
+## [Unreleased] — Comprehensive Project Audit وArchitecture Gaps
+
+### Added
+
+- تقرير تدقيق evidence-based في `docs/76-comprehensive-project-audit-2026-08-22.md` يغطي inventory المستودع، 46 Agent، دورة lifecycle، architecture boundaries، الأمن، الاختبارات، التبعيات، التقارير، والتسليم.
+- وثيقة `docs/77-agent-organization-architecture.md` لعقد Agent Definition، hierarchy، handoff packet، delegation، conflict، escalation، failure recovery، وHuman Gate.
+- وثيقة `docs/78-preview-browser-integrations-architecture.md` لتحليل VS Code Dev Tunnels وCloudflare/ngrok/Tailscale وPlaywright وOAuth/Google وMCP، مع least-privilege وconsent وSSRF/token/trace boundaries.
+- وثيقة `docs/79-documentation-traceability-reporting.md` لخريطة Requirement → Specification → Agent → Tool → Implementation → Test → Documentation → Deployment و`ReportDocument` المقترح.
+- سجل المصادر الخارجية في `research/audit-external-sources-2026-08-22.md`، مع فصل المصادر عن أدلة التنفيذ المحلية.
+- تصنيف صريح لـ`VERIFIED` و`PARTIALLY VERIFIED` و`DOCUMENTED ONLY` و`MISSING` و`UNKNOWN` و`DECISION REQUIRED` بدل تحويل التخطيط إلى تنفيذ.
+
+### Verified
+
+- inventory أولي: 260 ملفًا متتبعًا قبل وثائق التدقيق، مع الجرد التفصيلي في `research/audit-inventory-command-output-2026-08-22.txt`.
+- `pnpm check`: `167/167` اختبارًا ناجحًا؛ لا تغييرات كودية في audit batch.
+- final gate: build وdesktop/performance smoke وSQLite/JSON/Node syntax و`git diff --check` و`SECRET_SCAN=PASS` و`AUDIT_GATE=PASS`؛ performance smoke PASS تحت V8 heap 768MB؛ أرقام الزمن والذاكرة متغيرة بين التشغيلات، وسجل الدليل الكامل في `research/audit-gate-output-2026-08-22.txt`.
+- سجل البوابة محفوظ في `research/audit-gate-output-2026-08-22.txt` وrunner في `research/run-audit-gate.sh`.
+- مصادر رسمية راجعت Port Forwarding وPlaywright Trace/Options وRFC 8252 وGoogle OAuth/Scopes وMCP Specification/Security/Tools.
+
+### Boundaries
+
+- لا يضيف هذا القسم Agent Registry أو hierarchical supervisor أو DAG executor أو tunnel أو Playwright أو OAuth أو MCP dependency أو external connector.
+- لا تزال `OpenTo` في `UNKNOWN / REQUIRES VALIDATION`، ولا تُحسم provider/scopes/identity/autonomy إلا بقرار مالك مستقل.
+
 ## [Unreleased] — Second Brain: Memory Review وExplicit Confirmation
 
 ### Added

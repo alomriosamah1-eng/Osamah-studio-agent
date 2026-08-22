@@ -23,10 +23,13 @@
       "low-memory-resource-policy",
       "bounded-agent-runtime-slice",
       "production-root-picker",
-      "optional-sqlite-composition"
+      "optional-sqlite-composition",
+      "production-studio-sources-content-assets-manifest-render-policy",
+      "second-brain-memory-capture-review",
+      "comprehensive-audit-documentation"
     ],
-    "tests": "50/50",
-    "next_phase": "profile-path-policy-and-provider-approval-contracts",
+    "tests": "167/167",
+    "next_phase": "agent-definition-contract-and-catalog",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

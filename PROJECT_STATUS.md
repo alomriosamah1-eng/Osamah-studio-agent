@@ -11,7 +11,7 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Second Brain Memory Capture وKnowledge Entry Review السابقة مغلقة؛ Memory Review وExplicit Confirmation منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل |
+| حالة الشجرة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close مستقل متحقق. أُنجز التدقيق الشامل والتوثيق المعماري في docs/76–79، وaudit docs commit مستقل قيد الفحص والدفع |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm test` ناجح، `167/167` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
@@ -103,7 +103,8 @@
 | Production Studio: Asset Catalog وCreative Brief | `AssetCatalogPort` و`CreativeBriefPort` و`InMemoryAssetCatalog` وlicense/provenance guards وtyped IPC وWorkspace metadata-only panels وno-network/no-mutation smoke PASS؛ feature `552854705ea4b3371ec7fe1c8afbe8d8a9901158`، docs-close مستقل |
 | Production Studio: Render Job Policy وValidation Preview | `RenderPolicyPort` وlow-memory format/destination guards وtyped IPC وWorkspace readiness و`executionStarted: false` وno-render/no-mutation PASS؛ feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`، docs-close مستقل |
 | Second Brain: Memory Capture وKnowledge Entry Review | `MemoryCapturePort` وredaction/source provenance/local search وtyped IPC وWorkspace capture panel وno-provider/no-network/no-mutation PASS؛ feature `39bd89c7f4242abab76fd624045b493b72e48088`، docs-close مستقل |
-| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key review validation وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation PASS؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close مستقل |
+| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key review validation وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation PASS؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` |
+| Comprehensive Project Audit وArchitecture Gaps | inventory فعلي وcoverage matrix لـ46 Agent ودورة lifecycle وتدقيق Port Forwarding/Playwright/OAuth/Google/MCP/dependencies/docs وقرارات مطلوبة؛ docs 76–79 وresearch source log، دون external connector implementation |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
@@ -115,8 +116,8 @@
 
 ## القرار والخطوة التالية
 
-بعد إغلاق شريحة Second Brain Memory Review وExplicit Confirmation، تأتي بقية Second Brain أو Production Studio أو Development Environment وفق أولوية المالك، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق audit documentation، تبدأ الشريحة التقنية المقترحة `Agent Definition Contract وAgent Catalog bounded`، ثم ReportDocument أو PreviewSharePort أو bounded local memory links حسب قرار المالك؛ تبقى OAuth/MCP/Playwright/tunnels خلف gates مستقلة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `4f1709cd927b77627c4532ec396f572f3bbedb2c` متحقق local==remote؛ docs-close commit قيد push والتحقق النهائي.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit docs commit قيد الفحص والدفع.

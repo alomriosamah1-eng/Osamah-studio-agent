@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Second Brain: Memory Review وExplicit Confirmation |
-| الحالة | `MemoryReviewPort` وMemory Review state transitions وtyped `brain.memory.review`/`listForReview` وWorkspace confirm/archive queue منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل |
+| المرحلة | Comprehensive Project Audit وArchitecture Gaps |
+| الحالة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. أُنجز التدقيق الشامل والتوثيق المعماري في docs/76–79، وaudit docs commit مستقل قيد الفحص والدفع |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -98,7 +98,8 @@
 | Production Studio: Asset Catalog وCreative Brief | `AssetCatalogPort` و`CreativeBriefPort` و`InMemoryAssetCatalog` وlicense/provenance guards وtyped IPC وWorkspace metadata-only panels وno-network/no-mutation smoke PASS؛ feature `552854705ea4b3371ec7fe1c8afbe8d8a9901158`، docs-close مستقل |
 | Production Studio: Render Job Policy وValidation Preview | `RenderPolicyPort` و`InMemoryRenderPolicy` وlow-memory budget/format/destination guards وtyped IPC وWorkspace Render Readiness panel وblocked/no-execution/no-mutation؛ feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`، docs-close مستقل |
 | Second Brain: Memory Capture وKnowledge Entry Review | `MemoryCapturePort` و`InMemoryMemoryCapture` وredaction/source provenance/local search وtyped IPC وWorkspace capture panel وno-provider/no-network/no-mutation؛ feature `39bd89c7f4242abab76fd624045b493b72e48088`، docs-close مستقل |
-| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key validators وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close مستقل |
+| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key validators وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` |
+| Comprehensive Project Audit وArchitecture Gaps | inventory فعلي وcoverage matrix لـ46 Agent ودورة lifecycle وتدقيق Port Forwarding/Playwright/OAuth/Google/MCP/dependencies/docs وقرارات مطلوبة؛ docs 76–79 وresearch source log، دون external connector implementation |
 | approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
@@ -116,9 +117,9 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إغلاق Second Brain Memory Review وExplicit Confirmation، تبدأ بقية Second Brain أو Production Studio أو Development Environment وفق أولوية المالك، مع إبقاء Lightweight Web Preview/React Native Web/Metro parity إلى آخر مراحل تصميم البيئة.
+بعد إغلاق audit documentation، تبدأ الشريحة التقنية المقترحة `Agent Definition Contract وAgent Catalog bounded`، ثم ReportDocument أو PreviewSharePort أو bounded local memory links حسب قرار المالك؛ تبقى OAuth/MCP/Playwright/tunnels خلف gates مستقلة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close delivery قيد commit/push والتحقق النهائي.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit docs commit قيد الفحص والدفع.

@@ -19,7 +19,7 @@
 
 ## نمط التنسيق
 
-التنسيق المختار **hierarchical supervisor + DAG task graph + isolated workers**. يخطط supervisor، وتتحول الخطة إلى عقد DAG، ثم توزع على workers المستقلين. تعاد النتائج إلى validator، ويحدد critic إعادة المحاولة أو الفشل. peer-to-peer مفتوح فقط داخل workflow موثق؛ لا يسمح لوكيل بإنشاء حلقة تفويض غير محدودة.
+التنسيق المستهدف **hierarchical supervisor + DAG task graph + isolated workers**. يخطط supervisor، وتتحول الخطة إلى عقد DAG، ثم توزع على workers المستقلين. تعاد النتائج إلى validator، ويحدد critic إعادة المحاولة أو الفشل. peer-to-peer مفتوح فقط داخل workflow موثق؛ لا يسمح لوكيل بإنشاء حلقة تفويض غير محدودة. في الحالة التنفيذية الحالية توجد `BoundedAgentRuntime` و`AgentWorkCycleService` و`DeterministicPlanner`/`LlmPlanner` و`BoundedPlanCritic` وHuman Gate bounded، لكن لا يوجد بعد hierarchical supervisor أو DAG executor أو Agent Registry عام؛ لذلك يظل هذا القسم هدفًا معماريًا جزئي التنفيذ.
 
 ```mermaid
 flowchart TD
@@ -47,7 +47,7 @@ flowchart TD
 
 ## التحقق والجودة
 
-يجب أن يخرج كل worker بـ `result`, `evidence`, `assumptions`, `changed_files`, و`next_recommendation`. لا يقبل judge ناتجًا بلا evidence. في الكود، evidence هو diff وtest output. في البحث، evidence هو source record. في الإنتاج، evidence هو artifact metadata وrender check. Separate critic/judge مفيد عندما تكون تكلفة الخطأ عالية، لكنه يرفع التكلفة؛ لذلك يفعّل حسب risk score.
+يجب أن يخرج كل worker بـ `result`, `evidence`, `assumptions`, `changed_files`, و`next_recommendation`. لا يقبل judge ناتجًا بلا evidence. في الكود، evidence هو diff وtest output. في البحث، evidence هو source record. في الإنتاج، evidence هو artifact metadata وrender check. Separate critic/judge مفيد عندما تكون تكلفة الخطأ عالية، لكنه يرفع التكلفة؛ لذلك يفعّل حسب risk score. المنفذ حاليًا هو planner/critic bounded داخل WorkCycle وTask Preview؛ أما Judge العام وacceptance registry فمطلوبان لاحقًا.
 
 ## التعارض والتراجع
 
@@ -62,4 +62,4 @@ flowchart TD
 [1]: https://github.com/NousResearch/hermes-agent/blob/main/website/docs/developer-guide/architecture.md "Hermes architecture"
 [2]: https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md "DeepSeek Harness architecture"
 
-إعداد: Manus AI. تاريخ الفحص: 2026-08-21.
+إعداد: Manus AI. تاريخ الفحص: 2026-08-22. الحالة: architecture موثقة؛ supervisor/DAG/Agent Registry الكامل غير منفذ. انظر `docs/76-comprehensive-project-audit-2026-08-22.md` و`docs/77-agent-organization-architecture.md`.
