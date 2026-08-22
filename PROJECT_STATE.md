@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Development Environment العامة: Git Read-only Integration وRepository Boundary |
-| الحالة | Git read-only status/diff وtyped IPC وWorkspace Git panel منفذة ومدفوعة ومتحقق منها عند `6a0db8a180298030fe77ad53f8fc54667de4258f` |
+| المرحلة | Development Environment العامة: Context وAgent Task Review Panel |
+| الحالة | `task.preview` وApplication bounded review وWorkspace panel منفذة ومدفوعة ومتحقق منها عند feature `665fe76a44963736881f6f2ed519d95a2b901825`؛ docs-close مستقل |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -15,10 +15,10 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | `pnpm check` ناجح، `130/130` اختبارًا؛ full gate وGitHub verification للشريحة الحالية ناجحان |
+| آخر فحص | full gate ناجح؛ `pnpm check` و`pnpm test` بـ`136/136`، build وdesktop/performance smoke وSQLite/JSON/diff/secret validation PASS |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
-| حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
+| حالة push للشريحة السابقة | Git Read-only feature `6a0db8a180298030fe77ad53f8fc54667de4258f` ثم docs-close `0db944f48fed37ae54c3ec8f5fca400c0bbdd7d4`؛ verified |
 | حالة push لشريحة الأداء السابقة | `b9089efee33a174c3958a9295853623beae27503`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة root picker | `197424dc6cbc1f02b92011903f5bbce77e819f6c`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة SQLite composition | `e9a892a42e394b92e4708847f01eafc9205b70ae`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
@@ -72,10 +72,10 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `79/79` ناجحة |
+| `pnpm test` | `136/136` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 10ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.4MB، تحت V8 heap 768MB |
-| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
+| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` وtask.preview no-approval PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -93,6 +93,7 @@
 | Development Environment: Safe Editor Document Boundary | EditorDocumentPort وInMemoryEditorDocumentStore وeditor.open/propose وbounded diff وstale/path/NUL/size guards وElectron no-mutation smoke PASS؛ delivery `d989960112307b92185f18d1046506a620460887`، local == `origin/main` |
 | Development Environment: Terminal Policy Preview | TerminalPolicyPort وBoundedTerminalPolicy وterminal.inspect وclassification/deny-by-default/redaction/bounds وWorkspace Inspect-only وElectron no-process smoke PASS؛ delivery `18b980a4e3b76de01e919c959a5771e8a67475a9`، local == `origin/main` |
 | Development Environment: Git Read-only Integration | GitReadOnlyPort وFilesystemGitReadOnlyAdapter وgit.status/git.diff وbounded diff/truncation/path guards وWorkspace read-only panel وElectron smoke PASS؛ delivery `6a0db8a180298030fe77ad53f8fc54667de4258f`، local == `origin/main` |
+| Development Environment: Context وAgent Task Review | `AgentTaskPreviewService` و`task.preview` وdeterministic default planner وexplicit provider boundary وbounded path/input validation وWorkspace context/plan/critique panel وno-mutation/no-approval smoke PASS؛ feature `665fe76a44963736881f6f2ed519d95a2b901825`، docs-close مستقل |
 | approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
@@ -110,9 +111,9 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إغلاق Typed Provider Configuration UI/IPC، تُربط adapters بمسار planner/critic ثم تُبنى Development Environment العامة.
+بعد إغلاق Context وAgent Task Review Panel، تبدأ بقية Development Environment أو Production Studio وفق أولوية المالك، ثم Second Brain، مع إبقاء Lightweight Web Preview/React Native Web/Metro parity إلى آخر مراحل تصميم البيئة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `6a0db8a180298030fe77ad53f8fc54667de4258f`؛ Git Read-only Integration مدفوعة ومتحقق منها، local == `origin/main`.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `665fe76a44963736881f6f2ed519d95a2b901825`؛ docs-close delivery قيد commit/push والتحقق النهائي.
