@@ -46,6 +46,8 @@ test("embedded sqlite application reloads memory entries and candidates across r
     assert.equal(matches.ok, true);
     if (!matches.ok) return;
     assert.equal(matches.result.some((entry) => entry.entryId === entryId), true);
+    const invalidFilter = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-invalid-filter", correlationId: "persist-memory-restart", method: "brain.memory.searchLocal", payload: { query: "تعلم", visibility: "shared" as never } } as const);
+    assert.equal(invalidFilter.ok, false);
     const candidates = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-candidate-list", correlationId: "persist-memory-restart", method: "memory-candidate.list", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryCandidate[]>;
     assert.equal(candidates.ok, true);
     if (!candidates.ok) return;

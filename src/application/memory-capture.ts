@@ -49,11 +49,15 @@ export interface MemoryReviewDecision {
   readonly reason: string;
 }
 
+export interface MemorySearchOptions {
+  readonly visibility?: MemoryVisibility;
+}
+
 export interface MemoryCapturePort {
   capture(request: CaptureMemoryRequest): MemoryEntry;
   get(entryId: string): MemoryEntry | undefined;
   list(limit?: number): readonly MemoryEntry[];
-  searchLocal(query: string, limit?: number): readonly MemoryEntry[];
+  searchLocal(query: string, limit?: number, options?: MemorySearchOptions): readonly MemoryEntry[];
 }
 
 export interface MemoryReviewPort {
@@ -121,6 +125,12 @@ const cleanList = (values: readonly string[] | undefined): readonly string[] => 
   return cleaned;
 };
 const normalizeSearchText = (value: string): string => value.normalize("NFKC").toLocaleLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g, "").replace(/[إأآٱ]/g, "ا").replace(/ى/g, "ي").replace(/[\s\u200c]+/g, " ").trim();
+const cleanSearchVisibility = (value: MemorySearchOptions | undefined): MemoryVisibility | undefined => {
+  if (value === undefined || value.visibility === undefined) return undefined;
+  if (!visibilities.includes(value.visibility)) throw new MemoryCaptureError("visibility filter is invalid.");
+  return value.visibility;
+};
+
 const searchScore = (entry: MemoryEntry, tokens: readonly string[]): number => {
   const title = normalizeSearchText(entry.title);
   const content = normalizeSearchText(entry.content);
@@ -234,12 +244,14 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
     return [...this.entries.values()].slice(-safeLimit).reverse().map((entry) => this.clone(entry));
   }
 
-  public searchLocal(query: string, limit = 32): readonly MemoryEntry[] {
+  public searchLocal(query: string, limit = 32, options?: MemorySearchOptions): readonly MemoryEntry[] {
+    const visibility = cleanSearchVisibility(options);
     const normalized = normalizeSearchText(cleanText(query, "query", 512));
     const tokens = normalized.split(" ").filter(Boolean);
     if (tokens.length === 0) throw new MemoryCaptureError("query is invalid.");
     const safeLimit = this.limit(limit);
     return [...this.entries.values()]
+      .filter((entry) => visibility === undefined || entry.visibility === visibility)
       .map((entry) => ({ entry, score: searchScore(entry, tokens) }))
       .filter((result) => result.score >= 0)
       .sort((left, right) => right.score - left.score || right.entry.createdAt.localeCompare(left.entry.createdAt) || right.entry.entryId.localeCompare(left.entry.entryId))

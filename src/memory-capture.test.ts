@@ -40,6 +40,15 @@ test("memory local retrieval normalizes Arabic text and ranks title/tag matches 
   assert.deepEqual(memory.searchLocal("خطة غائبة", 8), []);
 });
 
+test("memory local retrieval applies an explicit visibility filter without widening access", () => {
+  const memory = new InMemoryMemoryCapture(new InMemorySourceRegistry(), { nextId: (prefix) => `${prefix}-${Math.random()}` });
+  const privateEntry = memory.capture({ kind: "note", title: "Private bounded note", content: "Local scope only." });
+  const workspaceEntry = memory.capture({ kind: "note", title: "Workspace bounded note", content: "Local scope only.", visibility: "workspace" });
+  assert.deepEqual(memory.searchLocal("local scope", 8, { visibility: "workspace" }).map((entry) => entry.entryId), [workspaceEntry.entryId]);
+  assert.deepEqual(memory.searchLocal("local scope", 8, { visibility: "private" }).map((entry) => entry.entryId), [privateEntry.entryId]);
+  assert.throws(() => memory.searchLocal("local scope", 8, { visibility: "shared" as never }), /visibility filter/);
+});
+
 test("memory capture rejects unknown source provenance and unsafe or duplicate references", () => {
   const sources = new InMemorySourceRegistry();
   const memory = new InMemoryMemoryCapture(sources);

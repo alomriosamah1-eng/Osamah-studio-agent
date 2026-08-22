@@ -86,7 +86,7 @@ export interface IpcMethodMap {
   "brain.memory.capture": { payload: CaptureMemoryRequest; result: MemoryEntry };
   "brain.memory.get": { payload: { entryId: string }; result: MemoryEntry | undefined };
   "brain.memory.list": { payload: { limit?: number }; result: readonly MemoryEntry[] };
-  "brain.memory.searchLocal": { payload: { query: string; limit?: number }; result: readonly MemoryEntry[] };
+  "brain.memory.searchLocal": { payload: { query: string; limit?: number; visibility?: MemoryVisibility }; result: readonly MemoryEntry[] };
   "brain.memory.review": { payload: MemoryReviewDecision; result: MemoryEntry };
   "brain.memory.listForReview": { payload: { limit?: number }; result: readonly MemoryEntry[] };
   "agent.catalog.list": { payload: { limit?: number }; result: readonly AgentDefinition[] };
@@ -385,7 +385,7 @@ const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
   && (value.provenance === undefined || (Array.isArray(value.provenance) && value.provenance.length <= 16 && value.provenance.every(isMemoryProvenancePayload)));
 const isMemoryGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["entryId"]) && isString(value.entryId, 256);
 const isMemoryListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
-const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["query", "limit"]) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["query", "limit", "visibility"]) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128)) && (value.visibility === undefined || isMemoryVisibilityPayload(value.visibility));
 const isMemoryReviewPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["entryId", "decision", "reason"]) && isString(value.entryId, 256) && (value.decision === "confirm" || value.decision === "archive") && isSingleLineString(value.reason, 512);
 const isMemoryListForReviewPayload = (value: unknown): boolean => isMemoryListPayload(value);
 const isAgentCatalogListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
