@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { InMemoryContentPlanService } from "./application/content-plan.js";
 import { InMemoryReportDocumentService, ReportDocumentError, reportDocumentContract } from "./application/report-document.js";
+import { InMemoryMarkdownExportService, markdownExportContract } from "./application/markdown-export.js";
 import { InMemorySourceRegistry } from "./application/source-registry.js";
 
 const createDependencies = () => {
@@ -77,6 +78,29 @@ test("report document derives evidence from a content plan and redacts secret-sh
   assert.equal(report.redactionState, "redacted");
   assert.equal(report.title, "token=[REDACTED]");
   assert.equal(report.assumptions[0], "password=[REDACTED]");
+});
+
+test("markdown preview preserves report traceability without filesystem or provider side effects", () => {
+  const { sourceRegistry, reports } = createDependencies();
+  const source = sourceRegistry.registerSource({ kind: "workspace_document", locator: "workspace://markdown/source", bytes: 128, sha256: "e".repeat(64), verificationState: "content_validated" });
+  const citation = sourceRegistry.addCitation({ sourceId: source.sourceId, label: "Markdown evidence", span: { start: 0, end: 32 }, verificationState: "content_validated" });
+  const report = reports.create({ kind: "technical_analysis", title: "Markdown preview", scope: "Export contract", evidence: [{ label: "Traceable source", citationId: citation.citationId }], claims: [{ text: "The preview keeps evidence references.", evidenceIds: ["evidence-1"] }], assumptions: ["Local review only."], unresolvedQuestions: ["Should a user publish this later?"] });
+  const exporter = new InMemoryMarkdownExportService(reports);
+  const preview = exporter.preview(report.reportId);
+  assert.equal(preview.filename, `report-${report.reportId}.md`);
+  assert.equal(preview.reportId, report.reportId);
+  assert.equal(preview.reviewState, "review_required");
+  assert.equal(preview.markdown.includes("# Markdown preview"), true);
+  assert.equal(preview.markdown.includes(source.sourceId), true);
+  assert.equal(preview.markdown.includes(citation.citationId), true);
+  assert.equal(preview.markdown.includes("The preview keeps evidence references."), true);
+  assert.equal(preview.warnings.includes("markdown_preview_is_metadata_only"), true);
+  assert.equal(preview.warnings.includes("factual_verification_is_not_implied"), true);
+  assert.equal(preview.warnings.includes("report_review_required_before_publish"), true);
+  assert.equal(preview.characterCount, preview.markdown.length);
+  assert.deepEqual(markdownExportContract, { mutatesFilesystem: false, executesCommands: false, invokesProviders: false, writesArtifact: false, requiresHumanGateForMutation: true, factualVerificationIsNotImplied: true });
+  const approved = reports.review({ reportId: report.reportId, decision: "approve", reason: "Reviewed locally." });
+  assert.equal(exporter.preview(approved.reportId).warnings.includes("report_review_required_before_publish"), false);
 });
 
 test("report document enforces bounded list and review decision inputs", () => {

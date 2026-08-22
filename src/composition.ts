@@ -41,6 +41,7 @@ import { InMemoryRenderPolicy } from "./application/render-policy.js";
 import { InMemoryMemoryCapture } from "./application/memory-capture.js";
 import { InMemoryAgentCatalog } from "./application/agent-catalog.js";
 import { InMemoryReportDocumentService } from "./application/report-document.js";
+import { InMemoryMarkdownExportService } from "./application/markdown-export.js";
 import { InMemoryApplicationSettings } from "./application/application-settings.js";
 import { InMemoryExternalAccountRegistry } from "./application/external-account-registry.js";
 import { createStorageSettingsSnapshot, StaticStorageSettings } from "./application/storage-settings.js";
@@ -199,6 +200,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const renderPolicy = new InMemoryRenderPolicy(artifactAssembly);
   const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now(), persistence: persistence.sqlite?.memoryEntries, agentScope: memoryAgentScope });
   const reportDocument = new InMemoryReportDocumentService(sourceRegistry, contentPlan, artifactAssembly, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
+  const markdownExport = new InMemoryMarkdownExportService(reportDocument);
   const applicationSettings = new InMemoryApplicationSettings();
   const externalAccounts = new InMemoryExternalAccountRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const storageSettings = new StaticStorageSettings(createStorageSettingsSnapshot({ storageKind: persistence.storageKind, profileId: persistence.profilePaths?.profileId, hasProfileLock: persistence.profileLock !== undefined, fallbackReason: persistence.storageFallbackReason }));
@@ -222,7 +224,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, settings: applicationSettings, externalAccounts, storageSettings, selfDevelopment, memoryConsolidation, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, markdownExport, settings: applicationSettings, externalAccounts, storageSettings, selfDevelopment, memoryConsolidation, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;

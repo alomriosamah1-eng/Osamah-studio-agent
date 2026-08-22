@@ -774,6 +774,17 @@ test("typed IPC exposes bounded report documents with provenance and explicit re
       assert.equal(approved.result.reviewState, "approved");
       assert.equal(approved.result.warnings.includes("user_approved_not_externally_verified"), true);
     }
+    const markdownPreview = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-markdown-preview", correlationId: "report-ipc", method: "production.report.markdown.preview", payload: { reportId: report.result.reportId } } as const);
+    assert.equal(markdownPreview.ok, true);
+    if (markdownPreview.ok) {
+      assert.equal(markdownPreview.result.reportId, report.result.reportId);
+      assert.equal(markdownPreview.result.filename.endsWith(".md"), true);
+      assert.equal(markdownPreview.result.markdown.includes("Traceable report"), true);
+      assert.equal(markdownPreview.result.markdown.includes(source.result.sourceId), true);
+      assert.equal(markdownPreview.result.warnings.includes("factual_verification_is_not_implied"), true);
+    }
+    const malformedMarkdown = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-invalid-markdown", correlationId: "report-ipc", method: "production.report.markdown.preview", payload: { reportId: report.result.reportId, path: "out.md" } } as const);
+    assert.equal(malformedMarkdown.ok, false);
     const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "report-invalid", correlationId: "report-ipc", method: "production.report.list", payload: { limit: 8, send: true } } as const);
     assert.equal(malformed.ok, false);
     if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
