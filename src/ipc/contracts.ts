@@ -21,6 +21,7 @@ import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryK
 import type { AgentDefinition } from "../application/agent-catalog.js";
 import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
 import type { MarkdownExportPreview } from "../application/markdown-export.js";
+import type { MarkdownDestinationWriteResult } from "../application/markdown-destination.js";
 import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
 import type { ExternalAccountRecord, RegisterExternalAccountRequest } from "../application/external-account-registry.js";
 import type { StorageSettings, StorageSettingsPort } from "../application/storage-settings.js";
@@ -97,6 +98,7 @@ export interface IpcMethodMap {
   "production.report.list": { payload: { limit?: number }; result: readonly ReportDocument[] };
   "production.report.review": { payload: ReportReviewDecision; result: ReportDocument };
   "production.report.markdown.preview": { payload: { reportId: string }; result: MarkdownExportPreview };
+  "production.report.markdown.write": { payload: { reportId: string; relativePath: string; approvalId?: string }; result: MarkdownDestinationWriteResult };
   "settings.get": { payload: Record<string, never>; result: ApplicationSettings };
   "settings.update": { payload: UpdateApplicationSettingsRequest; result: ApplicationSettings };
   "external.account.register": { payload: RegisterExternalAccountRequest; result: ExternalAccountRecord };
@@ -421,6 +423,13 @@ const isReportGetPayload = (value: unknown): boolean => isRecord(value) && hasOn
 const isReportListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
 const isReportReviewPayload = (value: unknown): value is ReportReviewDecision => isRecord(value) && hasOnlyKeys(value, ["reportId", "decision", "reason"]) && isString(value.reportId, 256) && (value.decision === "approve" || value.decision === "block") && isSingleLineString(value.reason, 512);
 const isMarkdownPreviewPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["reportId"]) && isString(value.reportId, 256);
+const isMarkdownDestinationWritePayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["reportId", "relativePath", "approvalId"])
+  && isString(value.reportId, 256)
+  && isString(value.relativePath, 512)
+  && isSafeRelativeDestinationPayload(value.relativePath)
+  && /\.md$/iu.test(value.relativePath)
+  && (value.approvalId === undefined || isString(value.approvalId, 256));
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -544,6 +553,7 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.report.list") return isReportListPayload(payload);
   if (method === "production.report.review") return isReportReviewPayload(payload);
   if (method === "production.report.markdown.preview") return isMarkdownPreviewPayload(payload);
+  if (method === "production.report.markdown.write") return isMarkdownDestinationWritePayload(payload);
   if (method === "settings.get") return isSettingsGetPayload(payload);
   if (method === "settings.update") return isSettingsUpdatePayload(payload);
   if (method === "external.account.register") return isExternalAccountRegisterPayload(payload);

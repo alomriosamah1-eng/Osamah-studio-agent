@@ -794,6 +794,52 @@ test("typed IPC exposes bounded report documents with provenance and explicit re
   }
 });
 
+test("typed IPC writes Markdown only after report review and Human Gate approval", async () => {
+  const destinationRoot = await mkdtemp(join(tmpdir(), "osamah-ipc-markdown-destination-"));
+  const app = createEmbeddedApplication({ markdownDestinationRoot: destinationRoot });
+  try {
+    const source = app.sourceRegistry.registerSource({ kind: "workspace_document", locator: "workspace://destination/report", bytes: 32, sha256: "f".repeat(64), verificationState: "content_validated" });
+    const citation = app.sourceRegistry.addCitation({ sourceId: source.sourceId, label: "Destination citation", verificationState: "content_validated" });
+    const plan = app.contentPlan.createPlan({ brief: "Destination write" });
+    const section = app.contentPlan.addSection({ planId: plan.planId, title: "Findings" });
+    const claim = app.contentPlan.addClaim({ planId: plan.planId, sectionId: section.sections[0]!.sectionId, text: "The Markdown destination is local." });
+    const cited = app.contentPlan.attachCitation({ planId: plan.planId, claimId: claim.claims[0]!.claimId, citationId: citation.citationId });
+    const report = app.reportDocument.create({ kind: "technical_analysis", title: "Destination report", scope: "Local output", contentPlanId: cited.planId });
+    assert.equal(report.reviewState, "review_required");
+    app.reportDocument.review({ reportId: report.reportId, decision: "approve", reason: "Reviewed locally before file output." });
+
+    const pendingWrite = await app.ipc.dispatch({ protocolVersion: 1, requestId: "markdown-write-request", correlationId: "markdown-write", method: "production.report.markdown.write", payload: { reportId: report.reportId, relativePath: "reports/destination.md" } } as const);
+    assert.equal(pendingWrite.ok, true);
+    if (!pendingWrite.ok) return;
+    assert.equal(pendingWrite.result.status, "approval_required");
+    if (pendingWrite.result.status !== "approval_required") return;
+    assert.equal(app.humanGate.listPending(8).length, 1);
+    assert.equal(app.humanGate.listPending(8)[0]?.action.kind, "filesystem.write");
+    assert.equal(app.humanGate.listPending(8)[0]?.action.scope.includes("relativePath=reports/destination.md"), true);
+
+    const approved = await app.ipc.dispatch({ protocolVersion: 1, requestId: "markdown-approval", correlationId: "markdown-write", method: "approval.decide", payload: { approvalId: pendingWrite.result.approvalId, decision: "approved" } } as const);
+    assert.equal(approved.ok, true);
+    const written = await app.ipc.dispatch({ protocolVersion: 1, requestId: "markdown-write-approved", correlationId: "markdown-write", method: "production.report.markdown.write", payload: { reportId: report.reportId, relativePath: "reports/destination.md", approvalId: pendingWrite.result.approvalId } } as const);
+    assert.equal(written.ok, true);
+    if (!written.ok) return;
+    assert.equal(written.result.status, "written");
+    if (written.result.status !== "written") return;
+    assert.equal(await readFile(join(destinationRoot, "reports/destination.md"), "utf8"), app.markdownExport.preview(report.reportId).markdown);
+    const manifest = JSON.parse(await readFile(join(destinationRoot, "reports/destination.md.manifest.json"), "utf8")) as { sha256: string; relativePath: string; overwritten: boolean };
+    assert.equal(manifest.relativePath, "reports/destination.md");
+    assert.equal(manifest.sha256, written.result.manifest.sha256);
+    assert.equal(manifest.overwritten, false);
+    const extraField = await app.ipc.dispatch({ protocolVersion: 1, requestId: "markdown-write-extra", correlationId: "markdown-write", method: "production.report.markdown.write", payload: { reportId: report.reportId, relativePath: "reports/other.md", path: "/tmp/other.md" } } as const);
+    assert.equal(extraField.ok, false);
+    const traversal = await app.ipc.dispatch({ protocolVersion: 1, requestId: "markdown-write-traversal", correlationId: "markdown-write", method: "production.report.markdown.write", payload: { reportId: report.reportId, relativePath: "../escape.md" } } as const);
+    assert.equal(traversal.ok, false);
+    assert.equal(app.humanGate.listPending(8).length, 0);
+  } finally {
+    app.close();
+    await rm(destinationRoot, { recursive: true, force: true });
+  }
+});
+
 test("typed IPC exposes Arabic-first application settings with bounded updates", async () => {
   const app = createEmbeddedApplication();
   try {

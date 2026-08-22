@@ -18,6 +18,7 @@ import type { MemoryCapturePort, MemoryReviewPort } from "../application/memory-
 import type { AgentCatalogPort } from "../application/agent-catalog.js";
 import type { ReportDocumentPort } from "../application/report-document.js";
 import type { MarkdownExportPort } from "../application/markdown-export.js";
+import type { MarkdownDestinationService } from "../application/markdown-destination.js";
 import type { ApplicationSettingsPort } from "../application/application-settings.js";
 import type { ExternalAccountRegistryPort } from "../application/external-account-registry.js";
 import type { StorageSettingsPort } from "../application/storage-settings.js";
@@ -39,6 +40,7 @@ export interface AgentIpcDependencies {
   readonly agentCatalog: Pick<AgentCatalogPort, "list" | "get">;
   readonly reportDocument: Pick<ReportDocumentPort, "create" | "get" | "list" | "review">;
   readonly markdownExport: Pick<MarkdownExportPort, "preview">;
+  readonly markdownDestination: Pick<MarkdownDestinationService, "write">;
   readonly settings: Pick<ApplicationSettingsPort, "get" | "update">;
   readonly externalAccounts: Pick<ExternalAccountRegistryPort, "register" | "get" | "list">;
   readonly storageSettings: Pick<StorageSettingsPort, "get">;
@@ -135,6 +137,7 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("production.report.list", async (request) => agentDependencies.reportDocument.list(request.payload.limit));
     transport.register("production.report.review", async (request) => agentDependencies.reportDocument.review(request.payload));
     transport.register("production.report.markdown.preview", async (request) => agentDependencies.markdownExport.preview(request.payload.reportId));
+    transport.register("production.report.markdown.write", async (request) => agentDependencies.markdownDestination.write(request.payload));
     transport.register("settings.get", async () => agentDependencies.settings.get());
     transport.register("settings.update", async (request) => agentDependencies.settings.update(request.payload));
     transport.register("external.account.register", async (request) => agentDependencies.externalAccounts.register(request.payload));
