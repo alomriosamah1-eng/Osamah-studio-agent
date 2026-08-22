@@ -7,12 +7,18 @@ export type MemoryVisibility = "private" | "workspace" | "project";
 export type MemoryProviderAccess = "never" | "explicit_only";
 export type MemoryRetention = "session" | "project" | "until_deleted";
 export type MemoryProvenanceKind = "source" | "artifact" | "task";
+export type MemoryLinkRelation = "related_to" | "supports" | "derived_from";
 
 export interface MemoryProvenanceRef {
   readonly kind: MemoryProvenanceKind;
   readonly id: string;
   readonly relation: "derived_from" | "supports" | "related_to";
   readonly label?: string;
+}
+
+export interface MemoryEntryLink {
+  readonly entryId: string;
+  readonly relation: MemoryLinkRelation;
 }
 
 export interface MemoryEntry {
@@ -26,6 +32,7 @@ export interface MemoryEntry {
   readonly retention: MemoryRetention;
   readonly tags: readonly string[];
   readonly provenance: readonly MemoryProvenanceRef[];
+  readonly links: readonly MemoryEntryLink[];
   readonly warnings: readonly string[];
   readonly createdAt: string;
   readonly reviewedAt?: string;
@@ -41,6 +48,7 @@ export interface CaptureMemoryRequest {
   readonly retention?: MemoryRetention;
   readonly tags?: readonly string[];
   readonly provenance?: readonly MemoryProvenanceRef[];
+  readonly links?: readonly MemoryEntryLink[];
 }
 
 export interface MemoryReviewDecision {
@@ -91,11 +99,13 @@ const providerAccessModes: readonly MemoryProviderAccess[] = ["never", "explicit
 const retentions: readonly MemoryRetention[] = ["session", "project", "until_deleted"];
 const provenanceKinds: readonly MemoryProvenanceKind[] = ["source", "artifact", "task"];
 const provenanceRelations: readonly MemoryProvenanceRef["relation"][] = ["derived_from", "supports", "related_to"];
+const linkRelations: readonly MemoryLinkRelation[] = ["derived_from", "supports", "related_to"];
 const maxTitleLength = 512;
 const maxTagLength = 128;
 const maxIdLength = 256;
 const maxTags = 128;
 const maxProvenance = 16;
+const maxLinks = 16;
 const maxEntriesDefault = 256;
 const maxContentDefault = 64 * 1024;
 
@@ -137,6 +147,26 @@ const searchScore = (entry: MemoryEntry, tokens: readonly string[]): number => {
   const tags = normalizeSearchText(entry.tags.join(" "));
   if (tokens.some((token) => !`${title}\n${content}\n${tags}`.includes(token))) return -1;
   return tokens.reduce((score, token) => score + (title.includes(token) ? 4 : 0) + (tags.includes(token) ? 2 : 0) + (content.includes(token) ? 1 : 0), 0);
+};
+
+const visibilityRank = (visibility: MemoryVisibility): number => ({ private: 0, workspace: 1, project: 2 })[visibility];
+
+const cleanLinks = (values: readonly MemoryEntryLink[] | undefined, currentEntryId: string | undefined, sourceVisibility: MemoryVisibility, entries: ReadonlyMap<string, MemoryEntry>): readonly MemoryEntryLink[] => {
+  if (values === undefined) return [];
+  if (values.length > maxLinks) throw new MemoryCaptureError("links exceed bounded limits.");
+  const seen = new Set<string>();
+  return values.map((value) => {
+    if (!linkRelations.includes(value.relation)) throw new MemoryCaptureError("link relation is invalid.");
+    const entryId = cleanReferenceId(value.entryId);
+    if (currentEntryId !== undefined && entryId === currentEntryId) throw new MemoryCaptureError("memory entry cannot link to itself.");
+    const target = entries.get(entryId);
+    if (!target) throw new MemoryCaptureError("linked memory entry is unknown.");
+    if (visibilityRank(target.visibility) < visibilityRank(sourceVisibility)) throw new MemoryCaptureError("link visibility would widen access.");
+    const key = `${entryId}:${value.relation}`;
+    if (seen.has(key)) throw new MemoryCaptureError("links must be unique.");
+    seen.add(key);
+    return { entryId, relation: value.relation };
+  });
 };
 
 const cleanProvenance = (values: readonly MemoryProvenanceRef[] | undefined, sourceRegistry: Pick<SourceRegistryPort, "getSource">): readonly MemoryProvenanceRef[] => {
@@ -187,6 +217,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
     const retention = cleanEnum(request.retention, retentions, "session", "retention");
     const tags = cleanList(request.tags);
     const provenance = cleanProvenance(request.provenance, this.sourceRegistry);
+    const links = cleanLinks(request.links, undefined, visibility, this.entries);
     const existing = [...this.entries.values()].find((entry) => entry.kind === request.kind && entry.title === title && entry.content === content && entry.visibility === visibility);
     if (existing) return this.clone(existing);
     if (this.entries.size >= this.maxEntries) throw new MemoryCaptureError("memory entry capacity reached.");
@@ -205,6 +236,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
       retention,
       tags,
       provenance,
+      links,
       warnings: [...warnings],
       createdAt: this.now(),
     };
@@ -265,6 +297,6 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
   }
 
   private clone(entry: MemoryEntry): MemoryEntry {
-    return { ...entry, tags: [...entry.tags], provenance: entry.provenance.map((ref) => ({ ...ref })), warnings: [...entry.warnings] };
+    return { ...entry, tags: [...entry.tags], provenance: entry.provenance.map((ref) => ({ ...ref })), links: entry.links.map((link) => ({ ...link })), warnings: [...entry.warnings] };
   }
 }

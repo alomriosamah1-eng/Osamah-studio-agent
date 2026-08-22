@@ -49,6 +49,18 @@ test("memory local retrieval applies an explicit visibility filter without widen
   assert.throws(() => memory.searchLocal("local scope", 8, { visibility: "shared" as never }), /visibility filter/);
 });
 
+test("memory entries accept bounded directed links only to existing entries", () => {
+  let id = 0;
+  const memory = new InMemoryMemoryCapture(new InMemorySourceRegistry(), { nextId: (prefix) => `${prefix}-${++id}` });
+  const target = memory.capture({ kind: "note", title: "Target", content: "Existing local context." });
+  const linked = memory.capture({ kind: "decision", title: "Linked", content: "A decision related to context.", links: [{ entryId: target.entryId, relation: "supports" }] });
+  assert.deepEqual(linked.links, [{ entryId: target.entryId, relation: "supports" }]);
+  assert.throws(() => memory.capture({ kind: "note", title: "Unknown link", content: "No target.", links: [{ entryId: "missing", relation: "related_to" }] }), /linked memory entry is unknown/);
+  assert.throws(() => memory.capture({ kind: "note", title: "Duplicate links", content: "Duplicate relation.", links: [{ entryId: target.entryId, relation: "related_to" }, { entryId: target.entryId, relation: "related_to" }] }), /links must be unique/);
+  assert.throws(() => memory.capture({ kind: "note", title: "Bad relation", content: "Invalid relation.", links: [{ entryId: target.entryId, relation: "unknown" as never }] }), /link relation/);
+  assert.throws(() => memory.capture({ kind: "note", title: "Wider link", content: "Would widen access.", visibility: "workspace", links: [{ entryId: target.entryId, relation: "related_to" }] }), /widen access/);
+});
+
 test("memory capture rejects unknown source provenance and unsafe or duplicate references", () => {
   const sources = new InMemorySourceRegistry();
   const memory = new InMemoryMemoryCapture(sources);

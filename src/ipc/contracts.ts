@@ -17,7 +17,7 @@ import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequ
 import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
 import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactDraftRequest } from "../application/artifact-assembly.js";
 import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyRequest } from "../application/render-policy.js";
-import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention, MemoryReviewDecision, MemoryReviewPort } from "../application/memory-capture.js";
+import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryLinkRelation, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention, MemoryReviewDecision, MemoryReviewPort } from "../application/memory-capture.js";
 import type { AgentDefinition } from "../application/agent-catalog.js";
 import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
 import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
@@ -373,8 +373,13 @@ const isMemoryProvenancePayload = (value: unknown): boolean => isRecord(value)
   && isString(value.id, 256)
   && (value.relation === "derived_from" || value.relation === "supports" || value.relation === "related_to")
   && (value.label === undefined || isSingleLineString(value.label, 256));
+const isMemoryLinkRelationPayload = (value: unknown): value is MemoryLinkRelation => value === "derived_from" || value === "supports" || value === "related_to";
+const isMemoryLinkPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["entryId", "relation"])
+  && isString(value.entryId, 256)
+  && isMemoryLinkRelationPayload(value.relation);
 const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
-  && hasOnlyKeys(value, ["kind", "title", "content", "visibility", "providerAccess", "retention", "tags", "provenance"])
+  && hasOnlyKeys(value, ["kind", "title", "content", "visibility", "providerAccess", "retention", "tags", "provenance", "links"])
   && isMemoryKindPayload(value.kind)
   && isSingleLineString(value.title, 512)
   && isString(value.content, 64 * 1024)
@@ -382,7 +387,8 @@ const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
   && (value.providerAccess === undefined || isMemoryProviderAccessPayload(value.providerAccess))
   && (value.retention === undefined || isMemoryRetentionPayload(value.retention))
   && (value.tags === undefined || isUniqueBoundedStringList(value.tags, 128, 128))
-  && (value.provenance === undefined || (Array.isArray(value.provenance) && value.provenance.length <= 16 && value.provenance.every(isMemoryProvenancePayload)));
+  && (value.provenance === undefined || (Array.isArray(value.provenance) && value.provenance.length <= 16 && value.provenance.every(isMemoryProvenancePayload)))
+  && (value.links === undefined || (Array.isArray(value.links) && value.links.length <= 16 && value.links.every(isMemoryLinkPayload)));
 const isMemoryGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["entryId"]) && isString(value.entryId, 256);
 const isMemoryListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
 const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["query", "limit", "visibility"]) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128)) && (value.visibility === undefined || isMemoryVisibilityPayload(value.visibility));

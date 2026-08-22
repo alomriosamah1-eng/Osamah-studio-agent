@@ -39,7 +39,7 @@ test("SQLite applies migrations in order and persists the latest schema version"
   const databasePath = join(root, "studio.sqlite");
   const database = new SqliteDatabase({ databasePath, migrationsPath });
   try {
-    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "005" });
+    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "006" });
     const tables = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((row) => row.name);
     assert.deepEqual(tables, ["agent_audit_records", "approval_tickets", "approvals", "artifacts", "device_profiles", "domain_events", "jobs", "memory_candidates", "memory_entries", "observability_logs", "preview_sessions", "schema_meta", "sessions", "workspaces"]);
     const indexes = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_autoindex_%' ORDER BY name").map((row) => row.name);
@@ -110,12 +110,15 @@ test("SQLite memory repositories persist entries and candidates across restart w
   const root = makeTempRoot();
   const databasePath = join(root, "studio.sqlite");
   const storage = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
-  const entry: MemoryEntry = { entryId: "memory-persisted", kind: "learning", title: "Persisted learning", content: "token=[REDACTED] local memory", state: "confirmed", visibility: "private", providerAccess: "never", retention: "until_deleted", tags: ["local"], provenance: [], warnings: ["user_confirmed_not_externally_verified"], createdAt: "2026-08-22T10:10:00.000Z", reviewedAt: "2026-08-22T10:11:00.000Z", reviewReason: "Owner reviewed locally." };
+  const related: MemoryEntry = { entryId: "memory-related", kind: "note", title: "Related note", content: "A related local note.", state: "confirmed", visibility: "private", providerAccess: "never", retention: "project", tags: ["related"], provenance: [], links: [], warnings: ["user_confirmed_not_externally_verified"], createdAt: "2026-08-22T10:09:00.000Z", reviewedAt: "2026-08-22T10:09:30.000Z", reviewReason: "Owner reviewed locally." };
+  const entry: MemoryEntry = { entryId: "memory-persisted", kind: "learning", title: "Persisted learning", content: "token=[REDACTED] local memory", state: "confirmed", visibility: "private", providerAccess: "never", retention: "until_deleted", tags: ["local"], provenance: [], links: [{ entryId: related.entryId, relation: "related_to" }], warnings: ["user_confirmed_not_externally_verified"], createdAt: "2026-08-22T10:10:00.000Z", reviewedAt: "2026-08-22T10:11:00.000Z", reviewReason: "Owner reviewed locally." };
   const candidate: MemoryCandidate = { candidateId: "memory-candidate-persisted", version: 1, kind: "summary", title: "Persisted summary", content: "A bounded local summary.", sourceEntryIds: [entry.entryId], sources: [{ entryId: entry.entryId, state: "confirmed", kind: "learning" }], scope: "second-brain", importance: 3, sensitivity: "routine", state: "consolidated", visibility: "private", providerAccess: "never", createdAt: "2026-08-22T10:12:00.000Z", reviewedAt: "2026-08-22T10:13:00.000Z", reviewReason: "Owner consolidated locally.", blockedReasons: [] };
   try {
+    storage.memoryEntries.save(related);
     storage.memoryEntries.save(entry);
     storage.memoryCandidates.save(candidate);
     assert.deepEqual(storage.memoryEntries.list(1), [entry]);
+    assert.deepEqual(storage.memoryEntries.list(2), [entry, related]);
     assert.deepEqual(storage.memoryCandidates.list(1), [candidate]);
   } finally {
     storage.database.close();
@@ -123,6 +126,7 @@ test("SQLite memory repositories persist entries and candidates across restart w
   const reopened = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
   try {
     assert.deepEqual(reopened.memoryEntries.list(1), [entry]);
+    assert.deepEqual(reopened.memoryEntries.list(2), [entry, related]);
     assert.deepEqual(reopened.memoryCandidates.list(1), [candidate]);
     const raw = reopened.database.get<{ content: string }>("SELECT content FROM memory_entries WHERE entry_id = ?", [entry.entryId]);
     assert.equal(raw?.content.includes("token=[REDACTED]"), true);
@@ -137,10 +141,24 @@ test("SQLite memory hydration fails closed on malformed bounded JSON and inconsi
   const root = makeTempRoot();
   const storage = createSqliteApplicationStorage({ databasePath: join(root, "studio.sqlite"), migrationsPath }, makeIds());
   try {
-    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, warnings_json, created_at, reviewed_at, review_reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["malformed-entry", "note", "title", "content", "review_required", "private", "never", "session", "{}", "[]", "[]", "2026-08-22T10:00:00.000Z", null, null]);
+    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["malformed-entry", "note", "title", "content", "review_required", "private", "never", "session", "[]", "[]", "{}", "[]", "2026-08-22T10:00:00.000Z", null, null]);
     assert.throws(() => storage.memoryEntries.list(1), /not a bounded array/);
     storage.database.run("DELETE FROM memory_entries WHERE entry_id = ?", ["malformed-entry"]);
+    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["self-link", "note", "title", "content", "review_required", "private", "never", "session", "[]", "[]", '[{"entryId":"self-link","relation":"related_to"}]', "[]", "2026-08-22T10:00:00.000Z", null, null]);
+    assert.throws(() => storage.memoryEntries.list(1), /self-link/);
+    storage.database.run("DELETE FROM memory_entries WHERE entry_id = ?", ["self-link"]);
+    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["private-target", "note", "private", "private", "confirmed", "private", "never", "project", "[]", "[]", "[]", "[]", "2026-08-22T10:00:00.000Z", "2026-08-22T10:01:00.000Z", "reviewed"]);
+    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["workspace-source", "note", "workspace", "workspace", "confirmed", "workspace", "never", "project", "[]", "[]", '[{"entryId":"private-target","relation":"supports"}]', "[]", "2026-08-22T10:02:00.000Z", "2026-08-22T10:03:00.000Z", "reviewed"]);
+    assert.throws(() => storage.memoryEntries.list(8), /widen access/);
+    storage.database.run("DELETE FROM memory_entries WHERE entry_id IN (?, ?)", ["private-target", "workspace-source"]);
+    storage.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["unknown-link", "note", "title", "content", "review_required", "private", "never", "session", "[]", "[]", '[{"entryId":"missing-target","relation":"related_to"}]', "[]", "2026-08-22T10:00:00.000Z", null, null]);
+    assert.throws(() => storage.memoryEntries.list(8), /linked entry is unknown/);
+    storage.database.run("DELETE FROM memory_entries WHERE entry_id = ?", ["unknown-link"]);
     storage.database.run(`INSERT INTO memory_candidates(candidate_id, version, kind, title, content, source_entry_ids_json, sources_json, scope, importance, expires_at, sensitivity, state, visibility, provider_access, created_at, reviewed_at, review_reason, blocked_reasons_json)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, ["inconsistent-candidate", 1, "summary", "title", "content", '["entry-1"]', "[]", "second-brain", 3, null, "routine", "review_required", "private", "never", "2026-08-22T10:00:00.000Z", null, null, "[]"]);
     assert.throws(() => storage.memoryCandidates.list(1), /sources are inconsistent/);
@@ -323,7 +341,7 @@ test("SQLite backup creates a verifiable snapshot and restores into a separate p
     storage.observability.record({ id: "backup-log", occurredAt: "2026-08-22T10:08:00.000Z", level: "info", eventType: "backup.fixture", payload: { apiKey: "never-export-raw" } });
     const manifest = await provider.create(backupRoot);
     assert.equal(manifest.formatVersion, 1);
-    assert.equal(manifest.schemaVersion, "005");
+    assert.equal(manifest.schemaVersion, "006");
     assert.equal(manifest.files[0]?.relativePath, "studio.sqlite");
     assert.deepEqual(await provider.verify(backupRoot), manifest);
     const restoredManifest = await provider.restore(backupRoot, restoredRoot);

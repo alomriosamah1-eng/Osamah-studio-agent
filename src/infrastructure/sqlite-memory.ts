@@ -1,6 +1,6 @@
 import { sanitizeAuditText } from "../application/agent-contracts.js";
 import type { SqlExecutor } from "../application/ports.js";
-import type { MemoryEntry, MemoryEntryPersistencePort, MemoryEntryKind, MemoryEntryState, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention } from "../application/memory-capture.js";
+import type { MemoryEntry, MemoryEntryLink, MemoryEntryPersistencePort, MemoryEntryKind, MemoryEntryState, MemoryProvenanceKind, MemoryLinkRelation, MemoryVisibility, MemoryProviderAccess, MemoryRetention } from "../application/memory-capture.js";
 import type { MemoryCandidate, MemoryCandidatePersistencePort, MemoryCandidateKind, MemoryCandidateState, MemorySensitivity } from "../application/memory-consolidation.js";
 
 interface SqlRow extends Record<string, unknown> {}
@@ -12,6 +12,8 @@ const providerAccessModes: readonly MemoryProviderAccess[] = ["never", "explicit
 const retentions: readonly MemoryRetention[] = ["session", "project", "until_deleted"];
 const provenanceKinds: readonly MemoryProvenanceKind[] = ["source", "artifact", "task"];
 const provenanceRelations: readonly MemoryEntry["provenance"][number]["relation"][] = ["derived_from", "supports", "related_to"];
+const linkRelations: readonly MemoryLinkRelation[] = ["derived_from", "supports", "related_to"];
+const visibilityRank = (visibility: MemoryVisibility): number => ({ private: 0, workspace: 1, project: 2 })[visibility];
 const candidateKinds: readonly MemoryCandidateKind[] = ["summary", "fact", "decision", "procedure", "episode"];
 const candidateStates: readonly MemoryCandidateState[] = ["review_required", "consolidated", "archived"];
 const sensitivities: readonly MemorySensitivity[] = ["routine", "personal", "sensitive", "secret_shaped"];
@@ -83,12 +85,31 @@ const asProvenance = (value: unknown): MemoryEntry["provenance"][number] => {
 
 const provenanceArray = (value: unknown): MemoryEntry["provenance"] => jsonArray(value, "provenance_json", 16).map(asProvenance);
 
+const asLink = (value: unknown): MemoryEntryLink => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("SQLite memory link row is invalid.");
+  const row = value as Record<string, unknown>;
+  const entryId = text(row.entryId, "links[].entryId", 256);
+  if (entryId.startsWith("/") || entryId.startsWith("~") || entryId.includes("\\") || entryId.includes("..") || entryId.includes("/")) throw new Error("SQLite memory link id is unsafe.");
+  const relation = enumValue(row.relation, "links[].relation", linkRelations);
+  return { entryId, relation };
+};
+
+const linksArray = (value: unknown): readonly MemoryEntryLink[] => {
+  const links = jsonArray(value, "links_json", 16).map(asLink);
+  const keys = links.map((link) => `${link.entryId}:${link.relation}`);
+  if (new Set(keys).size !== keys.length) throw new Error("SQLite memory links contain duplicates.");
+  return links;
+};
+
 const asMemoryEntry = (row: SqlRow): MemoryEntry => {
+  const entryId = text(row.entry_id, "entry_id", 256);
+  const links = linksArray(row.links_json);
+  if (links.some((link) => link.entryId === entryId)) throw new Error("SQLite memory entry contains a self-link.");
   const reviewedAt = optionalText(row.reviewed_at, "reviewed_at", 128);
   const reviewReason = optionalText(row.review_reason, "review_reason", 512);
   if ((reviewedAt === undefined) !== (reviewReason === undefined)) throw new Error("SQLite memory review fields are inconsistent.");
   return {
-    entryId: text(row.entry_id, "entry_id", 256),
+    entryId,
     kind: enumValue(row.kind, "kind", entryKinds),
     title: text(row.title, "title", 512),
     content: text(row.content, "content", 64 * 1024, true),
@@ -98,6 +119,7 @@ const asMemoryEntry = (row: SqlRow): MemoryEntry => {
     retention: enumValue(row.retention, "retention", retentions),
     tags: stringArray(row.tags_json, "tags_json", 128, 128),
     provenance: provenanceArray(row.provenance_json),
+    links,
     warnings: stringArray(row.warnings_json, "warnings_json", 64, 256),
     createdAt: timestamp(row.created_at, "created_at"),
     ...(reviewedAt === undefined ? {} : { reviewedAt }),
@@ -154,17 +176,27 @@ export class SqliteMemoryEntryRepository implements MemoryEntryPersistencePort {
   public constructor(private readonly database: SqlExecutor) {}
 
   public save(entry: MemoryEntry): void {
-    this.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, warnings_json, created_at, reviewed_at, review_reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    this.database.run(`INSERT INTO memory_entries(entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(entry_id) DO UPDATE SET kind=excluded.kind, title=excluded.title, content=excluded.content, state=excluded.state, visibility=excluded.visibility,
-        provider_access=excluded.provider_access, retention=excluded.retention, tags_json=excluded.tags_json, provenance_json=excluded.provenance_json,
+        provider_access=excluded.provider_access, retention=excluded.retention, tags_json=excluded.tags_json, provenance_json=excluded.provenance_json, links_json=excluded.links_json,
         warnings_json=excluded.warnings_json, reviewed_at=excluded.reviewed_at, review_reason=excluded.review_reason`,
-    [entry.entryId, entry.kind, sanitizeAuditText(entry.title, 512), sanitizeAuditText(entry.content, 64 * 1024), entry.state, entry.visibility, entry.providerAccess, entry.retention, saveJson(entry.tags, "tags"), saveJson(entry.provenance, "provenance"), saveJson(entry.warnings, "warnings"), entry.createdAt, entry.reviewedAt ?? null, entry.reviewReason === undefined ? null : sanitizeAuditText(entry.reviewReason, 512)]);
+    [entry.entryId, entry.kind, sanitizeAuditText(entry.title, 512), sanitizeAuditText(entry.content, 64 * 1024), entry.state, entry.visibility, entry.providerAccess, entry.retention, saveJson(entry.tags, "tags"), saveJson(entry.provenance, "provenance"), saveJson(entry.links, "links"), saveJson(entry.warnings, "warnings"), entry.createdAt, entry.reviewedAt ?? null, entry.reviewReason === undefined ? null : sanitizeAuditText(entry.reviewReason, 512)]);
   }
 
   public list(limit = 256): readonly MemoryEntry[] {
-    const rows = this.database.all<SqlRow>("SELECT entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, warnings_json, created_at, reviewed_at, review_reason FROM memory_entries ORDER BY created_at DESC, entry_id DESC LIMIT ?", [boundedLimit(limit, 256)]);
-    return rows.map(asMemoryEntry);
+    const safeLimit = boundedLimit(limit, 256);
+    const rows = this.database.all<SqlRow>("SELECT entry_id, kind, title, content, state, visibility, provider_access, retention, tags_json, provenance_json, links_json, warnings_json, created_at, reviewed_at, review_reason FROM memory_entries ORDER BY created_at DESC, entry_id DESC LIMIT ?", [256]);
+    const entries = rows.map(asMemoryEntry);
+    const byId = new Map(entries.map((entry) => [entry.entryId, entry]));
+    for (const entry of entries) {
+      for (const link of entry.links) {
+        const target = byId.get(link.entryId);
+        if (!target) throw new Error("SQLite memory linked entry is unknown.");
+        if (visibilityRank(target.visibility) < visibilityRank(entry.visibility)) throw new Error("SQLite memory link visibility would widen access.");
+      }
+    }
+    return entries.slice(0, safeLimit);
   }
 }
 
