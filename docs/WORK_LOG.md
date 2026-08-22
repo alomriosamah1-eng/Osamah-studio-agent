@@ -19,6 +19,8 @@
 
 | 2026-08-22 | Master Implementation Plan | تحويل كل التحليلات إلى خطة موحدة للأقسام الثلاثة والمراحل 0–17 | تثبيت ترتيب التنفيذ والاعتماديات وبوابات القبول وإعادة استخدام المشاريع المفتوحة المصدر | `docs/45-master-implementation-plan.md`, `project/master-implementation-plan.json`, `docs/README.md`, `CHANGELOG.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `FINAL_REPORT.md`, `AI_CONTINUATION.md` | JSON validation و`git diff --check` PASS؛ الخطة تضع typed preload أولًا وتؤجل native/OpenTo حسب الأدلة | `0f1010462c6297e274c66b9c99ed38404272df5d` | pushed/verified on `origin/main`; worktree clean | next: typed Electron preload/CSP/sandbox |
 
+| 2026-08-22 | Electron Shell + Typed Preload | إضافة main process وBrowserWindow معزولة وpreload bridge وقناة IPC allowlisted | تحويل in-memory boundary إلى shell Desktop قابل للتشغيل دون كشف Node APIs | `src/desktop/main.ts`, `src/desktop/preload-api.ts`, `src/desktop/preload.cjs`, `src/desktop/security.ts`, `src/desktop/security.test.ts`, `scripts/desktop-smoke.mjs`, `prototypes/studio/workspace.js`, `docs/46`, `package.json`, `pnpm-lock.yaml` | `pnpm check`: 23/23؛ `pnpm desktop:smoke`: startup/preload/IPC PASS؛ SQLite/diff/secret/syntax PASS | `ddeb5edc939c107f808339c480cf7535f1150595` | pushed/verified on `origin/main`; worktree clean | next: SQLite adapter/observability + production root picker |
+
 ## قاعدة السجل
 
 لا يُغلق السطر حتى يُكتب commit hash ويُتحقق من remote hash. عند فشل test أو push، يضاف سطر جديد يشرح الفشل والإصلاح، ولا يُستبدل التاريخ بصمت.

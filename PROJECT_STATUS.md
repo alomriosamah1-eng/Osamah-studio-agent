@@ -2,13 +2,13 @@
 
 ## ملخص الحالة
 
-المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. أضيف الآن Electron shell وtyped preload وCSP وdesktop smoke فوق النواة.
+المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. اكتمل الآن Electron shell وtyped preload وCSP وdesktop smoke فوق النواة.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `0f1010462c6297e274c66b9c99ed38404272df5d`؛ شريحة Electron الحالية محلية |
-| حالة الشجرة | تغييرات Electron shell/preload محلية، جاهزة للفحوص النهائية والـ commit |
+| آخر commit مدفوع | `ddeb5edc939c107f808339c480cf7535f1150595` |
+| حالة الشجرة | Electron shell/preload مدفوعان ومتحققان؛ تغييرات الحالة النهائية محلية |
 | الإصدار المحلي | `0.6.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `23/23` اختبارًا ناجحًا؛ desktop smoke وIPC smoke ناجحان |
@@ -46,10 +46,10 @@
 
 ## المخاطر والقرارات المفتوحة
 
-لا يوجد بعد Electron shell أو typed Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. Android يعتمد على toolchain وتسريع الأجهزة، وiOS Simulator يحتاج macOS/Xcode. browser/fixture preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ولا يوجد بعد production packaging الموقّع أو SQLite native driver أو agent runtime أو provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. Android يعتمد على toolchain وتسريع الأجهزة، وiOS Simulator يحتاج macOS/Xcode. browser/fixture preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا.
 
 ## الإجراء التالي
 
-الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. اكتمل prototype أولي لـ typed Electron preload؛ الخطوة التالية بعد إغلاق هذه الشريحة هي SQLite adapter/observability، ثم root picker production. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. اكتمل prototype أولي لـ Electron shell وtyped preload، واجتاز startup/preload/IPC smoke؛ الخطوة التالية بعد إغلاق هذه الشريحة هي SQLite adapter/observability، ثم root picker production. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `0f1010462c6297e274c66b9c99ed38404272df5d`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `ddeb5edc939c107f808339c480cf7535f1150595`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

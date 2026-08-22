@@ -65,6 +65,7 @@
 | Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
 | Presentation renderer | `df53c8cd32b5e35c25488171bdca5241770146b3`؛ final delivery state at `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
 | IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ delivery state متحقق في `c1b1613a92515b5daa186137ad48f37844834878` |
+| Electron Shell + Typed Preload | `src/desktop/` و`desktop:smoke`؛ 23/23 tests؛ startup/preload/IPC smoke ناجح |
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
 
 تم التحقق من `pnpm check` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، ثم دُفعت شريحة IPC Project Open ووثيقتها، ثم دُفعت الخطة الرئيسية ونسختها JSON، وتطابق `git rev-parse HEAD` مع GitHub API عند `0f1010462c6297e274c66b9c99ed38404272df5d`، والشجرة نظيفة.
@@ -75,11 +76,12 @@
 
 ## الحدود الحالية
 
-لا يوجد بعد Electron shell أو Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC، وليس Electron preload production boundary بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ولا يوجد بعد SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **typed Electron preload boundary** أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject` دون كشف Node APIs مباشرة إلى renderer. يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **SQLite adapter وobservability**، بالتوازي مع production root picker عبر typed preload، ثم agent runtime. كانت هذه الشريحة هي typed Electron preload boundary الأولى، وقد اجتازت contract tests وCSP/sandbox/resource smoke. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد.
+
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
