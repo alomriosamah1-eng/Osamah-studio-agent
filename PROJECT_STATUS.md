@@ -2,7 +2,7 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter.
 
 | البند | الحالة |
 |---|---|
@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | نظيفة بعد دفع Provider/Approval؛ local == `origin/main` |
+| حالة الشجرة | Agent Work Cycle وContext Index والاختبارات والتوثيق المحلي قيد بوابة الإغلاق والدفع |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `63/63` اختبارًا؛ full gate وGitHub push verification ناجحان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `71/71` اختبارًا؛ full gate ناجح في 2026-08-22، وcommit/push لهذه الشريحة لاحقان |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -53,7 +53,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `63/63` ناجحة |
+| `pnpm test` | `71/71` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
@@ -66,16 +66,18 @@
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
+| agent work cycle | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety PASS؛ delivery pending full docs gate |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow موجودة كـapplication slices bounded، لكن provider adapters الفعلية وpersistent audit وHuman Gate UI وquota/circuit breaker الكامل ما زالت لاحقة. SQLite مربوط اختياريًا داخل `createEmbeddedApplication`، ومسار `sqlite-profile` يفرض profile path policy وexclusive locking؛ backup UX والتشفير ما زالا لاحقين.
+ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow وAgentWorkCycle وContextIndex موجودة كـapplication slices bounded، لكن planner/critic وLLM inference وprovider adapters الفعلية وpersistent audit وHuman Gate UI وquota/circuit breaker الكامل ما زالت لاحقة.
+ SQLite مربوط اختياريًا داخل `createEmbeddedApplication`، ومسار `sqlite-profile` يفرض profile path policy وexclusive locking؛ backup UX والتشفير ما زالا لاحقين.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
 ## القرار والخطوة التالية
 
-بعد إغلاق Provider/Approval وProviderGateway، تُنفذ دورة agent العامة `request → constraints → plan → targeted read → patch → approval → checkpoint`، ثم persistent audit وHuman Gate UI وprovider adapters الفعلية. يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain وفق الخطة؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق Agent Work Cycle الحالي، تُنفذ typed application/IPC boundary وpersistent audit وHuman Gate UI وplanner/critic وprovider adapters الفعلية. يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain وفق الخطة؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

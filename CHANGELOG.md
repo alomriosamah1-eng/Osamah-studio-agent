@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Agent Work Cycle وProject Context Index
+
+### Added
+
+- `FilesystemProjectContextIndex` لفهرسة الملفات والـmanifests وGit status وقراءة targeted bounded مع SHA-256، دون تشغيل project scripts.
+- `GitStatusAdapter` يستخدم `git status --porcelain=v1 --branch` عبر `execFile` دون shell.
+- `AgentWorkCycleService` بتسلسل request → context → targeted read → caller-supplied plan → patch preview → approval → checkpoint → revalidate → apply.
+- `FilesystemPatchAdapter` مع canonical root وpath traversal/symlink guards وduplicate checks وexpected SHA وstaged atomic file replacement.
+- `Checkpoint` و`InMemoryCheckpointStore` وDomainEvents لمراحل WorkCycle، مع composition exports لدورة الوكيل وpatch/context adapters.
+- `docs/53-agent-work-cycle.md` واختبارات `src/project-context.test.ts` و`src/agent-work-cycle.test.ts` و`src/filesystem-patch.test.ts`.
+
+### Verified
+
+- `pnpm check`: `71/71` اختبارًا ناجحًا.
+- دورة approval ثم checkpoint ثم apply، denial، conflict، no-op checkpoint، وpatch safety: PASS.
+- full static/build/desktop/performance gates ستُعاد قبل commit الدفع النهائي لهذه الشريحة.
+
+### Boundaries
+
+- لا يوجد planner أو critic أو LLM inference تلقائي؛ الخطة يقدّمها caller حاليًا.
+- لا يوجد persistent project index أو checkpoint restore أو terminal/Git write adapter أو editor UI؛ التعديلات محصورة في patch contract المحلي.
+
 ## [Unreleased] — Provider وApproval Contracts
 
 ### Added

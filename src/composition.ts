@@ -3,12 +3,16 @@ import { GeneralProjectDetector } from "./application/mobile-services.js";
 import { BoundedAgentRuntime } from "./application/agent-runtime.js";
 import { InMemoryApprovalWorkflow } from "./application/approval-workflow.js";
 import { ProviderGateway } from "./application/provider-gateway.js";
+import { FilesystemProjectContextIndex } from "./application/project-context.js";
+import { AgentWorkCycleService } from "./application/agent-work-cycle.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
-import { FixedClock, InMemoryAuditTrail, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
+import { FixedClock, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
 import { createSqliteApplicationStorage, type SqliteApplicationStorage } from "./infrastructure/sqlite.js";
 import { FileProfileLock, resolveProfilePaths, type ProfileLock, type ProfilePaths } from "./infrastructure/profile-storage.js";
+import { GitStatusAdapter } from "./infrastructure/git-status.js";
+import { FilesystemPatchAdapter } from "./infrastructure/filesystem-patch.js";
 import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
 import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
@@ -100,6 +104,18 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
   const ipc = new InMemoryIpcTransport();
   const scanner = new FilesystemProjectScanner({ limits: resourcePolicy.limits });
+  const projectContextIndex = new FilesystemProjectContextIndex(scanner, new GitStatusAdapter(), resourcePolicy, () => foundation.dependencies.clock.now());
+  const checkpointStore = new InMemoryCheckpointStore();
+  const projectPatchAdapter = new FilesystemPatchAdapter(resourcePolicy);
+  const agentWorkCycle = new AgentWorkCycleService({
+    runtime: agentRuntime,
+    context: projectContextIndex,
+    patches: projectPatchAdapter,
+    checkpoints: checkpointStore,
+    events: persistence.events,
+    now: () => foundation.dependencies.clock.now(),
+    nextId: (prefix) => foundation.dependencies.ids.next(prefix),
+  });
   const projectPreviewService = new FilesystemProjectPreviewService(scanner, resourcePolicy);
   const generalProjectDetector = new GeneralProjectDetector(scanner);
   const defaultProfiles = [
@@ -122,6 +138,10 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     ipc,
     projectPreviewService,
     generalProjectDetector,
+    projectContextIndex,
+    checkpointStore,
+    projectPatchAdapter,
+    agentWorkCycle,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,

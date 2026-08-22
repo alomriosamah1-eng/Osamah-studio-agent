@@ -267,10 +267,12 @@ export class SqliteRepositories {
 }
 
 const eventAggregateId = (event: DomainEvent): string => {
+  if ("cycleId" in event) return event.cycleId;
   if ("workspaceId" in event) return event.workspaceId;
   if ("sessionId" in event) return event.sessionId;
   if ("approvalId" in event) return event.approvalId;
-  return event.previewSessionId;
+  if ("previewSessionId" in event) return event.previewSessionId;
+  throw new Error("Unsupported domain event.");
 };
 
 export class SqliteEventBus implements EventBus {
