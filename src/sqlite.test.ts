@@ -6,6 +6,9 @@ import { test } from "node:test";
 import { createApproval, createDeviceProfile, createPreviewSession, createSession, createWorkspace } from "./domain/entities.js";
 import { approvalId, deviceProfileId, previewSessionId, sessionId, workspaceId } from "./domain/primitives.js";
 import { InMemoryObservabilitySink, IncrementingIds } from "./infrastructure/in-memory.js";
+import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
+import type { AuditRecord } from "./application/agent-contracts.js";
+import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
 import { LocalSqliteBackupProvider } from "./infrastructure/sqlite-backup.js";
 import { createSqliteApplicationStorage, migrationChecksum, redactJson, SqliteDatabase } from "./infrastructure/sqlite.js";
 
@@ -14,6 +17,20 @@ const migrationsPath = join(process.cwd(), "db", "migrations");
 const makeTempRoot = (): string => mkdtempSync(join(tmpdir(), "osamah-studio-sqlite-"));
 
 const makeIds = (): IncrementingIds => new IncrementingIds();
+
+const auditFixture = (id: string, occurredAt: string, scope = "src/app.ts", reason = "reviewed") : AuditRecord => ({
+  id,
+  occurredAt,
+  correlationId: `corr-${id}`,
+  actionId: `action-${id}`,
+  sessionId: `session-${id}`,
+  kind: "filesystem.write",
+  risk: "high",
+  decision: "approved",
+  approvalId: `approval-${id}`,
+  scope,
+  reason,
+});
 
 test("SQLite applies migrations in order and persists the latest schema version", () => {
   const root = makeTempRoot();
@@ -175,6 +192,58 @@ test("SQLite audit trail persists redacted decision fields across restart", () =
     assert.equal(record?.reason.includes("do-not-store"), false);
   } finally {
     reopened.database.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("audit export writes bounded redacted NDJSON and rejects live profile destinations", async () => {
+  const root = makeTempRoot();
+  const liveRoot = join(root, "live");
+  const exportRoot = join(root, "audit-export");
+  mkdirSync(liveRoot, { recursive: true });
+  const storage = createSqliteApplicationStorage({ databasePath: join(liveRoot, "studio.sqlite"), migrationsPath }, makeIds());
+  const provider = new LocalAuditExportProvider({ trail: storage.audit, clock: { now: () => "2026-08-22T10:09:00.000Z" }, sourceProfileDirectory: liveRoot });
+  try {
+    storage.audit.append(auditFixture("export-1", "2026-08-22T10:05:00.000Z", "root=/tmp prompt=never-store token=never-store", "authorization=never-store"));
+    storage.audit.append(auditFixture("export-2", "2026-08-22T10:06:00.000Z"));
+    const manifest = await provider.create(exportRoot, 2);
+    assert.equal(manifest.formatVersion, 1);
+    assert.equal(manifest.recordCount, 2);
+    assert.equal(manifest.relativePath, "audit.ndjson");
+    assert.match(manifest.sha256, /^[a-f0-9]{64}$/);
+    const lines = readFileSync(join(exportRoot, "audit.ndjson"), "utf8").trim().split("\n");
+    assert.equal(lines.length, 2);
+    const exported = JSON.parse(lines[0] ?? "{}") as AuditRecord;
+    assert.equal(exported.id, "export-2");
+    const redactedExported = JSON.parse(lines[1] ?? "{}") as AuditRecord;
+    assert.equal(redactedExported.scope, "root=/tmp prompt=[REDACTED] token=[REDACTED]");
+    assert.equal(redactedExported.reason, "authorization=[REDACTED]");
+    assert.ok(manifest.bytes > 0);
+    assert.deepEqual(JSON.parse(readFileSync(join(exportRoot, "manifest.json"), "utf8")), manifest);
+    await assert.rejects(() => provider.create(liveRoot), /separate from the live profile/);
+    await assert.rejects(() => provider.create(join(liveRoot, "nested")), /separate from the live profile/);
+  } finally {
+    storage.database.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("audit retention deletes only records outside the bounded age and count policy", () => {
+  const root = makeTempRoot();
+  const storage = createSqliteApplicationStorage({ databasePath: join(root, "studio.sqlite"), migrationsPath }, makeIds());
+  const policy = new BoundedAuditRetentionPolicy(storage.audit, { now: () => "2026-08-22T00:00:00.000Z" });
+  try {
+    storage.audit.append(auditFixture("retention-old", "2026-07-01T00:00:00.000Z"));
+    storage.audit.append(auditFixture("retention-recent-1", "2026-08-15T00:00:00.000Z"));
+    storage.audit.append(auditFixture("retention-recent-2", "2026-08-16T00:00:00.000Z"));
+    const result = policy.prune({ maxAgeMs: 30 * 24 * 60 * 60 * 1000, maxRecords: 1 });
+    assert.equal(result.deletedByAge, 1);
+    assert.equal(result.deletedByCount, 1);
+    assert.equal(result.remaining, 1);
+    assert.deepEqual(storage.audit.list(10).map((record) => record.id), ["retention-recent-2"]);
+    assert.throws(() => policy.prune({ maxAgeMs: 12 * 60 * 60 * 1000 }), /at least one day/);
+  } finally {
+    storage.database.close();
     rmSync(root, { recursive: true, force: true });
   }
 });

@@ -1,5 +1,5 @@
 import type { DomainEvent, EventBus } from "../domain/events.js";
-import { sanitizeAuditText, type ApprovalStore, type AuditRecord, type AuditTrail, type ApprovalTicket } from "../application/agent-contracts.js";
+import { sanitizeAuditText, type ApprovalStore, type AuditRecord, type AuditRetentionStore, type AuditTrail, type ApprovalTicket } from "../application/agent-contracts.js";
 import type { ProviderRouteAudit, ProviderRouteAuditRecord } from "../application/provider-contracts.js";
 import type { Checkpoint, CheckpointStore } from "../application/agent-work-cycle.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
@@ -98,7 +98,7 @@ export class InMemoryProviderRouteAudit implements ProviderRouteAudit {
   }
 }
 
-export class InMemoryAuditTrail implements AuditTrail {
+export class InMemoryAuditTrail implements AuditTrail, AuditRetentionStore {
   private readonly records: AuditRecord[] = [];
 
   public append(record: AuditRecord): void {
@@ -109,6 +109,21 @@ export class InMemoryAuditTrail implements AuditTrail {
   public list(limit = 100): readonly AuditRecord[] {
     const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
     return this.records.slice(-boundedLimit).reverse();
+  }
+
+  public deleteBefore(occurredBefore: string): number {
+    const remaining = this.records.filter((record) => record.occurredAt >= occurredBefore);
+    const deleted = this.records.length - remaining.length;
+    this.records.splice(0, this.records.length, ...remaining);
+    return deleted;
+  }
+
+  public deleteIds(ids: readonly string[]): number {
+    const targetIds = new Set(ids.slice(0, 256));
+    const remaining = this.records.filter((record) => !targetIds.has(record.id));
+    const deleted = this.records.length - remaining.length;
+    this.records.splice(0, this.records.length, ...remaining);
+    return deleted;
   }
 }
 

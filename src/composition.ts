@@ -7,6 +7,7 @@ import { FilesystemProjectContextIndex } from "./application/project-context.js"
 import { AgentWorkCycleService } from "./application/agent-work-cycle.js";
 import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
+import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
 import { FixedClock, InMemoryApprovalStore, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
@@ -21,6 +22,7 @@ import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
 import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
 import { FilesystemProjectPreviewService } from "./application/project-preview-service.js";
 import { FilesystemProjectScanner } from "./infrastructure/filesystem-project-scanner.js";
+import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -101,6 +103,8 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const foundation = createFoundationFromStorage(persistence.repositories, persistence.events);
   const resourcePolicy = new ResourcePolicy("low_memory");
   const auditTrail = persistence.sqlite?.audit ?? new InMemoryAuditTrail();
+  const auditRetention = new BoundedAuditRetentionPolicy(auditTrail, foundation.dependencies.clock);
+  const auditExport = new LocalAuditExportProvider({ trail: auditTrail, clock: foundation.dependencies.clock, sourceProfileDirectory: persistence.profilePaths?.profileDirectory });
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
@@ -152,6 +156,8 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     approvalWorkflow,
     humanGate,
     auditTrail,
+    auditRetention,
+    auditExport,
     providerGateway,
     providerRouteAudit,
     defaultProfiles,

@@ -85,3 +85,21 @@ export interface AuditTrail {
   append(record: AuditRecord): void;
   list(limit?: number): readonly AuditRecord[];
 }
+
+export interface AuditRetentionStore {
+  deleteBefore(occurredBefore: string): number;
+  deleteIds(ids: readonly string[]): number;
+}
+
+export interface AuditExportManifest {
+  readonly formatVersion: 1;
+  readonly createdAt: string;
+  readonly recordCount: number;
+  readonly bytes: number;
+  readonly sha256: string;
+  readonly relativePath: "audit.ndjson";
+}
+
+export interface AuditExportProvider {
+  create(destinationRoot: string, limit?: number): Promise<AuditExportManifest>;
+}

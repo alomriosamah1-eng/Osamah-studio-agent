@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { DomainEvent, EventBus } from "../domain/events.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
-import { sanitizeAuditText, type ApprovalStore, type ApprovalTicket, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
+import { sanitizeAuditText, type ApprovalStore, type ApprovalTicket, type AuditRecord, type AuditRetentionStore, type AuditTrail } from "../application/agent-contracts.js";
 import type { ApprovalId, DeviceProfileId, PreviewSessionId, SessionId, WorkspaceId } from "../domain/primitives.js";
 import type {
   ApprovalRepository,
@@ -355,7 +355,7 @@ export class SqliteApprovalStore implements ApprovalStore {
   }
 }
 
-export class SqliteAuditTrail implements AuditTrail {
+export class SqliteAuditTrail implements AuditTrail, AuditRetentionStore {
   public constructor(private readonly database: SqlExecutor) {}
 
   public append(record: AuditRecord): void {
@@ -381,6 +381,25 @@ export class SqliteAuditTrail implements AuditTrail {
       scope: asString(row.scope, "scope"),
       reason: asString(row.reason, "reason"),
     }));
+  }
+
+  public deleteBefore(occurredBefore: string): number {
+    const count = this.database.get<{ count: number }>("SELECT COUNT(*) AS count FROM agent_audit_records WHERE occurred_at < ?", [occurredBefore])?.count ?? 0;
+    this.database.run("DELETE FROM agent_audit_records WHERE occurred_at < ?", [occurredBefore]);
+    return count;
+  }
+
+  public deleteIds(ids: readonly string[]): number {
+    const boundedIds = [...new Set(ids)].slice(0, 256);
+    let deleted = 0;
+    this.database.transaction(() => {
+      for (const id of boundedIds) {
+        const present = this.database.get<{ count: number }>("SELECT COUNT(*) AS count FROM agent_audit_records WHERE id = ?", [id])?.count ?? 0;
+        this.database.run("DELETE FROM agent_audit_records WHERE id = ?", [id]);
+        deleted += present;
+      }
+    });
+    return deleted;
   }
 }
 

@@ -14,17 +14,20 @@
 - `ApprovalStore` و`InMemoryApprovalStore` و`SqliteApprovalStore` مع hydration bounded إلى `InMemoryApprovalWorkflow` عند فتح SQLite profile، وتوثيق `docs/56-approval-hydration.md`.
 - عقد `IpcEvent` و`approval.changed`، قناة `osamah:approval-events`، وpreload `subscribe()` مع filter وunsubscribe.
 - لوحة Human Gate داخل Workspace تعرض pending tickets حتى 8 عناصر وتنفذ Approve/Deny عبر typed `approval.decide`؛ وثيقة التنفيذ `docs/57-human-gate-ui-event-stream.md`.
+- `AuditExportProvider` و`LocalAuditExportProvider` لإنشاء `audit.ndjson` وmanifest ذري مع SHA-256 وbyte count وredaction إضافي، مع منع destination داخل live profile.
+- `AuditRetentionStore` و`BoundedAuditRetentionPolicy` بسياسة عمر محافظة من يوم إلى 365 يومًا وحد أقصى 256 سجلًا، دون حذف تلقائي عند الإقلاع؛ وثيقة التنفيذ `docs/58-audit-export-retention.md`.
 
 ### Verified
 
-- `pnpm check`: `79/79` اختبارًا ناجحًا.
+- `pnpm check`: `81/81` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
 - approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.
+- Audit Export NDJSON/manifest/redaction/destination safety وRetention age/count/fail-safe: PASS.
 
 ### Boundaries
 
-- audit export/retention policy وmulti-user identity ما زالت مؤجلة. Human Gate UI وapproval event streaming وapproval ticket hydration بعد restart أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
+- multi-user identity وRBAC والتشفير وsigned/tamper-evident export ما زالت مؤجلة. Human Gate UI وapproval event streaming وapproval ticket hydration وAudit Export وRetention Policy أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
 
 ## [Unreleased] — Typed Agent WorkCycle IPC Boundary
 
