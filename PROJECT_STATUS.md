@@ -2,7 +2,7 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProject Explorer/File Reader وSafe Editor Document Boundary وTerminal Policy Preview وGit Read-only Integration وContext وAgent Task Review Panel وProduction Studio Source Registry وProvenance وContent Plan وClaim/Citation Integrity وAsset Catalog وCreative Brief وArtifact Assembly وManifest Review وRender Job Policy وValidation Preview وSecond Brain Memory Capture وKnowledge Entry Review.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProject Explorer/File Reader وSafe Editor Document Boundary وTerminal Policy Preview وGit Read-only Integration وContext وAgent Task Review Panel وProduction Studio Source Registry وProvenance وContent Plan وClaim/Citation Integrity وAsset Catalog وCreative Brief وArtifact Assembly وManifest Review وRender Job Policy وValidation Preview وSecond Brain Memory Capture وKnowledge Entry Review وMemory Review وExplicit Confirmation.
 
 | البند | الحالة |
 |---|---|
@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Second Brain Memory Capture وKnowledge Entry Review منفذة ومدفوعة ومتحقق منها عند feature `39bd89c7f4242abab76fd624045b493b72e48088`؛ docs-close مستقل |
+| حالة الشجرة | Second Brain Memory Capture وKnowledge Entry Review السابقة مغلقة؛ Memory Review وExplicit Confirmation منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm test` ناجح، `165/165` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm test` ناجح، `167/167` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -44,7 +44,7 @@
 
 أضيفت شريحة Asset Catalog وCreative Brief: `AssetCatalogPort` و`CreativeBriefPort` و`InMemoryAssetCatalog` لتسجيل metadata وlicense/provenance وإنشاء briefs وربط asset IDs، مع typed IPC وWorkspace panels metadata-only. تُرفض locators وhash/bytes وsource IDs غير الصالحة، ويُمنع attach للأصول المحظورة، دون binary fetch أو media generation أو converters أو filesystem mutation.
 
-أضيفت شريحة Artifact Assembly وManifest Review ثم Render Job Policy وValidation Preview، مع manifest completeness وقرارات review وlow-memory format/destination guards وtyped IPC وWorkspace Artifact/Render Readiness panels، دون render أو export أو converter أو output file. ثم أضيفت شريحة Second Brain Memory Capture وKnowledge Entry Review مع `MemoryCapturePort` و`InMemoryMemoryCapture`، redaction وsource provenance وlocal search، وprivacy defaults `private`/`never`/`session`؛ لا embeddings أو FTS أو provider sharing أو autosave دائم.
+أضيفت شريحة Artifact Assembly وManifest Review ثم Render Job Policy وValidation Preview، مع manifest completeness وقرارات review وlow-memory format/destination guards وtyped IPC وWorkspace Artifact/Render Readiness panels، دون render أو export أو converter أو output file. ثم أضيفت شريحة Second Brain Memory Capture وKnowledge Entry Review مع `MemoryCapturePort` و`InMemoryMemoryCapture`، redaction وsource provenance وlocal search، وprivacy defaults `private`/`never`/`session`؛ لا embeddings أو FTS أو provider sharing أو autosave دائم. ثم أضيفت Memory Review وExplicit Confirmation عبر `MemoryReviewPort` وانتقالات `review_required` إلى `confirmed` أو `archived`، وreview reason/reviewedAt، وtyped IPC وWorkspace queue؛ confirmation محلي لا يثبت صحة خارجية ويحافظ على privacy fields، ولا ينشئ approval ticket أو provider call أو filesystem mutation.
 أضيفت شريحة Artifact Assembly وManifest Review ثم Render Job Policy وValidation Preview مع manifest completeness وحالات review bounded وlow-memory budget/format/destination guards وtyped IPC وWorkspace Artifact/Render Readiness panels، دون render أو export أو converter أو output file، و`executionStarted: false` دائمًا.
 
 أضيف provider-backed planning: `AsyncPlannerPort` و`LlmPlanner` و`ProviderBackedPlannerCritic`، واختيار `providerId`/`modelId`/`offlineMode` في WorkCycle وIPC. الاستجابة JSON strict ومحدودة، وprovider selection الصريح يمنع fallback، بينما تبقى الكتابة خلف Human Gate و`submitGuarded`. Electron smoke يثبت plan-less generation عبر fixture provider وعدم mutation.
@@ -79,7 +79,7 @@
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
-| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`؛ task.preview وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy وMemory Capture no-mutation PASS |
+| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`؛ task.preview وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy وMemory Capture/Review no-mutation PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -101,6 +101,9 @@
 | Production Studio: Source Registry وProvenance | `SourceRegistryPort` و`InMemorySourceRegistry` وsource/citation/provenance IPC وbounded validation/deduplication وWorkspace Sources panel وno-network/no-mutation smoke PASS؛ feature `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c`، docs-close مستقل |
 | Production Studio: Content Plan وClaim/Citation Integrity | `ContentPlanPort` و`InMemoryContentPlanService` وclaim-source integrity وtyped IPC وWorkspace Content Plan panel وunresolved/conflicted/no-mutation smoke PASS؛ feature `403372b4b13c2545818d4fd0fddff180bde89983`، docs-close مستقل |
 | Production Studio: Asset Catalog وCreative Brief | `AssetCatalogPort` و`CreativeBriefPort` و`InMemoryAssetCatalog` وlicense/provenance guards وtyped IPC وWorkspace metadata-only panels وno-network/no-mutation smoke PASS؛ feature `552854705ea4b3371ec7fe1c8afbe8d8a9901158`، docs-close مستقل |
+| Production Studio: Render Job Policy وValidation Preview | `RenderPolicyPort` وlow-memory format/destination guards وtyped IPC وWorkspace readiness و`executionStarted: false` وno-render/no-mutation PASS؛ feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`، docs-close مستقل |
+| Second Brain: Memory Capture وKnowledge Entry Review | `MemoryCapturePort` وredaction/source provenance/local search وtyped IPC وWorkspace capture panel وno-provider/no-network/no-mutation PASS؛ feature `39bd89c7f4242abab76fd624045b493b72e48088`، docs-close مستقل |
+| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key review validation وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation PASS؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close مستقل |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
@@ -112,8 +115,8 @@
 
 ## القرار والخطوة التالية
 
-بعد إغلاق شريحة Second Brain Memory Capture وKnowledge Entry Review، تأتي بقية Second Brain أو Production Studio أو Development Environment وفق أولوية المالك، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق شريحة Second Brain Memory Review وExplicit Confirmation، تأتي بقية Second Brain أو Production Studio أو Development Environment وفق أولوية المالك، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `39bd89c7f4242abab76fd624045b493b72e48088` متحقق local==remote؛ docs-close commit قيد push والتحقق النهائي.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `4f1709cd927b77627c4532ec396f572f3bbedb2c` متحقق local==remote؛ docs-close commit قيد push والتحقق النهائي.

@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Second Brain: Memory Review وExplicit Confirmation
+
+### Added
+
+- `MemoryReviewPort` وstate transitions typed من `review_required` إلى `confirmed` أو `archived` داخل `InMemoryMemoryCapture`.
+- `brain.memory.review` و`brain.memory.listForReview` مع exact-key validators fail-closed وbounded review reason.
+- Workspace review queue بأزرار `Confirm locally` و`Archive` وعبارة واضحة أن confirmation محلي وليس تحققًا خارجيًا.
+- confirmation يحافظ على `providerAccess` و`visibility` و`retention` وprovenance، ويضيف تحذير `user_confirmed_not_externally_verified` بدل تحويل entry إلى FACT.
+- اختبارات Application وIPC وElectron smoke تثبت transitions، ومنع إعادة مراجعة archived، وعدم provider/network/filesystem mutation أو إنشاء approval ticket.
+- توثيق القرار في `docs/75-second-brain-memory-review.md`.
+
+### Verified
+
+- `pnpm check`: `167/167` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ queue/confirm/archive وno-provider/no-approval PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- review mutation محلي داخل memory store فقط؛ لا SQLite persistence أو FTS/vector embeddings أو provider sharing أو deletion دائم.
+- `confirmed` تعني user-reviewed ولا تعني تحققًا موضوعيًا للمحتوى أو citation.
+
 ## [Unreleased] — Second Brain: Memory Capture وKnowledge Entry Review
 
 ### Added

@@ -5,8 +5,8 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Production Studio: Render Job Policy وValidation Preview |
-| الحالة | `RenderPolicyPort` و`InMemoryRenderPolicy` وtyped render policy IPC وWorkspace Render Readiness panel منفذة ومدفوعة ومتحقق منها عند feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`؛ docs-close مستقل |
+| المرحلة | Second Brain: Memory Review وExplicit Confirmation |
+| الحالة | `MemoryReviewPort` وMemory Review state transitions وtyped `brain.memory.review`/`listForReview` وWorkspace confirm/archive queue منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -15,7 +15,7 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | full gate ناجح؛ `pnpm check` و`pnpm test` بـ`160/160`، build وdesktop/performance smoke وSQLite/JSON/diff/secret validation PASS |
+| آخر فحص | full gate ناجح؛ `pnpm check` و`pnpm test` بـ`167/167`، build وdesktop/performance smoke وSQLite/JSON/diff/secret validation PASS |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | Git Read-only feature `6a0db8a180298030fe77ad53f8fc54667de4258f` ثم docs-close `0db944f48fed37ae54c3ec8f5fca400c0bbdd7d4`؛ verified |
@@ -72,10 +72,10 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `160/160` ناجحة |
+| `pnpm test` | `167/167` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 14ms، heap delta حوالي 0.1MB، RSS delta حوالي 3.4MB، تحت V8 heap 768MB |
-| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` وtask.preview وSource Registry وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy no-mutation PASS |
+| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` وtask.preview وSource Registry وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy وMemory Capture/Review no-mutation PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -97,6 +97,8 @@
 | Production Studio: Source Registry وProvenance | `SourceRegistryPort` و`InMemorySourceRegistry` وsource/citation/provenance IPC وbounded validation/deduplication وWorkspace Sources panel وno-network/no-mutation smoke PASS؛ feature `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c`، docs-close مستقل |
 | Production Studio: Asset Catalog وCreative Brief | `AssetCatalogPort` و`CreativeBriefPort` و`InMemoryAssetCatalog` وlicense/provenance guards وtyped IPC وWorkspace metadata-only panels وno-network/no-mutation smoke PASS؛ feature `552854705ea4b3371ec7fe1c8afbe8d8a9901158`، docs-close مستقل |
 | Production Studio: Render Job Policy وValidation Preview | `RenderPolicyPort` و`InMemoryRenderPolicy` وlow-memory budget/format/destination guards وtyped IPC وWorkspace Render Readiness panel وblocked/no-execution/no-mutation؛ feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`، docs-close مستقل |
+| Second Brain: Memory Capture وKnowledge Entry Review | `MemoryCapturePort` و`InMemoryMemoryCapture` وredaction/source provenance/local search وtyped IPC وWorkspace capture panel وno-provider/no-network/no-mutation؛ feature `39bd89c7f4242abab76fd624045b493b72e48088`، docs-close مستقل |
+| Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key validators وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close مستقل |
 | approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
@@ -114,9 +116,9 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إغلاق Production Studio Render Job Policy وValidation Preview، تبدأ بقية Production Studio أو Development Environment وفق أولوية المالك، ثم Second Brain، مع إبقاء Lightweight Web Preview/React Native Web/Metro parity إلى آخر مراحل تصميم البيئة.
+بعد إغلاق Second Brain Memory Review وExplicit Confirmation، تبدأ بقية Second Brain أو Production Studio أو Development Environment وفق أولوية المالك، مع إبقاء Lightweight Web Preview/React Native Web/Metro parity إلى آخر مراحل تصميم البيئة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`؛ docs-close delivery قيد commit/push والتحقق النهائي.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close delivery قيد commit/push والتحقق النهائي.

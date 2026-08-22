@@ -1,6 +1,6 @@
 # Second Brain: Memory Entry Review وExplicit Confirmation
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ هذه الشريحة تضيف مراجعة بشرية صريحة وانتقالات state bounded فوق Memory Capture، ولا تمنح provider access أو تنشئ mutation خارج سجل الذاكرة.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل ويحدّث summaries فقط. تضيف الشريحة مراجعة بشرية صريحة وانتقالات state bounded فوق Memory Capture، ولا تمنح provider access أو تنشئ mutation خارج سجل الذاكرة.
 
 ## الغرض
 
