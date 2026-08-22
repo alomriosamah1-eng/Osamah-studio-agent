@@ -1775,21 +1775,129 @@
     }
   };
 
-  const viewLabels = { development: 'بيئة التطوير', studio: 'Production Studio', brain: 'Second Brain', settings: 'مركز التحكم' };
+  const viewLabels = { home: 'الرئيسية', development: 'بيئة التطوير', studio: 'Production Studio', brain: 'Second Brain', settings: 'مركز التحكم' };
+  const setInspectorOpen = (open) => {
+    const shell = $('bodyShell');
+    if (!shell) return;
+    const homeActive = document.querySelector('[data-app-view="home"]')?.classList.contains('active') === true;
+    const nextOpen = open && !homeActive;
+    shell.classList.toggle('inspector-open', nextOpen);
+    $('toggleInspector')?.setAttribute('aria-expanded', String(nextOpen));
+    $('toggleInspector').textContent = nextOpen ? 'إخفاء المراقبة' : 'المراقبة';
+    $('toggleInspector').disabled = homeActive;
+    $('inspectorPanel')?.setAttribute('aria-hidden', String(!nextOpen));
+  };
+  const setPreviewOpen = (open) => {
+    const panel = $('previewPanel');
+    const workspace = $('developmentWorkspace');
+    if (!panel || !workspace) return;
+    const developmentActive = document.querySelector('[data-app-view="development"]')?.classList.contains('active') === true;
+    const nextOpen = open && developmentActive;
+    panel.hidden = !nextOpen;
+    workspace.classList.toggle('preview-open', nextOpen);
+    $('openPreview')?.setAttribute('aria-expanded', String(nextOpen));
+    $('openPreview').textContent = nextOpen ? 'إخفاء المحاكي' : 'فتح المحاكي';
+  };
+  const previewAgentCommand = () => {
+    const instruction = $('agentInstruction').value.trim();
+    const intent = $('agentIntent').selectedOptions[0]?.textContent || $('agentIntent').value;
+    const scope = $('agentScope').value.trim() || 'workspace';
+    const constraints = $('agentConstraints').value.trim() || 'لا توجد قيود إضافية';
+    const status = $('agentCommandStatus');
+    const preview = $('agentCommandPreview');
+    if (!instruction) {
+      status.textContent = 'اكتب توجيهًا قبل طلب المعاينة.';
+      preview.hidden = true;
+      return;
+    }
+    preview.replaceChildren();
+    const title = document.createElement('strong');
+    title.textContent = 'معاينة توجيه محلية';
+    const body = document.createElement('div');
+    body.className = 'subtext';
+    body.style.marginTop = '6px';
+    body.textContent = `المهمة: ${intent} · النطاق: ${scope} · القيود: ${constraints}`;
+    const prompt = document.createElement('div');
+    prompt.className = 'log';
+    prompt.style.marginTop = '8px';
+    prompt.textContent = instruction;
+    preview.append(title, body, prompt);
+    preview.hidden = false;
+    status.textContent = 'تم إعداد مسودة محلية للمراجعة؛ لم تُرسل ولم يبدأ تنفيذ.';
+    log(`agent.instruction_preview ${intent} · scope=${scope} · no execution`, 'ok');
+  };
+  const clearAgentCommand = () => {
+    $('agentInstruction').value = '';
+    $('agentScope').value = 'workspace';
+    $('agentConstraints').value = 'قراءة محدودة، دون تنفيذ أو كتابة، وانتظر الموافقة البشرية';
+    $('agentCommandPreview').hidden = true;
+    $('agentCommandStatus').textContent = 'مسودة محلية فقط · لم تُرسل إلى وكيل أو مزود.';
+  };
+  const workspaceSectionDefaults = { development: 'editor', studio: 'pipeline', brain: 'overview' };
+  const workspaceSectionState = { ...workspaceSectionDefaults };
+  const selectWorkspaceSection = (key) => {
+    const [scope, section] = key.split(':');
+    if (!scope || !section || !(scope in workspaceSectionDefaults)) return;
+    workspaceSectionState[scope] = section;
+    document.querySelectorAll(`[data-workspace-section^="${scope}:"]`).forEach((button) => {
+      button.classList.toggle('active', button.dataset.workspaceSection === key);
+      button.setAttribute('aria-selected', String(button.dataset.workspaceSection === key));
+    });
+    const attributes = { development: 'data-dev-panel', studio: 'data-studio-panel', brain: 'data-brain-panel' };
+    const attribute = attributes[scope];
+    if (!attribute) return;
+    document.querySelectorAll(`[${attribute}]`).forEach((panel) => {
+      panel.hidden = panel.getAttribute(attribute) !== section;
+    });
+  };
+  const moveAgentCommandToGlobalBar = () => {
+    const bar = $('globalAgentBar');
+    const panel = document.querySelector('.agent-command');
+    if (!bar || !panel || panel.parentElement === bar) return;
+    bar.appendChild(panel);
+  };
   const activateView = (view) => {
-    document.querySelectorAll('[data-app-view]').forEach((panel) => { panel.classList.toggle('active', panel.dataset.appView === view); });
-    document.querySelectorAll('[data-view]').forEach((button) => { button.classList.toggle('active', button.dataset.view === view); });
-    const label = viewLabels[view] || view;
+    const nextView = viewLabels[view] ? view : 'home';
+    document.querySelectorAll('[data-app-view]').forEach((panel) => { panel.classList.toggle('active', panel.dataset.appView === nextView); });
+    document.querySelectorAll('[data-view]').forEach((button) => { button.classList.toggle('active', button.dataset.view === nextView); });
+    $('bodyShell')?.classList.toggle('home-active', nextView === 'home');
+    if (nextView !== 'development') setPreviewOpen(false);
+    if (nextView in workspaceSectionDefaults) selectWorkspaceSection(`${nextView}:${workspaceSectionState[nextView]}`);
+    const label = viewLabels[nextView] || nextView;
     document.querySelector('.main')?.scrollTo({ top: 0, behavior: 'auto' });
+    if ($('currentSection')) $('currentSection').textContent = label;
     if ($('footerText')) $('footerText').textContent = `${label} · واجهة Osamah الموحدة`;
     if ($('inspectorStatus')) $('inspectorStatus').textContent = `${label} · جاهز للمراجعة`;
+    setInspectorOpen(nextView !== 'home' && $('bodyShell')?.classList.contains('inspector-open') === true);
     document.title = `${label} · Osamah Studio Agent`;
   };
+  moveAgentCommandToGlobalBar();
   document.querySelectorAll('[data-view]').forEach((button) => {
-    button.addEventListener('click', () => activateView(button.dataset.view || 'development'));
+    button.addEventListener('click', () => activateView(button.dataset.view || 'home'));
+  });
+  document.querySelectorAll('[data-workspace-section]').forEach((button) => {
+    button.addEventListener('click', () => selectWorkspaceSection(button.dataset.workspaceSection || 'development:editor'));
+  });
+  const selectEditorKind = (kind) => {
+    document.querySelectorAll('[data-editor-kind]').forEach((button) => {
+      const active = button.dataset.editorKind === kind;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    document.querySelectorAll('[data-editor-kind-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.editorKindPanel !== kind;
+    });
+  };
+  document.querySelectorAll('[data-editor-kind]').forEach((button) => {
+    button.addEventListener('click', () => selectEditorKind(button.dataset.editorKind || 'document'));
   });
 
   $('openProject').onclick = () => { void chooseProjectRoot(); };
+  $('toggleInspector').onclick = () => { const open = !$('bodyShell').classList.contains('inspector-open'); setInspectorOpen(open); if (open) void loadPendingApprovals(); };
+  $('closeInspector').onclick = () => setInspectorOpen(false);
+  $('openPreview').onclick = () => setPreviewOpen($('previewPanel').hidden);
+  $('previewAgentCommand').onclick = () => previewAgentCommand();
+  $('clearAgentCommand').onclick = () => clearAgentCommand();
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
   $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
   $('reviewTask').onclick = () => { void previewCurrentTask(); };
@@ -1814,12 +1922,66 @@
   $('deviceSelect').onchange = (event) => { selected = profiles[event.target.value]; renderProfile(); log(`device.selected ${selected.name}`); };
   $('rotate').onclick = () => { orientation = orientation === 'portrait' ? 'landscape' : 'portrait'; renderProfile(); log(`orientation.changed ${orientation}`); };
   $('theme').onclick = () => { dark = !dark; renderProfile(); log(`theme.changed ${dark ? 'dark' : 'light'}`); };
-  $('run').onclick = () => { $('rightStatus').textContent = 'Preview running'; $('projectState').textContent = 'embedded session running'; renderPreview(); log('PreviewStatusChanged: ready', 'ok'); };
+  $('run').onclick = () => { setPreviewOpen(true); $('rightStatus').textContent = 'Preview running'; $('projectState').textContent = 'embedded session running'; renderPreview(); log('PreviewStatusChanged: ready', 'ok'); };
   $('stop').onclick = () => { $('rightStatus').textContent = 'Preview stopped'; $('projectState').textContent = 'session stopped'; log('PreviewStatusChanged: stopped', 'warn'); };
   $('refresh').onclick = () => { $('rightStatus').textContent = 'Fast Refresh applied'; renderPreview(); log('FastRefresh: state preserved', 'ok'); setTimeout(() => { $('rightStatus').textContent = 'Preview ready'; }, 700); };
   $('capture').onclick = () => { log('ScreenshotCaptured: artifact created', 'ok'); };
-  $('approve').onclick = () => { void loadPendingApprovals(); log('approval.queue_refreshed'); };
+  $('approve').onclick = () => { setInspectorOpen(true); void loadPendingApprovals(); log('approval.queue_refreshed'); };
+  $('globalAgentBar')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-agent-action]');
+    if (!button) return;
+    const action = button.dataset.agentAction;
+    if (action === 'expand') {
+      const expanded = $('globalAgentBar').classList.toggle('agent-bar-expanded');
+      button.setAttribute('aria-expanded', String(expanded));
+      button.textContent = expanded ? 'تصغير' : 'توسيع';
+    } else if (action === 'attach') {
+      $('agentCommandStatus').textContent = 'المرفقات metadata فقط؛ اختر ملفًا أو معرفًا من الشاشة الحالية قبل الإرسال.';
+    } else if (action === 'cancel') {
+      clearAgentCommand();
+      $('agentCommandStatus').textContent = 'أُلغيت مسودة التوجيه ولم يبدأ تنفيذ.';
+    } else if (action === 'activity') {
+      setInspectorOpen(true);
+      $('inspectorStatus').textContent = 'مركز نشاط الوكيل · لا توجد عملية نشطة';
+      log('agent.activity_opened');
+    } else if (action === 'send') {
+      previewAgentCommand();
+      if ($('agentCommandStatus')) $('agentCommandStatus').textContent = 'أُرسلت للمراجعة المحلية فقط؛ لم تُرسل إلى وكيل أو مزود.';
+    }
+  });
   $('refreshAgentCatalog').onclick = () => { void loadAgentCatalog(); };
+  $('runDiagnostics').onclick = () => {
+    const status = $('performanceDiagnosticsStatus');
+    const list = $('diagnosticEventsList');
+    if (!status || !list) return;
+    status.textContent = 'اكتمل التشخيص الخفيف · لم يبدأ profiler أو worker.';
+    list.replaceChildren();
+    const items = [
+      'renderer: responsive shell available',
+      'preview: one lightweight session policy',
+      'agent: one active job policy',
+      'storage: local-only metadata path',
+    ];
+    items.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'kv';
+      row.textContent = item;
+      list.appendChild(row);
+    });
+    log('diagnostics.completed lightweight · no worker started', 'ok');
+  };
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if ($('bodyShell').classList.contains('inspector-open')) setInspectorOpen(false);
+    if (!$('previewPanel').hidden) setPreviewOpen(false);
+  });
+  selectWorkspaceSection('development:editor');
+  selectWorkspaceSection('studio:pipeline');
+  selectWorkspaceSection('brain:overview');
+  selectEditorKind('document');
+  activateView('home');
+  setInspectorOpen(false);
+  setPreviewOpen(false);
   document.querySelectorAll('[data-control-section]').forEach((button) => {
     button.addEventListener('click', () => selectControlSection(button.dataset.controlSection || 'general'));
   });
@@ -1828,6 +1990,7 @@
   $('appFontScale').onchange = () => { void updateApplicationSettings(); };
   $('appDensity').onchange = () => { void updateApplicationSettings(); };
   $('appReduceMotion').onchange = () => { void updateApplicationSettings(); };
+  selectControlSection('general');
   $('registerExternalAccount').onclick = () => { void registerExternalAccount(); };
   $('createSelfDevelopmentCandidate').onclick = async () => {
     const button = $('createSelfDevelopmentCandidate');
