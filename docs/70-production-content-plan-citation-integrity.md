@@ -1,6 +1,6 @@
 # Production Studio: Content Plan وClaim/Citation Integrity
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ لا توجد في هذه الشريحة كتابة مستند نهائي أو توليد provider-backed أو تصدير.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `403372b4b13c2545818d4fd0fddff180bde89983`؛ docs-close مستقل ويحدّث summaries فقط. لا توجد في هذه الشريحة كتابة مستند نهائي أو توليد provider-backed أو تصدير.
 
 ## الغرض
 

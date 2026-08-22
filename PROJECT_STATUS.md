@@ -2,7 +2,7 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProject Explorer/File Reader وSafe Editor Document Boundary وTerminal Policy Preview وGit Read-only Integration وContext وAgent Task Review Panel وProduction Studio Source Registry وProvenance.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProject Explorer/File Reader وSafe Editor Document Boundary وTerminal Policy Preview وGit Read-only Integration وContext وAgent Task Review Panel وProduction Studio Source Registry وProvenance وContent Plan وClaim/Citation Integrity.
 
 | البند | الحالة |
 |---|---|
@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Production Studio Source Registry وProvenance منفذة ومدفوعة ومتحقق منها عند feature `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c`؛ docs-close مستقل |
+| حالة الشجرة | Production Studio Content Plan وClaim/Citation Integrity منفذة ومدفوعة ومتحقق منها عند feature `403372b4b13c2545818d4fd0fddff180bde89983`؛ docs-close مستقل |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm test` ناجح، `141/141` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm test` ناجح، `146/146` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -38,6 +38,10 @@
 
 أضيفت شريحة Context وAgent Task Review: `AgentTaskPreviewService` يقرأ snapshot وtargeted files bounded، ويستخدم deterministic planner/critic افتراضيًا، ولا يستخدم provider إلا عند اختيار صريح مع dependency provider-backed. أضيف `task.preview` إلى typed IPC مع رفض traversal والقيود غير الصالحة قبل Application، وربطت Workspace لوحة تعرض counters وmetadata/hash مختصرًا والخطة والنقد، دون patch أو command أو runtime أو approval ticket.
 
+أضيفت شريحة Production Studio Source Registry وProvenance: `SourceRegistryPort` و`InMemorySourceRegistry` وسجلات source/citation/provenance، وtyped IPC للتسجيل والقوائم، وWorkspace Sources panel تعرض metadata وhash وcitations عبر DOM آمن. التسجيل محلي bounded وdeduplicated؛ لا fetch أو upload أو export تلقائي، و`verificationState` لا يثبت صحة claim.
+
+أضيفت شريحة Content Plan وClaim/Citation Integrity: `ContentPlanPort` و`InMemoryContentPlanService` وsections/claims وintegrity counters، وtyped IPC لإنشاء الخطة وإضافة claims وربط citation IDs، وWorkspace panel تعرض supported/unresolved/conflicted دون توليد أو render أو export. claim بلا citation يبقى unresolved، وinvalid evidence يسبب conflicted.
+
 أضيف provider-backed planning: `AsyncPlannerPort` و`LlmPlanner` و`ProviderBackedPlannerCritic`، واختيار `providerId`/`modelId`/`offlineMode` في WorkCycle وIPC. الاستجابة JSON strict ومحدودة، وprovider selection الصريح يمنع fallback، بينما تبقى الكتابة خلف Human Gate و`submitGuarded`. Electron smoke يثبت plan-less generation عبر fixture provider وعدم mutation.
 
 أضيفت أول شريحة من Development Environment العامة: `ProjectExplorerPort` و`WorkspaceFileReaderPort` وfilesystem adapters bounded، typed `project.tree` و`file.openText`، وشجرة Workspace ديناميكية تعرض النص عبر DOM nodes آمنة. تشمل الحماية traversal وsymlink وbinary والحجم وأسماء secrets الشائعة، دون كتابة أو scripts أو native toolchains.
@@ -61,7 +65,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `141/141` ناجحة |
+| `pnpm test` | `146/146` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
@@ -70,7 +74,7 @@
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
-| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`؛ task.preview review-only PASS |
+| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`؛ task.preview review-only وContent Plan unresolved/no-mutation PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -90,6 +94,7 @@
 | Development Environment: Git Read-only Integration | GitReadOnlyPort وFilesystemGitReadOnlyAdapter وgit.status/git.diff وbounded diff/truncation/path guards وWorkspace read-only panel وElectron smoke PASS؛ delivery `6a0db8a180298030fe77ad53f8fc54667de4258f`، local == `origin/main` |
 | Development Environment: Context وAgent Task Review | `AgentTaskPreviewService` و`task.preview` typed IPC وdeterministic default planner وexplicit provider boundary وbounded path/input validation وWorkspace context/plan/critique panel وno-mutation/no-approval smoke PASS؛ feature `665fe76a44963736881f6f2ed519d95a2b901825`، docs-close مستقل |
 | Production Studio: Source Registry وProvenance | `SourceRegistryPort` و`InMemorySourceRegistry` وsource/citation/provenance IPC وbounded validation/deduplication وWorkspace Sources panel وno-network/no-mutation smoke PASS؛ feature `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c`، docs-close مستقل |
+| Production Studio: Content Plan وClaim/Citation Integrity | `ContentPlanPort` و`InMemoryContentPlanService` وclaim-source integrity وtyped IPC وWorkspace Content Plan panel وunresolved/conflicted/no-mutation smoke PASS؛ feature `403372b4b13c2545818d4fd0fddff180bde89983`، docs-close مستقل |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
@@ -101,8 +106,8 @@
 
 ## القرار والخطوة التالية
 
-بعد إغلاق شريحة Production Studio Source Registry وProvenance، تأتي بقية Production Studio أو Development Environment وفق أولوية المالك، ثم Second Brain، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق شريحة Production Studio Content Plan وClaim/Citation Integrity، تأتي بقية Production Studio أو Development Environment وفق أولوية المالك، ثم Second Brain، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `fc738f4c89ce5f5df54c6fdbee9f302e13285f7c` متحقق local==remote؛ docs-close commit قيد push والتحقق النهائي.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Feature delivery: `403372b4b13c2545818d4fd0fddff180bde89983` متحقق local==remote؛ docs-close commit قيد push والتحقق النهائي.
