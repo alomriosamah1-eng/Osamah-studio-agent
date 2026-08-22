@@ -67,4 +67,4 @@
 
 ## الخطوة التالية
 
-بعد إغلاق هذه الشريحة، تنتقل الأولوية إلى **عقود Provider Gateway وapproval workflow** حول `BoundedAgentRuntime`، مع audit trail وfail-closed approvals. يأتي backup UX وencryption/key management عندما تُحسم متطلبات المنتج والثقة، بينما يبقى استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة وفق القرار المعتمد.
+بعد إغلاق هذه الشريحة، نُفذت عقود Provider وApproval وProviderGateway في `docs/52-provider-approval-contracts.md`. تبقى الأولوية التالية دورة agent العامة وpersistent audit وHuman Gate UI، بينما يأتي backup UX وencryption/key management عند حسم متطلبات المنتج والثقة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة وفق القرار المعتمد.

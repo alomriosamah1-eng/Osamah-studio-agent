@@ -1,4 +1,5 @@
 import { ResourcePolicy, type ResourceRejectionCode } from "./resource-policy.js";
+import type { AgentActionRequest, AgentAuthorizationDecision, AgentAuthorizationPort } from "./agent-contracts.js";
 
 export type AgentJobState = "queued" | "running" | "completed" | "failed" | "cancelled" | "timed_out";
 
@@ -6,6 +7,8 @@ export interface AgentJobRequest<T> {
   readonly jobId: string;
   readonly run: (signal: AbortSignal) => Promise<T>;
   readonly timeoutMs?: number;
+  readonly action?: AgentActionRequest;
+  readonly approvalId?: string;
 }
 
 export interface AgentJobSnapshot {
@@ -15,6 +18,18 @@ export interface AgentJobSnapshot {
   readonly startedAt?: string;
   readonly finishedAt?: string;
   readonly error?: string;
+}
+
+export class AgentAuthorizationError extends Error {
+  public constructor(
+    public readonly decision: Exclude<AgentAuthorizationDecision["decision"], "allowed">,
+    public readonly correlationId: string,
+    message: string,
+    public readonly approvalId?: string,
+  ) {
+    super(message);
+    this.name = "AgentAuthorizationError";
+  }
 }
 
 export class AgentResourceError extends Error {
@@ -38,9 +53,25 @@ export class BoundedAgentRuntime {
   private active: InternalJob<unknown> | undefined;
   private draining = false;
 
-  public constructor(private readonly resourcePolicy: ResourcePolicy = new ResourcePolicy("low_memory")) {}
+  public constructor(
+    private readonly resourcePolicy: ResourcePolicy = new ResourcePolicy("low_memory"),
+    private readonly authorization?: AgentAuthorizationPort,
+  ) {}
+
+  public submitGuarded<T>(
+    request: Omit<AgentJobRequest<T>, "action" | "approvalId">,
+    action: AgentActionRequest,
+    approvalId?: string,
+  ): Promise<T> {
+    return this.submit({ ...request, action, approvalId });
+  }
 
   public submit<T>(request: AgentJobRequest<T>): Promise<T> {
+    const decision = this.authorize(request.action, request.approvalId);
+    if (decision && decision.decision !== "allowed") {
+      const approvalId = decision.approvalId;
+      return Promise.reject(new AgentAuthorizationError(decision.decision, decision.correlationId, decision.reason, approvalId));
+    }
     if (this.snapshots.has(request.jobId)) return Promise.reject(new Error(`Agent job ${request.jobId} already exists.`));
     if (this.queue.length >= this.resourcePolicy.limits.maxQueuedAgentJobs) {
       return Promise.reject(new AgentResourceError("AGENT_QUEUE_LIMIT", `Agent queue limit reached for ${this.resourcePolicy.profile} profile.`));
@@ -76,6 +107,14 @@ export class BoundedAgentRuntime {
   public list(): readonly AgentJobSnapshot[] { return [...this.snapshots.values()]; }
 
   public resourceSnapshot(): ReturnType<ResourcePolicy["snapshot"]> { return this.resourcePolicy.snapshot(); }
+
+  private authorize(action: AgentActionRequest | undefined, approvalId: string | undefined): AgentAuthorizationDecision | undefined {
+    if (!action) return undefined;
+    if (!this.authorization) {
+      return { decision: "denied", correlationId: "unconfigured", reason: "Guarded agent action cannot run without an authorization port." };
+    }
+    return this.authorization.authorize(action, approvalId);
+  }
 
   private async drain(): Promise<void> {
     if (this.draining) return;

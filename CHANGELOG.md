@@ -1,5 +1,30 @@
 # سجل التغييرات
 
+## [Unreleased] — Provider وApproval Contracts
+
+### Added
+
+- typed `AgentActionRequest` و`AgentAuthorizationDecision` و`ApprovalTicket` و`AuditRecord` لفصل فعل الوكيل عن runtime وpolicy.
+- `InMemoryApprovalWorkflow` بسياسة default-deny للأفعال الحساسة، وapproval-required قبل queue، وmatching approval عند الاستئناف، وbounded audit trail دون prompt input.
+- `BoundedAgentRuntime.submitGuarded()` الذي يرفض guarded actions قبل إدخالها إلى الطابور عند غياب الموافقة أو authorization port.
+- typed `ProviderManifest` و`ProviderAdapter` و`ProviderInvocationRequest/Response` و`ProviderRouteDecision` وroute audit.
+- `ProviderGateway` بفلترة capability/privacy/offline، local-first ordering، health checks، bounded fallback، malformed-output validation، وmutation idempotency guard.
+- `FixtureProviderAdapter` و`InMemoryProviderRouteAudit` لاختبارات deterministic بلا شبكة أو تحميل model weights أو تشغيل process خارجي.
+- composition exports لـ`approvalWorkflow` و`auditTrail` و`providerGateway` و`providerRouteAudit`، مع بقاء gateway registry فارغًا عند الإقلاع.
+- `docs/52-provider-approval-contracts.md` واختبارات `src/approval-workflow.test.ts` و`src/provider-gateway.test.ts`.
+
+### Verified
+
+- `pnpm check`: `63/63` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke`: `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
+- `pnpm performance:smoke`: `PERF_SMOKE=PASS` مع `low_memory` وpreview `11.56ms` وRSS delta `3MB` تقريبًا تحت V8 heap 768MB.
+- SQLite migration validator وJSON validation وdiff hygiene وsecret scan: PASS.
+
+### Boundaries
+
+- لا يوجد remote provider أو Ollama/llama.cpp adapter أو model loading تلقائي؛ ProviderGateway يعمل بلا providers إلى أن يُسجل adapter صريح.
+- approval tickets وaudit trail الحالية in-memory؛ persistence hydration وHuman Gate UI وquota/circuit breaker الكامل خطوات لاحقة.
+
 ## [Unreleased] — Profile Path Policy وExclusive Lock
 
 ### Added

@@ -1,4 +1,4 @@
-# AI_CONTINUATION
+# AI Continuation — Osamah Studio Agent
 
 ## الهوية والهدف
 
@@ -6,34 +6,39 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore ثم دُفعت إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، مع تطابق local وremote SHA. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock؛ آخر delivery متحقق قبل الشريحة الحالية هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع تطابق local وremote SHA.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`53/53` اختبارًا. أضيفت profile path policy وexclusive lock عبر `sqlite-profile`، واجتازت full gate، ودُفعت عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع تطابق local وremote SHA.
- validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت slice الأداء `pnpm build` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret heuristic وdesktop smoke؛ سجل الأداء low_memory وReact Native → lightweight_web وpreview حوالي 10ms وheap delta حوالي 0.3MB وRSS delta حوالي 3.1MB، مع root picker `DESKTOP_ROOT_PICKER_SMOKE=PASS` وcomposition SQLite opt-in/restart/fallback PASS و`PERFORMANCE_FINAL_GATE=PASS`.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`63/63` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage؛ full gate ناجح، والشريحة الحالية قيد commit/push.
+
+validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret scan وdiff hygiene؛ سجل الأداء `low_memory` وReact Native → `lightweight_web` وpreview حوالي 11.56ms وheap delta حوالي 0.32MB وRSS delta حوالي 3MB، مع `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
 
 ## المعمارية
 
-Clean Architecture: Domain مستقل، Application use cases/ports، Interface Adapters، Infrastructure، Presentation. Domain وApplication يعرفان `SqlExecutor` و`ObservabilitySink` و`BackupProvider` والعقود repository فقط. `DatabaseSync` وWAL ومسارات الملفات و`VACUUM INTO` محصورة في `src/infrastructure/`.
+Clean Architecture: Domain مستقل، Application use cases/ports، Interface Adapters، Infrastructure، Presentation. Domain وApplication يعرفان العقود المجردة؛ `DatabaseSync` وWAL ومسارات الملفات و`VACUUM INTO` محصورة في Infrastructure.
 
 Mobile subsystem له LightweightPreview وFixturePreview في compatibility mode، ثم adapters مستقلة لـReact Native Web/Metro وAndroid Emulator وiOS Simulator وphysical devices وEAS. لا يدّعي preview الحالي native fidelity ولا Metro HMR حقيقيًا.
 
-## الملفات المهمة الجديدة
+## الملفات المهمة
 
-`db/migrations/002_observability.sql` يضيف `device_profiles` و`preview_sessions` و`observability_logs` والفهارس `idx_preview_device` و`idx_observability_time` و`idx_observability_correlation`.
+`src/infrastructure/profile-storage.ts` يعرّف `ProfilePaths` و`validateProfileId` و`FileProfileLock` بقفل `wx` وownership-token release، وتغطيه `src/profile-storage.test.ts`.
 
-`src/application/ports.ts` يحتوي `SqlValue` و`SqlExecutor` و`ObservabilityRecord` و`ObservabilitySink` و`BackupManifest` و`BackupProvider` مع `create` و`verify` و`restore`.
+`src/application/agent-contracts.ts` و`src/application/approval-workflow.ts` يعرّفان action/approval/audit contracts. `src/application/agent-runtime.ts` يعرّف `submitGuarded()` الذي يرفض الفعل قبل queue عند غياب authorization أو الموافقة المطابقة.
 
-`src/infrastructure/sqlite.ts` يحتوي `SqliteDatabase` مع migration runner وchecksum validation وtransactions وsnapshot، و`SqliteRepositories` للكيانات الحالية، و`SqliteEventBus`، و`SqliteObservabilitySink`، وfactory `createSqliteApplicationStorage`.
+`src/application/provider-contracts.ts` و`src/application/provider-gateway.ts` يعرّفان ProviderManifest وProviderAdapter وProviderGateway مع capability/privacy/offline filtering وlocal-first وhealth وfallback bounded وtyped output validation وmutation idempotency.
 
-`src/infrastructure/sqlite-backup.ts` يحتوي `LocalSqliteBackupProvider` مع atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run على نسخة مؤقتة وrestore إلى profile منفصل. `src/infrastructure/profile-storage.ts` يعرّف `ProfilePaths` و`validateProfileId` و`FileProfileLock` بقفل `wx` وownership-token release، و`src/profile-storage.test.ts` يختبر policy والقفل.
+`src/infrastructure/fixture-provider.ts` و`src/infrastructure/in-memory.ts` يوفران adapters deterministic خفيفة. composition يصدر `approvalWorkflow` و`auditTrail` و`providerGateway` و`providerRouteAudit`، مع registry فارغ فلا توجد network calls أو model loading عند الإقلاع.
 
-`src/sqlite.test.ts` يغطي migration order وchecksum mismatch وrestart persistence وrepositories وevent bus وredaction وtransactions وbackup/restore والتلاعب بالنسخة. `scripts/validate_sqlite_migration.py` يطبق migrations 001 و002 في memory ويتحقق من schema والجداول والفهارس وforeign keys. أضيفت `src/application/resource-policy.ts` و`src/application/agent-runtime.ts` و`src/domain/project.ts` و`scripts/performance-smoke.mjs` واختباراتها، ثم `src/desktop/root-picker.ts` و`src/root-picker.test.ts` مع root-picker desktop smoke. التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md`.
+`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل.
+
+التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md`.
 
 ## القواعد
 
-لا يعتمد Domain على UI أو OS أو vendor. لا تضع secrets أو user files أو model weights في Git. لا تشغل native toolchains أو scripts غير موثوقة تلقائيًا. لا تجعل iOS Simulator يبدو متاحًا على Windows/Linux. لا تحول UNKNOWN إلى FACT. كل feature تحتاج architecture، interface، data model، dependencies، risks، acceptance criteria، implementation، tests، docs، commit، push، verification.
+لا يعتمد Domain على UI أو OS أو vendor. لا تضع secrets أو user files أو model weights في Git. لا تشغل native toolchains أو scripts غير موثوقة تلقائيًا. لا تجعل iOS Simulator يبدو متاحًا على Windows/Linux. لا تحول UNKNOWN إلى FACT.
 
-في SQLite، لا تعدّل migration منشورة؛ أضف ملفًا جديدًا. يفشل runner مغلقًا عند checksum mismatch. لا يستبدل restore profile الحي. لا يفتح `verify` snapshot الأصلي للكتابة؛ migration dry-run يعمل على نسخة مؤقتة. Redaction recursive للـ logs/events ليست بديلًا عن secret provider وسياسة أسرار كاملة.
+كل feature تحتاج architecture وinterface وdata model وdependencies وrisks وacceptance criteria وimplementation وtests وdocs وcommit وpush وverification. لا تدخل الأفعال الحساسة إلى Agent Runtime عبر المسار غير المحمي؛ استخدم `submitGuarded()` مع `AgentActionRequest` وapproval matching.
+
+في SQLite، لا تعدّل migration منشورة؛ أضف ملفًا جديدًا. يفشل runner مغلقًا عند checksum mismatch. لا يستبدل restore profile الحي. Redaction recursive للـlogs/events ليست بديلًا عن secret provider وسياسة أسرار كاملة.
 
 ## الأوامر الحالية
 
@@ -42,23 +47,26 @@ pnpm install --frozen-lockfile
 pnpm check
 pnpm build
 pnpm desktop:smoke
+pnpm performance:smoke
 python3 scripts/validate_sqlite_migration.py
+python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق مدفوع هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main`.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery قبل الشريحة الحالية هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ الشريحة الحالية تحتاج commit/push verification.
 
 ## ما يزال مؤجلًا
 
-SQLite adapter مربوط اختياريًا داخل `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، ودُفعت الشريحة عند `e9a892a42e394b92e4708847f01eafc9205b70ae` مع تطابق local وremote SHA. أضيف `sqlite-profile` مع profile paths قياسية و`FileProfileLock` حصري ورفض IDs غير الآمنة، ودُفعت الشريحة عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع 53/53 tests وfull gate ناجح.
- لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد بعد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
+لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. approval tickets وaudit trail الحالية in-memory؛ لا توجد persistence hydration بعد restart أو persistent outbox أو Human Gate UI.
+
+Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
 
 ## التسلسل التالي
 
-بعد إغلاق profile path policy وexclusive lock، تُوسّع BoundedAgentRuntime بعقود provider/approval وaudit trail fail-closed، ثم Provider Gateway. يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
+بعد إغلاق Provider وApproval وProviderGateway، تُنفذ دورة agent العامة `request → constraints → plan → targeted read → patch → approval → checkpoint`، ثم persistent audit وHuman Gate UI وprovider adapters الفعلية. يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true`.
+إعداد: Manus AI. آخر تحديث: 2026-08-22.

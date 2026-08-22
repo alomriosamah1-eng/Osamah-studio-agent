@@ -1,0 +1,77 @@
+export type AgentActionKind =
+  | "filesystem.read"
+  | "filesystem.write"
+  | "terminal.exec"
+  | "git.commit"
+  | "github.push"
+  | "mcp.tool"
+  | "browser.submit"
+  | "media.publish"
+  | "provider.invoke";
+
+export interface AgentActionRequest {
+  readonly actionId: string;
+  readonly sessionId: string;
+  readonly kind: AgentActionKind;
+  readonly risk: "low" | "medium" | "high" | "critical";
+  readonly scope: string;
+  readonly idempotencyKey?: string;
+}
+
+export type AgentAuthorizationDecision =
+  | {
+      readonly decision: "allowed";
+      readonly correlationId: string;
+      readonly reason: string;
+    }
+  | {
+      readonly decision: "approval_required";
+      readonly correlationId: string;
+      readonly approvalId: string;
+      readonly reason: string;
+    }
+  | {
+      readonly decision: "denied";
+      readonly correlationId: string;
+      readonly approvalId?: string;
+      readonly reason: string;
+    };
+
+export interface AgentAuthorizationPort {
+  authorize(action: AgentActionRequest, approvalId?: string): AgentAuthorizationDecision;
+}
+
+export interface ApprovalTicket {
+  readonly approvalId: string;
+  readonly correlationId: string;
+  readonly action: AgentActionRequest;
+  readonly status: "requested" | "approved" | "denied";
+  readonly createdAt: string;
+  readonly resolvedAt?: string;
+}
+
+export interface ApprovalWorkflowPort extends AgentAuthorizationPort {
+  get(approvalId: string): ApprovalTicket | undefined;
+  resolve(approvalId: string, decision: "approved" | "denied"): ApprovalTicket;
+}
+
+export type AuditDecision = "allowed" | "approval_required" | "approved" | "denied";
+
+export interface AuditRecord {
+  readonly id: string;
+  readonly occurredAt: string;
+  readonly correlationId: string;
+  readonly actionId: string;
+  readonly sessionId: string;
+  readonly kind: AgentActionKind;
+  readonly risk: "low" | "medium" | "high" | "critical";
+  readonly decision: AuditDecision;
+  readonly approvalId?: string;
+  readonly scope: string;
+  readonly reason: string;
+}
+
+export interface AuditTrail {
+  append(record: AuditRecord): void;
+  list(limit?: number): readonly AuditRecord[];
+}

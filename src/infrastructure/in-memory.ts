@@ -1,4 +1,6 @@
 import type { DomainEvent, EventBus } from "../domain/events.js";
+import type { AuditRecord, AuditTrail } from "../application/agent-contracts.js";
+import type { ProviderRouteAudit, ProviderRouteAuditRecord } from "../application/provider-contracts.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
 import type { ApprovalId, DeviceProfileId, PreviewSessionId, SessionId, WorkspaceId } from "../domain/primitives.js";
 import type {
@@ -46,6 +48,34 @@ export class InMemoryRepositories {
   public readonly approvals: ApprovalRepository = this.approvalStore;
   public readonly devices: DeviceProfileRepository = this.deviceStore;
   public readonly previews: PreviewRepository = this.previewStore;
+}
+
+export class InMemoryProviderRouteAudit implements ProviderRouteAudit {
+  private readonly records: ProviderRouteAuditRecord[] = [];
+
+  public record(route: ProviderRouteAuditRecord): void {
+    this.records.push(route);
+    while (this.records.length > 256) this.records.shift();
+  }
+
+  public list(limit = 100): readonly ProviderRouteAuditRecord[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
+    return this.records.slice(-boundedLimit).reverse();
+  }
+}
+
+export class InMemoryAuditTrail implements AuditTrail {
+  private readonly records: AuditRecord[] = [];
+
+  public append(record: AuditRecord): void {
+    this.records.push(record);
+    while (this.records.length > 256) this.records.shift();
+  }
+
+  public list(limit = 100): readonly AuditRecord[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
+    return this.records.slice(-boundedLimit).reverse();
+  }
 }
 
 export class InMemoryObservabilitySink implements ObservabilitySink {

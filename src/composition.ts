@@ -1,10 +1,12 @@
 import { FoundationUseCases } from "./application/use-cases.js";
 import { GeneralProjectDetector } from "./application/mobile-services.js";
 import { BoundedAgentRuntime } from "./application/agent-runtime.js";
+import { InMemoryApprovalWorkflow } from "./application/approval-workflow.js";
+import { ProviderGateway } from "./application/provider-gateway.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
-import { FixedClock, InMemoryEventBus, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
+import { FixedClock, InMemoryAuditTrail, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
 import { createSqliteApplicationStorage, type SqliteApplicationStorage } from "./infrastructure/sqlite.js";
 import { FileProfileLock, resolveProfilePaths, type ProfileLock, type ProfilePaths } from "./infrastructure/profile-storage.js";
 import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
@@ -90,7 +92,11 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const persistence = createPersistence(options);
   const foundation = createFoundationFromStorage(persistence.repositories, persistence.events);
   const resourcePolicy = new ResourcePolicy("low_memory");
-  const agentRuntime = new BoundedAgentRuntime(resourcePolicy);
+  const auditTrail = new InMemoryAuditTrail();
+  const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail);
+  const providerRouteAudit = new InMemoryProviderRouteAudit();
+  const providerGateway = new ProviderGateway([], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });
+  const agentRuntime = new BoundedAgentRuntime(resourcePolicy, approvalWorkflow);
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
   const ipc = new InMemoryIpcTransport();
   const scanner = new FilesystemProjectScanner({ limits: resourcePolicy.limits });
@@ -118,6 +124,10 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     generalProjectDetector,
     resourcePolicy,
     agentRuntime,
+    approvalWorkflow,
+    auditTrail,
+    providerGateway,
+    providerRouteAudit,
     defaultProfiles,
     sqlite: persistence.sqlite,
     storageKind: persistence.storageKind,
