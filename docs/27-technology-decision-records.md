@@ -55,3 +55,11 @@
 [4]: https://github.com/diegosouzapw/OmniRoute "OmniRoute"
 
 إعداد: Manus AI. تاريخ الفحص: 2026-08-21.
+
+## ADR-009: Open-source-first actual integration
+
+**الحالة:** معتمد ابتداءً من 2026-08-23. **القرار:** تُدمج المشاريع مفتوحة المصدر فعليًا عندما تقدم capability ناضجة، عبر dependency أو SDK أو worker/adapter حقيقي، لا عبر إعادة بناء بديل محلي. يحتفظ Osamah بـDomain/Application وTyped IPC وHuman Gate وAudit وRedaction وResource Policy كـanti-corruption and control layer. يُعدّل هذا القرار النطاق المطلق في ADR-005، لكنه لا يلغي عزل المشاريع ولا يسمح بنسخ monorepo كامل دون حاجة.
+
+**التطبيق الأول:** `@opencode-ai/sdk@1.18.21` مدمج كتَبعية إنتاجية اختيارية مع `OpenCodeSdkProviderAdapter` داخل `ProviderGateway`. ينفذ health وsession creation وprompt round-trip عند طلب صريح فقط، ويُلزم loopback URL وbounded output وsession mapping، ويبقى inert عند startup. feature commit هو `ce4fae4d68636cb4fbc34bbea70720ac5016e788`.
+
+**المراحل التالية:** DeepSeek Harness عبر package compatibility matrix أو worker، وHermes عبر Python worker/ACP أو JSONL، ثم Monaco/xterm وReact Native Web/Metro وqpdf/pdfcpu/FFmpeg خلف ports/workers مناسبة. يتطلب كل دمج version pin وlockfile أو worker manifest وlicense notice وSBOM/CVE review وcontract tests وRAM/startup benchmark وfallback. لا تبدأ embeddings/vector/Voice/Avatar بهذه الإضافة.

@@ -41,10 +41,12 @@
       "second-brain-agent-scope-filtering-bounded",
       "production-markdown-export-preview-bounded",
       "second-brain-semantic-memory-deferred-decision",
-      "production-markdown-destination-review"
+      "production-markdown-destination-review",
+      "open-source-integration-policy",
+      "opencode-sdk-provider-adapter"
     ],
-    "tests": "213/213",
-    "next_phase": "production-render-workers-format-review",
+    "tests": "217/217",
+    "next_phase": "deepseek-hermes-harness-bridge-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

@@ -136,7 +136,7 @@
 ### Boundaries
 
 - لا runtime code changes أو migration جديدة أو native FTS dependency أو provider sharing أو automatic consolidation نتيجة هذا القرار.
-- تبقى Voice وAvatar مؤجلتين؛ destination review أُغلقت، والمسار التنفيذي التالي render workers وformat validators أو FTS adapter مشروط بعد مراجعة مستقلة.
+- تبقى Voice وAvatar مؤجلتين؛ destination review أُغلقت، وOpenCode SDK أصبح أول دمج مفتوح المصدر فعلي؛ المسار التالي DeepSeek/Hermes harness bridge review ثم render workers وformat validators، مع FTS adapter مشروط بعد مراجعة مستقلة.
 
 ## [Unreleased] — Production Studio Markdown Destination Review
 
@@ -157,6 +157,26 @@
 
 - Markdown destination write mutation محلية خلف approval ولا تعني factual verification أو external citation validation أو publish.
 - لا PDF/HTML/PPTX/media render، ولا converter أو provider/network/command execution، ولا overwrite أو live-profile write.
+
+## [Unreleased] — Open-source-first Integration and OpenCode SDK
+
+### Added
+
+- أضيفت سياسة دمج مفتوح المصدر فعلية في `docs/98-open-source-integration-and-migration-plan.md` وADR-009، بحيث تُستخدم upstream dependencies وSDKs وworkers عند اعتمادها بدل الاكتفاء بالمرجعية النظرية.
+- أضيفت `@opencode-ai/sdk@1.18.21` كتَبعية إنتاجية مثبتة في lockfile، مع `OpenCodeSdkProviderAdapter` خلف `ProviderGateway`.
+- يدعم adapter loopback health وsession creation وprompt round-trip وsession reuse، مع mapping typed إلى `ProviderInvocationResponse` وحدود حجم ورفض remote URL والمخرجات غير الصالحة.
+- رُبط OpenCode اختياريًا داخل `createEmbeddedApplication({ openCode })` دون probe أو server/model loading عند startup؛ implementation الحالي وHuman Gate وProviderGateway لم تُحذف.
+
+### Verified
+
+- `pnpm check`: `217/217` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `ce4fae4d68636cb4fbc34bbea70720ac5016e788` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- OpenCode SDK مدمج opt-in عبر loopback adapter؛ لا يبدأ OpenCode server تلقائيًا، ولا يمنح tools أو shell أو filesystem mutation تلقائيًا، ولا يعني وجود model أو provider خارجي فعلي في بيئة التشغيل.
+- DeepSeek Harness وHermes Agent وMonaco وxterm.js وReact Native Web/Metro وOmniRoute وqpdf/pdfcpu وFFmpeg ما زالت في خطة الدمج المرحلي، وليست dependencies مدمجة حاليًا. لا embeddings/vector/FTS migration ولا Voice/Avatar runtime.
 
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 

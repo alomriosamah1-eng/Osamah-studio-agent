@@ -63,6 +63,7 @@
 | `95-production-markdown-export-preview.md` | Markdown export preview bounded لتقارير Production Studio مع evidence traceability ودون كتابة ملفات أو publish |
 | `96-semantic-memory-deferred-decision.md` | قرار تصميمي مؤجل لـsemantic memory وFTS5 وembeddings وvector services، مع شروط فتح المرحلة دون تنفيذها |
 | `97-production-markdown-destination-review.md` | destination review/ write الآمنة لـMarkdown مع relative-path/live-profile/no-overwrite/manifest guards وreport review وHuman Gate |
+| `98-open-source-integration-and-migration-plan.md` | خطة دمج المشاريع مفتوحة المصدر فعليًا عبر dependencies وSDKs وworkers وadapters، مع ترحيل OpenCode وDeepSeek وHermes وواجهة fallback |
 
 ## ملفات الحالة خارج هذا المجلد
 

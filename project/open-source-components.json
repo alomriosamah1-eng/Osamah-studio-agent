@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "as_of": "2026-08-22",
+  "as_of": "2026-08-23",
   "source_snapshot": "research/ecosystem-github-metadata.ndjson",
   "components": [
-    {"project":"anomalyco/opencode","url":"https://github.com/anomalyco/opencode","license":"MIT","classification":"ADAPT/WRAP","role":"coding-agent and desktop patterns","status":"research"},
+    {"project":"anomalyco/opencode","url":"https://github.com/anomalyco/opencode","license":"MIT","classification":"ADAPT/WRAP","role":"coding-agent SDK/provider adapter","status":"integrated-sdk-opt-in","integrated_version":"@opencode-ai/sdk@1.18.21"},
     {"project":"NousResearch/hermes-agent","url":"https://github.com/NousResearch/hermes-agent","license":"MIT","classification":"ADAPT/WRAP","role":"memory, skills, gateway, cron, subagents","status":"research"},
     {"project":"diegosouzapw/OmniRoute","url":"https://github.com/diegosouzapw/OmniRoute","license":"MIT","version":"3.8.50 snapshot","classification":"REFERENCE/ADAPT","role":"provider routing and fallback","status":"research"},
     {"project":"deepseek-ai/deepseek-harness","url":"https://github.com/deepseek-ai/deepseek-harness","license":"MIT","classification":"REFERENCE/ADAPT","role":"plugin seams and event composition","status":"research"},
