@@ -33,6 +33,7 @@
 
 - `pnpm check`: `185/185` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
 - desktop smoke تحقق من register/list ورفض محاولة token، مع عدم إجراء network call أو إنشاء approval ticket.
+- feature commit `1b7d9df2d997776fe5453c7d8ea7c4e4c8fc3a4b` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل لهذه التسليمة.
 
 ### Boundaries
 
