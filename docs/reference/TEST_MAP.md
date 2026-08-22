@@ -12,7 +12,8 @@
 | Visual regression | golden screenshots/threshold | مفقود |
 | AI | tool calling/fallback/memory/visual loop | مفقود |
 | Performance | startup/RSS/CPU/GPU/queue | مفقود |
-| IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect/openProject | منفذ: `src/ipc.test.ts` |
+| IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect/openProject وAgent Catalog methods | منفذ: `src/ipc.test.ts` |
+| Agent Definition Catalog | 46 definitions، schema/privacy/handoff/status/bounds وread-only IPC | منفذ: `src/agent-catalog.test.ts` و`src/ipc.test.ts` و`pnpm desktop:smoke` |
 | Desktop security | CSP، context isolation، sender URL/id، preload bridge | منفذ: `src/desktop/security.test.ts` و`pnpm desktop:smoke` |
 | Preview runtime security | blocked imports/path traversal/source hash/diagnostics | منفذ: `src/preview-runtime.test.ts` و`src/ipc.test.ts` |
 | Project open integration | filesystem root → bundle → embedded session → inspect | منفذ: `src/ipc.test.ts` |

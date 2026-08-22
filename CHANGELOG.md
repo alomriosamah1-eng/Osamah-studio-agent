@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Agent Definition Contract وBounded Agent Catalog
+
+### Added
+
+- `AgentDefinition` و`AgentCatalogPort` و`InMemoryAgentCatalog` مع 46 تعريفًا صريحًا، وحقول mission/responsibilities/inputs/outputs/tools/permissions/quality/handoff/privacy/security.
+- حالات تنفيذ واضحة `bounded_capability` و`definition_only` و`not_implemented` لمنع مساواة التعريف بالتنفيذ أو ادعاء وجود orchestrator.
+- `agent.catalog.list` و`agent.definition.get` عبر typed IPC وWorkspace panel read-only، مع safe IDs وlimits وno provider/no approval/no filesystem mutation.
+- اختبارات Application وIPC وdesktop smoke تغطي 46 تعريفًا، الحقول الحساسة، malformed payload، bounds، وno-mutation behavior.
+- توثيق القرار في `docs/80-agent-definition-contract-catalog.md`.
+
+### Verified
+
+- `pnpm check`: `172/172` اختبارًا ناجحًا؛ `node --check prototypes/studio/workspace.js` ناجح.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ الأداء ضمن low-memory policy، وSQLite/JSON/diff/secret checks PASS.
+
+### Boundaries
+
+- لا يتضمن هذا القسم hierarchical supervisor أو DAG executor أو tool execution registry أو provider/network calls أو OAuth/MCP/Playwright.
+- أي انتقال من catalog إلى WorkCycle أو filesystem أو provider يبقى خلف العقود القائمة وHuman Gate وشريحة مستقلة.
+
 ## [Unreleased] — Comprehensive Project Audit وArchitecture Gaps
 
 ### Added

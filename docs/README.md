@@ -45,6 +45,7 @@
 | `77-agent-organization-architecture.md` | عقد Agent Definition والهيكل التنظيمي والـhandoff والـquality gates |
 | `78-preview-browser-integrations-architecture.md` | Preview Sharing وPlaywright وOAuth/Google وMCP وحدود الأمان |
 | `79-documentation-traceability-reporting.md` | taxonomy التوثيق وخريطة التتبع وReportDocument وhandoff |
+| `80-agent-definition-contract-catalog.md` | عقد تعريف الوكيل والكتالوج bounded وحالات التنفيذ والحدود |
 
 ## ملفات الحالة خارج هذا المجلد
 

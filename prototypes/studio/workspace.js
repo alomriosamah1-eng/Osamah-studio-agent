@@ -294,6 +294,53 @@
     window.addEventListener('beforeunload', unsubscribe, { once: true });
   };
 
+  const renderAgentCatalog = (definitions) => {
+    const status = $('agentCatalogStatus');
+    const list = $('agentCatalogList');
+    if (!status || !list) return;
+    status.hidden = definitions.length > 0;
+    status.textContent = definitions.length ? `${definitions.length} agent definition(s) · review-only · no execution` : 'No agent catalog loaded.';
+    list.replaceChildren();
+    definitions.slice(0, 64).forEach((definition) => {
+      const card = document.createElement('div');
+      card.className = 'approval-card agent-card';
+      const title = document.createElement('strong');
+      title.textContent = `${definition.role} · ${definition.executionStatus}`;
+      const meta = document.createElement('div');
+      meta.className = 'approval-meta';
+      meta.textContent = `${definition.agentId} · authority: ${definition.decisionAuthority}`;
+      const mission = document.createElement('div');
+      mission.className = 'approval-scope';
+      mission.textContent = `Mission: ${definition.mission}`;
+      const details = document.createElement('div');
+      details.className = 'approval-scope';
+      details.textContent = `Responsibilities: ${definition.responsibilities.join(', ') || 'none'}\nTools: ${definition.tools.join(', ') || 'none'}\nPermissions: ${definition.permissions.join(', ') || 'none'}\nHandoff: ${definition.handoffProtocol}`;
+      card.append(title, meta, mission, details);
+      list.append(card);
+    });
+  };
+  const loadAgentCatalog = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      renderAgentCatalog([]);
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('agent-catalog-list'),
+      correlationId: nextRequest('agent-catalog-correlation'),
+      method: 'agent.catalog.list',
+      payload: { limit: 64 },
+    });
+    if (!response.ok) {
+      $('agentCatalogStatus').hidden = false;
+      $('agentCatalogStatus').textContent = `Agent catalog rejected: ${response.error.message}`;
+      log(`agent.catalog.list_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderAgentCatalog(response.result);
+    log(`agent.catalog.loaded ${response.result.length} definition(s) · no execution`, 'ok');
+  };
+
   const providerConfigs = new Map();
   const renderProviders = (providers) => {
     const empty = $('providerEmpty');
@@ -1289,6 +1336,7 @@
   $('refresh').onclick = () => { $('rightStatus').textContent = 'Fast Refresh applied'; renderPreview(); log('FastRefresh: state preserved', 'ok'); setTimeout(() => { $('rightStatus').textContent = 'Preview ready'; }, 700); };
   $('capture').onclick = () => { log('ScreenshotCaptured: artifact created', 'ok'); };
   $('approve').onclick = () => { void loadPendingApprovals(); log('approval.queue_refreshed'); };
+  $('refreshAgentCatalog').onclick = () => { void loadAgentCatalog(); };
 
   const runDesktopSmoke = async () => {
     if (window.location.hash !== '#osamah-smoke' || !window.osamah) return;
@@ -1577,6 +1625,20 @@
       method: 'provider.list',
       payload: {},
     });
+    const agentCatalogResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-agent-catalog-list',
+      correlationId: 'desktop-smoke-agent-catalog',
+      method: 'agent.catalog.list',
+      payload: { limit: 64 },
+    });
+    const agentDefinitionResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-agent-definition-get',
+      correlationId: 'desktop-smoke-agent-catalog',
+      method: 'agent.definition.get',
+      payload: { agentId: 'security' },
+    });
     const providerConfigResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-provider-configure',
@@ -1645,6 +1707,8 @@
     console.log(rootPickerPassed ? 'DESKTOP_ROOT_PICKER_SMOKE=PASS' : 'DESKTOP_ROOT_PICKER_SMOKE=FAIL');
     const streamReady = typeof window.osamah.subscribe === 'function';
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
+    const agentCatalogPassed = agentCatalogResponse.ok && agentCatalogResponse.result.length === 46 && agentCatalogResponse.result.find((definition) => definition.agentId === 'api-architect')?.executionStatus === 'bounded_capability' && agentDefinitionResponse.ok && agentDefinitionResponse.result?.agentId === 'security' && agentDefinitionResponse.result?.memoryRequirements.providerAccess === 'never';
+    const agentCatalogNoMutationPassed = agentCatalogPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
     const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
     const explorerPassed = projectTreeResponse.ok && projectTreeResponse.result.fileCount > 0 && projectFileResponse.ok && projectFileResponse.result?.relativePath === 'app/index.tsx' && projectFileResponse.result.content.includes('react-native');
@@ -1670,13 +1734,14 @@
     const renderPolicyNoMutationPassed = renderPolicyPassed && renderPolicyMalformedResponse.ok === false && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
   renderProfile();
   subscribeToApprovalEvents();
   void loadPendingApprovals();
+  void loadAgentCatalog();
   void loadProviders();
   void loadSources();
   void loadAssets();

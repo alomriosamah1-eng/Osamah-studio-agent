@@ -15,6 +15,7 @@ import type { AssetCatalogPort, CreativeBriefPort } from "../application/asset-c
 import type { ArtifactAssemblyPort } from "../application/artifact-assembly.js";
 import type { RenderPolicyPort } from "../application/render-policy.js";
 import type { MemoryCapturePort, MemoryReviewPort } from "../application/memory-capture.js";
+import type { AgentCatalogPort } from "../application/agent-catalog.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -28,6 +29,7 @@ export interface AgentIpcDependencies {
   readonly artifactAssembly: Pick<ArtifactAssemblyPort, "createDraft" | "getDraft">;
   readonly renderPolicy: Pick<RenderPolicyPort, "preview">;
   readonly memoryCapture: Pick<MemoryCapturePort, "capture" | "get" | "list" | "searchLocal"> & Pick<MemoryReviewPort, "review" | "listForReview">;
+  readonly agentCatalog: Pick<AgentCatalogPort, "list" | "get">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -112,6 +114,8 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("brain.memory.searchLocal", async (request) => agentDependencies.memoryCapture.searchLocal(request.payload.query, request.payload.limit));
     transport.register("brain.memory.review", async (request) => agentDependencies.memoryCapture.review(request.payload));
     transport.register("brain.memory.listForReview", async (request) => agentDependencies.memoryCapture.listForReview(request.payload.limit));
+    transport.register("agent.catalog.list", async (request) => agentDependencies.agentCatalog.list(request.payload.limit));
+    transport.register("agent.definition.get", async (request) => agentDependencies.agentCatalog.get(request.payload.agentId));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

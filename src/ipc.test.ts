@@ -601,6 +601,34 @@ test("typed IPC reviews memory explicitly and keeps confirmed entries local-only
   }
 });
 
+test("typed IPC exposes the bounded agent catalog without execution or approval", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "agent-catalog-list", correlationId: "agent-catalog", method: "agent.catalog.list", payload: { limit: 64 } } as const);
+    assert.equal(listed.ok, true);
+    if (listed.ok) {
+      assert.equal(listed.result.length, 46);
+      assert.equal(listed.result.find((definition) => definition.agentId === "api-architect")?.executionStatus, "bounded_capability");
+    }
+    const definition = await app.ipc.dispatch({ protocolVersion: 1, requestId: "agent-definition-get", correlationId: "agent-catalog", method: "agent.definition.get", payload: { agentId: "security" } } as const);
+    assert.equal(definition.ok, true);
+    if (definition.ok) {
+      assert.equal(definition.result?.agentId, "security");
+      assert.equal(definition.result?.memoryRequirements.providerAccess, "never");
+      assert.equal(definition.result?.humanApprovalRequirements.includes("github.push"), true);
+    }
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "agent-catalog-invalid", correlationId: "agent-catalog", method: "agent.catalog.list", payload: { limit: 64, send: true } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    const unsafe = await app.ipc.dispatch({ protocolVersion: 1, requestId: "agent-definition-unsafe", correlationId: "agent-catalog", method: "agent.definition.get", payload: { agentId: "../secret" } } as const);
+    assert.equal(unsafe.ok, false);
+    if (!unsafe.ok) assert.equal(unsafe.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC exposes render policy preview without starting a renderer", async () => {
   const app = createEmbeddedApplication();
   try {

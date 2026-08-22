@@ -3,6 +3,7 @@
 | المكون | المسؤولية | حالته |
 |---|---|---|
 | Supervisor | ترتيب DAG والموارد | مخطط؛ لا يوجد hierarchical supervisor بعد |
+| Agent Catalog | تعريف schema موحد لـ46 دورًا وحالات التنفيذ والـhandoff والخصوصية | `InMemoryAgentCatalog` وtyped IPC read-only منفذان؛ لا orchestrator أو agent execution registry |
 | AgentRuntime | queue/timeout/cancel وguarded execution | `BoundedAgentRuntime` منفذ؛ orchestration loop ما زال لاحقًا |
 | Planner | خطة قابلة للتحرير | `DeterministicPlanner` و`LlmPlanner` bounded؛ لا Planner Agent Registry مستقل |
 | Worker | تنفيذ محدود | `AgentWorkCycleService` و`FilesystemPatchAdapter` bounded؛ لا Worker Agent Registry أو pool مستقل |
