@@ -26,7 +26,7 @@
 | حالة push لشريحة Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
-| حالة push لشريحة Persistent Audit وHuman Gate | pending docs commit؛ full gate ناجح وschema 003 و76/76 tests ناجحة |
+| حالة push لشريحة Persistent Audit وHuman Gate | `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 
 ## المكتمل
 
@@ -66,7 +66,7 @@
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
 | agent work cycle | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety PASS؛ delivery `fb5d93ec87939125373dd8c450d1195af50fc911`، local == `origin/main` |
 | typed workcycle IPC | context index وstart/resume/inspect/cancel وmalformed payload validation وduplicate protection PASS؛ delivery `786ea0b888634742936f546431c4d1e7251495e0`، local == `origin/main` |
-| persistent audit/Human Gate | schema 003 وSqliteAuditTrail وscope/reason redaction وrestart وpending/decide fail-closed PASS؛ delivery pending docs commit |
+| persistent audit/Human Gate | schema 003 وSqliteAuditTrail وscope/reason redaction وrestart وpending/decide fail-closed PASS؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `3`، schema `003`، 11 جدولًا، 21 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
 | event bus وobservability | persistence وrecursive redaction وbounded listing ناجحة |
@@ -88,4 +88,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `f26a4e8bb560af02ee7f2c84510c606e473cf423`؛ Persistent Audit وHuman Gate قيد docs commit وGitHub verification.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true`.

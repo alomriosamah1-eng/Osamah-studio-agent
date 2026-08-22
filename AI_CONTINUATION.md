@@ -6,11 +6,11 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock؛ آخر delivery متحقق قبل الشريحة الحالية هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع تطابق local وremote SHA.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock؛ أحدث delivery هو Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`76/76` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate؛ schema 003 وredaction/restart وpending/decide contracts ناجحة، والشريحة الحالية قيد full gate والدفع.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`76/76` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate؛ schema 003 وredaction/restart وpending/decide contracts ناجحة، والشريحة مدفوعة ومتحقق منها.
 
-validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `3`، schema version `003`، 11 جدولًا و21 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail restart/redaction وHuman Gate fail-closed. full gate النهائي للشريحة الحالية ما زال مطلوبًا قبل الدفع.
+validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `3`، schema version `003`، 11 جدولًا و21 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail restart/redaction وHuman Gate fail-closed. full gate وGitHub push verification ناجحان؛ `local_sha == remote_sha`.
 
 ## المعمارية
 
@@ -53,7 +53,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل سابق هو `f26a4e8bb560af02ee7f2c84510c606e473cf423`؛ شريحة Persistent Audit وHuman Gate الحالية pending إلى أن يكتمل full gate وcommit/push وremote SHA verification.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ full gate و`GITHUB_PUSH_VERIFIED=true` مثبتان.
 
 ## ما يزال مؤجلًا
 
@@ -70,4 +70,4 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `f26a4e8bb560af02ee7f2c84510c606e473cf423`؛ Persistent Audit وHuman Gate pending إلى اكتمال full gate وGitHub verification.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true`.

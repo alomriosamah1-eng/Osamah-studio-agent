@@ -1,6 +1,6 @@
 # Persistent Audit وHuman Gate
 
-**الحالة:** منفذة ومدفوعة ومتحقق منها بعد full gate؛ آخر delivery سيُثبت في commit التوثيق النهائي.
+**الحالة:** منفذة ومدفوعة ومتحقق منها بعد full gate؛ delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`، و`local_sha == remote_sha`.
 
 أضيفت طبقة `SqliteAuditTrail` فوق migration `003_agent_audit.sql`، مع إبقاء `InMemoryAuditTrail` للمسار memory الافتراضي. تحفظ الطبقة الدائمة حقول القرار اللازمة للمراجعة: `correlation_id` و`action_id` و`session_id` و`kind` و`risk` و`decision` و`approval_id` و`scope` و`reason`. لا تحفظ prompt أو request payload أو transcript.
 
