@@ -11,6 +11,7 @@ import type { ProjectPreviewService } from "../application/project-preview-servi
 import type { AgentTaskPreviewService } from "../application/agent-task-preview.js";
 import type { SourceRegistryPort } from "../application/source-registry.js";
 import type { ContentPlanPort } from "../application/content-plan.js";
+import type { AssetCatalogPort, CreativeBriefPort } from "../application/asset-catalog.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -19,6 +20,8 @@ export interface AgentIpcDependencies {
   readonly taskPreview: Pick<AgentTaskPreviewService, "preview">;
   readonly sourceRegistry: Pick<SourceRegistryPort, "registerSource" | "listSources" | "addCitation" | "getCitation" | "listCitations" | "listProvenanceLinks">;
   readonly contentPlan: Pick<ContentPlanPort, "createPlan" | "getPlan" | "addSection" | "addClaim" | "attachCitation">;
+  readonly assetCatalog: Pick<AssetCatalogPort, "registerAsset" | "listAssets">;
+  readonly creativeBrief: Pick<CreativeBriefPort, "createBrief" | "getBrief" | "attachAsset">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -89,6 +92,11 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("production.plan.section.add", async (request) => agentDependencies.contentPlan.addSection(request.payload));
     transport.register("production.plan.claim.add", async (request) => agentDependencies.contentPlan.addClaim(request.payload));
     transport.register("production.plan.citation.attach", async (request) => agentDependencies.contentPlan.attachCitation(request.payload));
+    transport.register("production.asset.register", async (request) => agentDependencies.assetCatalog.registerAsset(request.payload));
+    transport.register("production.asset.list", async (request) => agentDependencies.assetCatalog.listAssets(request.payload.limit));
+    transport.register("production.brief.create", async (request) => agentDependencies.creativeBrief.createBrief(request.payload));
+    transport.register("production.brief.get", async (request) => agentDependencies.creativeBrief.getBrief(request.payload.briefId));
+    transport.register("production.brief.asset.attach", async (request) => agentDependencies.creativeBrief.attachAsset(request.payload));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

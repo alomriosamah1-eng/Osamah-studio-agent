@@ -1,5 +1,27 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Studio: Asset Catalog وCreative Brief
+
+### Added
+
+- `AssetCatalogPort` و`CreativeBriefPort` مع `InMemoryAssetCatalog` bounded لتسجيل metadata للأصول وإنشاء briefs وربط asset IDs.
+- license/provenance guards للـkind وlocator وhash/bytes وsource IDs وحالات `declared/unverified/verified/blocked`، مع منع attach للأصول المحظورة وتحذيرات صريحة للأصول غير الموثقة.
+- typed IPC methods `production.asset.register` و`production.asset.list` و`production.brief.create` و`production.brief.get` و`production.brief.asset.attach` مع validators fail-closed.
+- Workspace Asset Catalog وCreative Brief panels لعرض metadata والترخيص والـwarnings، دون binary fetch أو media generation أو converter أو assembly/render/export.
+- اختبارات Application وElectron smoke تثبت deduplication ورفض locator/hash/bytes/source غير الصالحة وblocked asset، وتتحقق من no-network/no-mutation وبقاء Human Gate بلا تذكرة جديدة.
+- توثيق القرار في `docs/71-production-asset-catalog.md`.
+
+### Verified
+
+- `pnpm check`: `150/150` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ Asset Catalog وCreative Brief metadata-only smoke PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- Asset Catalog وCreative Brief حاليًا in-memory وreview-only؛ لا object store أو binary ingestion أو provider generation أو FFmpeg/ComfyUI أو converter execution أو export.
+- حالة license `verified` لا تعني منح حقوق تجارية، وsource/provenance warnings لا تتحول إلى FACT تلقائيًا.
+
 ## [Unreleased] — Production Studio: Content Plan وClaim/Citation Integrity
 
 ### Added

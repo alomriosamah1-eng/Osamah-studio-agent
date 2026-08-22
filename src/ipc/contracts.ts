@@ -14,6 +14,7 @@ import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from 
 import type { AgentTaskPreviewRequest, AgentTaskPreviewResult } from "../application/agent-task-preview.js";
 import type { AddCitationRequest, CitationRecord, RegisterSourceRequest, SourceRecord, SourceRegistryPort, ProvenanceLink } from "../application/source-registry.js";
 import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequest, ContentPlan, CreateContentPlanRequest } from "../application/content-plan.js";
+import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -64,6 +65,11 @@ export interface IpcMethodMap {
   "production.plan.section.add": { payload: AddContentSectionRequest; result: ContentPlan };
   "production.plan.claim.add": { payload: AddClaimRequest; result: ContentPlan };
   "production.plan.citation.attach": { payload: AttachClaimCitationRequest; result: ContentPlan };
+  "production.asset.register": { payload: RegisterAssetRequest; result: AssetRecord };
+  "production.asset.list": { payload: { limit?: number }; result: readonly AssetRecord[] };
+  "production.brief.create": { payload: CreateCreativeBriefRequest; result: CreativeBrief };
+  "production.brief.get": { payload: { briefId: string }; result: CreativeBrief | undefined };
+  "production.brief.asset.attach": { payload: AttachAssetRequest; result: CreativeBrief };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -264,6 +270,35 @@ const isPlanCitationAttachPayload = (value: unknown): boolean => isRecord(value)
   && isString(value.planId, 256)
   && isString(value.claimId, 256)
   && isString(value.citationId, 256);
+const isAssetKindPayload = (value: unknown): value is AssetKind => value === "image" || value === "video" || value === "audio" || value === "document" || value === "other";
+const isLicenseStatePayload = (value: unknown): value is AssetLicense["state"] => value === "declared" || value === "unverified" || value === "verified" || value === "blocked";
+const isBoundedStringList = (value: unknown, maxItems: number, maxLength: number): value is readonly string[] => Array.isArray(value) && value.length <= maxItems && value.every((item) => isString(item, maxLength) && !item.includes("\u0000"));
+const isAssetLicensePayload = (value: unknown): value is AssetLicense => isRecord(value)
+  && isString(value.name, 256)
+  && (value.attribution === undefined || isString(value.attribution, 1_000))
+  && (value.sourceLocator === undefined || isString(value.sourceLocator, 2_048))
+  && isLicenseStatePayload(value.state)
+  && (value.warnings === undefined || isBoundedStringList(value.warnings, 16, 512));
+const isAssetRegisterPayload = (value: unknown): boolean => isRecord(value)
+  && isAssetKindPayload(value.kind)
+  && isString(value.title, 512)
+  && isString(value.locator, 2_048)
+  && !value.locator.includes("\\")
+  && !value.locator.includes("..")
+  && (value.mediaType === undefined || isString(value.mediaType, 128))
+  && (value.bytes === undefined || (typeof value.bytes === "number" && Number.isSafeInteger(value.bytes) && value.bytes >= 0 && value.bytes <= 128 * 1024 * 1024))
+  && (value.sha256 === undefined || (typeof value.sha256 === "string" && /^[a-f0-9]{64}$/iu.test(value.sha256)))
+  && isAssetLicensePayload(value.license)
+  && (value.sourceIds === undefined || isBoundedStringList(value.sourceIds, 8, 256));
+const isAssetListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit > 0 && value.limit <= 256));
+const isBriefCreatePayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.title, 512)
+  && isString(value.intent, 2_000)
+  && (value.visualDirection === undefined || isString(value.visualDirection, 2_000))
+  && (value.constraints === undefined || isBoundedStringList(value.constraints, 16, 512))
+  && (value.assetSlots === undefined || isBoundedStringList(value.assetSlots, 16, 256));
+const isBriefGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.briefId, 256);
+const isBriefAssetAttachPayload = (value: unknown): boolean => isRecord(value) && isString(value.briefId, 256) && isString(value.assetId, 256);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -298,6 +333,11 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.plan.section.add") return isPlanSectionAddPayload(payload);
   if (method === "production.plan.claim.add") return isPlanClaimAddPayload(payload);
   if (method === "production.plan.citation.attach") return isPlanCitationAttachPayload(payload);
+  if (method === "production.asset.register") return isAssetRegisterPayload(payload);
+  if (method === "production.asset.list") return isAssetListPayload(payload);
+  if (method === "production.brief.create") return isBriefCreatePayload(payload);
+  if (method === "production.brief.get") return isBriefGetPayload(payload);
+  if (method === "production.brief.asset.attach") return isBriefAssetAttachPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

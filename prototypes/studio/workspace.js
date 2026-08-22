@@ -689,6 +689,143 @@
     await loadSourceCitations(response.result.sourceId);
   };
 
+  let selectedAssetId = '';
+  let activeBrief;
+  const renderAssets = (assets) => {
+    const list = $('assetList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!assets.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No asset metadata yet.';
+      list.append(empty);
+      return;
+    }
+    assets.slice(0, 64).forEach((asset) => {
+      const item = document.createElement('div');
+      item.className = `asset-item${asset.assetId === selectedAssetId ? ' active' : ''}`;
+      item.textContent = `${asset.kind.toUpperCase()} · ${asset.title}\n${asset.locator}\nLicense: ${asset.license.name} · ${asset.license.state}\n${asset.bytes === undefined ? 'bytes unknown' : `${asset.bytes} bytes`} · ${asset.sha256 ? `sha256 ${asset.sha256.slice(0, 12)}…` : 'no hash'}\n${asset.warnings.length ? `Warnings: ${asset.warnings.join(', ')}` : 'No metadata warnings'}`;
+      item.onclick = () => { selectedAssetId = asset.assetId; renderAssets(assets); };
+      list.append(item);
+    });
+  };
+  const loadAssets = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      renderAssets([]);
+      $('assetCatalogStatus').textContent = 'Desktop IPC unavailable; no asset was fetched.';
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('production-asset-list'),
+      correlationId: nextRequest('production-asset-list-correlation'),
+      method: 'production.asset.list',
+      payload: { limit: 64 },
+    });
+    if (!response.ok) {
+      $('assetCatalogStatus').textContent = `Asset list rejected: ${response.error.message}`;
+      log(`production.asset.list_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderAssets(response.result);
+    $('assetCatalogStatus').textContent = `${response.result.length} asset(s) · metadata-only · no binary fetch`;
+  };
+  const registerDemoAsset = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('assetCatalogStatus').textContent = 'Desktop IPC unavailable; no asset metadata was registered.';
+      log('production.asset.register_unavailable', 'warn');
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('production-asset-register'),
+      correlationId: nextRequest('production-asset-register-correlation'),
+      method: 'production.asset.register',
+      payload: {
+        kind: 'image',
+        title: 'Embedded hero reference',
+        locator: 'studio://assets/embedded-hero.png',
+        mediaType: 'image/png',
+        license: { name: 'Declared placeholder', state: 'unverified', warnings: ['Demo metadata only; license requires review.'] },
+      },
+    });
+    if (!response.ok) {
+      $('assetCatalogStatus').textContent = `Asset registration rejected: ${response.error.message}`;
+      log(`production.asset.register_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    selectedAssetId = response.result.assetId;
+    $('assetCatalogStatus').textContent = `Registered locally · ${response.result.assetId} · no generation/fetch`;
+    log(`production.asset.registered ${response.result.kind} · no binary`, 'ok');
+    await loadAssets();
+  };
+  const renderBrief = (brief) => {
+    activeBrief = brief;
+    $('creativeBriefStatus').textContent = `Brief ${brief.briefId} · review-only · no assembly/render/export`;
+    $('briefAssetCount').textContent = String(brief.assetIds.length);
+    $('briefWarningCount').textContent = String(brief.warnings.length);
+    const list = $('briefAssetList');
+    list.replaceChildren();
+    if (!brief.assetIds.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = brief.warnings.length ? `No asset links · ${brief.warnings.join(', ')}` : 'No brief asset links.';
+      list.append(empty);
+      return;
+    }
+    brief.assetIds.slice(0, 16).forEach((assetId) => {
+      const item = document.createElement('div');
+      item.className = 'brief-item';
+      item.textContent = `Asset ${assetId} · linked by ID only`;
+      list.append(item);
+    });
+  };
+  const createCreativeBrief = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('creativeBriefStatus').textContent = 'Desktop IPC unavailable; no brief was created.';
+      log('production.brief.create_unavailable', 'warn');
+      return;
+    }
+    const button = $('createCreativeBrief');
+    button.disabled = true;
+    $('creativeBriefStatus').textContent = 'Creating bounded brief preview…';
+    try {
+      const created = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-brief-create'),
+        correlationId: nextRequest('production-brief-correlation'),
+        method: 'production.brief.create',
+        payload: { title: $('briefTitle').value.trim(), intent: $('briefIntent').value.trim(), constraints: ['Do not generate media automatically.'], assetSlots: ['hero'] },
+      });
+      if (!created.ok) {
+        $('creativeBriefStatus').textContent = `Brief rejected: ${created.error.message}`;
+        log(`production.brief.create_rejected ${created.error.message}`, 'warn');
+        return;
+      }
+      const attached = selectedAssetId ? await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-brief-asset-attach'),
+        correlationId: nextRequest('production-brief-correlation'),
+        method: 'production.brief.asset.attach',
+        payload: { briefId: created.result.briefId, assetId: selectedAssetId },
+      }) : created;
+      if (!attached.ok) {
+        $('creativeBriefStatus').textContent = `Brief asset link rejected: ${attached.error.message}`;
+        log(`production.brief.asset_attach_rejected ${attached.error.message}`, 'warn');
+        return;
+      }
+      renderBrief(attached.result);
+      $('rightStatus').textContent = `Creative brief ${attached.result.warnings.length ? 'needs review' : 'ready'}`;
+      log(`production.brief.preview_ready ${attached.result.assetIds.length} asset(s) · no generation`, 'ok');
+    } catch (error) {
+      $('creativeBriefStatus').textContent = `Brief failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('production.brief.failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   let activeContentPlan;
   const renderContentPlan = (plan) => {
     activeContentPlan = plan;
@@ -883,6 +1020,9 @@
   $('reviewTask').onclick = () => { void previewCurrentTask(); };
   $('registerCurrentSource').onclick = () => { void registerCurrentSource(); };
   $('refreshSources').onclick = () => { void loadSources(); };
+  $('registerDemoAsset').onclick = () => { void registerDemoAsset(); };
+  $('refreshAssets').onclick = () => { void loadAssets(); };
+  $('createCreativeBrief').onclick = () => { void createCreativeBrief(); };
   $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
@@ -1027,6 +1167,41 @@
       method: 'production.plan.get',
       payload: { planId: contentPlanCreateResponse.result.planId },
     }) : { ok: false };
+    const assetRegisterResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-asset-register',
+      correlationId: 'desktop-smoke-production-asset',
+      method: 'production.asset.register',
+      payload: { kind: 'image', title: 'Desktop smoke asset', locator: 'studio://assets/smoke.png', mediaType: 'image/png', license: { name: 'Smoke placeholder', state: 'unverified', warnings: ['Review license before use.'] } },
+    });
+    const assetListResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-asset-list',
+      correlationId: 'desktop-smoke-production-asset',
+      method: 'production.asset.list',
+      payload: { limit: 8 },
+    });
+    const briefCreateResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-brief-create',
+      correlationId: 'desktop-smoke-production-brief',
+      method: 'production.brief.create',
+      payload: { title: 'Desktop smoke brief', intent: 'Review visual direction', constraints: ['Do not generate media.'], assetSlots: ['hero'] },
+    });
+    const briefAttachResponse = assetRegisterResponse.ok && briefCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-brief-attach',
+      correlationId: 'desktop-smoke-production-brief',
+      method: 'production.brief.asset.attach',
+      payload: { briefId: briefCreateResponse.result.briefId, assetId: assetRegisterResponse.result.assetId },
+    }) : { ok: false };
+    const briefGetResponse = briefCreateResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-brief-get',
+      correlationId: 'desktop-smoke-production-brief',
+      method: 'production.brief.get',
+      payload: { briefId: briefCreateResponse.result.briefId },
+    }) : { ok: false };
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -1158,7 +1333,9 @@
     const sourceRegistryNoMutationPassed = sourceRegistryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const contentPlanPassed = contentPlanCreateResponse.ok && contentPlanSectionResponse.ok && contentPlanClaimResponse.ok && contentPlanGetResponse.ok && contentPlanClaimResponse.result.integrity.unresolvedClaims === 1 && contentPlanClaimResponse.result.claims[0]?.citationIds.length === 0;
     const contentPlanNoMutationPassed = contentPlanPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const assetBriefPassed = assetRegisterResponse.ok && assetListResponse.ok && assetListResponse.result.length === 1 && assetRegisterResponse.result.license.state === 'unverified' && briefCreateResponse.ok && briefAttachResponse.ok && briefGetResponse.ok && briefAttachResponse.result.assetIds.length === 1 && briefAttachResponse.result.warnings.includes('asset_license_unverified');
+    const assetBriefNoMutationPassed = assetBriefPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -1167,5 +1344,6 @@
   void loadPendingApprovals();
   void loadProviders();
   void loadSources();
+  void loadAssets();
   void runDesktopSmoke();
 })();
