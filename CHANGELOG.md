@@ -1,5 +1,13 @@
 # سجل التغييرات
 
+## [Unreleased] — Master Implementation Plan
+
+### Added
+
+- `docs/45-master-implementation-plan.md` كخطة تنفيذ شاملة للأقسام الثلاثة، المعمارية، العقود، المراحل 0–17، بوابات القبول، المخاطر، والإصدارات.
+- `project/master-implementation-plan.json` كنسخة قابلة للآلة للمراحل والاعتماديات وMVP وسياسة إعادة استخدام المشاريع المفتوحة المصدر.
+- مصفوفة reuse تصنف المشاريع إلى `USE` و`ADAPT/WRAP` و`OPTIONAL` و`REFERENCE/LEGAL REVIEW` و`CONTRACT ONLY`.
+
 ## [Unreleased] — IPC Project Open
 
 ### Added

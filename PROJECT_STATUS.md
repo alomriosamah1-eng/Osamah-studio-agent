@@ -8,10 +8,11 @@
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
 | آخر commit مدفوع | `c1b1613a92515b5daa186137ad48f37844834878` |
-| حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع IPC project open |
+| حالة الشجرة | تغييرات توثيق الخطة الرئيسية محلية، جاهزة للمراجعة والدفع |
 | الإصدار المحلي | `0.5.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `21/21` اختبارًا ناجحًا |
+| الخطة الشاملة | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
 | Project Preview | bundle builder + fixture runtime + controller + typed IPC + filesystem scanner/service |
 | Presentation Renderer | renderer نقي + browser adapter + دمج داخل `prototypes/studio/index.html` |
 | IPC Project Open | `preview.openProject` يبني bundle ويبدأ embedded session ويعيد summary محدودًا |
@@ -48,6 +49,6 @@
 
 ## الإجراء التالي
 
-بعد هذه الشريحة يبدأ typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. أول مرحلة تنفيذية تالية فيها هي typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. آخر push مؤكد: `c1b1613a92515b5daa186137ad48f37844834878`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "plan_id": "osamah-studio-agent-master-implementation-plan",
+  "as_of": "2026-08-22",
+  "product": "Osamah Studio Agent",
+  "architecture": "modular-desktop-monolith-with-process-isolation",
+  "current_state": {
+    "version": "0.5.0-ipc-project-open",
+    "completed": [
+      "foundation-typescript-slice",
+      "embedded-simulator-controller",
+      "typed-in-memory-ipc",
+      "sqlite-migration-contract",
+      "project-preview-runtime",
+      "filesystem-project-scanner",
+      "presentation-renderer",
+      "ipc-preview-open-project"
+    ],
+    "tests": "21/21",
+    "next_phase": "typed-electron-preload-boundary",
+    "native_fidelity": "not_claimed"
+  },
+  "product_sections": [
+    {
+      "id": "development",
+      "name": "Intelligent Software Development Environment",
+      "outcome": "reviewable code changes with plan, approval, diff, tests, rollback, and embedded preview",
+      "shared_domains": ["workspace", "agents", "providers", "memory", "policy", "jobs", "artifacts"]
+    },
+    {
+      "id": "production",
+      "name": "Production Studio",
+      "outcome": "traceable documents, presentations, and media artifacts with render validation and export",
+      "shared_domains": ["projects", "sources", "citations", "agents", "jobs", "artifacts", "memory"]
+    },
+    {
+      "id": "brain",
+      "name": "Second Brain",
+      "outcome": "scoped, searchable, linked knowledge with provenance and controlled agent retrieval",
+      "shared_domains": ["projects", "tasks", "sources", "permissions", "activity", "agents"]
+    }
+  ],
+  "shared_contracts": [
+    "Workspace",
+    "Project",
+    "AgentDefinition",
+    "AgentSession",
+    "Task",
+    "TaskStep",
+    "ToolManifest",
+    "PermissionGrant",
+    "ProviderCapability",
+    "MemoryItem",
+    "Source",
+    "Citation",
+    "Artifact",
+    "Job",
+    "Checkpoint",
+    "AuditEvent"
+  ],
+  "phases": [
+    {
+      "id": 0,
+      "name": "scope-and-product-freeze",
+      "depends_on": [],
+      "primary_owner": "product",
+      "deliverables": ["MVP scope", "acceptance criteria US-001..US-008", "decision log", "OpenTo unknown boundary"],
+      "exit_gate": "every planned feature has scope, owner, data, permission, evidence, and rollback behavior"
+    },
+    {
+      "id": 1,
+      "name": "desktop-shell-and-typed-preload",
+      "depends_on": [0],
+      "primary_owner": "desktop",
+      "deliverables": ["Electron main process", "typed preload API", "CSP", "context isolation", "sender validation", "Workspace UI wiring"],
+      "exit_gate": "renderer cannot access Node or secrets directly; preview.openProject works through preload and embedded panel"
+    },
+    {
+      "id": 2,
+      "name": "sqlite-data-and-observability",
+      "depends_on": [1],
+      "primary_owner": "data",
+      "deliverables": ["SQLite adapter", "migration runner", "FTS5", "object store", "structured logs", "backup and restore dry-run"],
+      "exit_gate": "restart, migration failure, backup checksum, and large-file indexing tests pass"
+    },
+    {
+      "id": 3,
+      "name": "policy-permissions-secrets",
+      "depends_on": [1, 2],
+      "primary_owner": "security",
+      "deliverables": ["default deny", "scope and classifications", "approval engine", "secret store", "redaction", "terminal limits", "MCP consent contract"],
+      "exit_gate": "high-risk actions require explicit approval and all external actions produce audit events"
+    },
+    {
+      "id": 4,
+      "name": "bounded-agent-runtime",
+      "depends_on": [2, 3],
+      "primary_owner": "ai-runtime",
+      "deliverables": ["session state machine", "supervisor", "DAG", "isolated workers", "context packets", "critic", "judge", "checkpoints", "conflicts", "idempotency"],
+      "exit_gate": "three-step workflow can fail, retry once, resume, pause, and preserve evidence without freezing UI"
+    },
+    {
+      "id": 5,
+      "name": "provider-gateway",
+      "depends_on": [3, 4],
+      "primary_owner": "provider",
+      "deliverables": ["provider registry", "capabilities", "privacy metadata", "routing", "fallback", "circuit breaker", "local-only mode"],
+      "exit_gate": "provider swap preserves task/artifact contracts and privacy policy is enforced"
+    },
+    {
+      "id": 6,
+      "name": "development-environment",
+      "depends_on": [1, 2, 3, 4, 5],
+      "primary_owner": "development",
+      "deliverables": ["Monaco", "xterm.js", "file explorer", "Git diff", "test runner", "project context", "embedded preview", "rollback"],
+      "exit_gate": "US-001, US-002, and US-003 pass end-to-end"
+    },
+    {
+      "id": 7,
+      "name": "production-documents-and-research",
+      "depends_on": [2, 3, 4, 5],
+      "primary_owner": "production",
+      "deliverables": ["source registry", "claim provenance", "citation validator", "Markdown/HTML/PDF pipeline", "qpdf/pdfcpu workers", "render evidence"],
+      "exit_gate": "US-005 report is traceable, rendered, exportable, and never cites unread source spans"
+    },
+    {
+      "id": 8,
+      "name": "production-slides-images-video",
+      "depends_on": [7, 3, 4, 5],
+      "primary_owner": "production",
+      "deliverables": ["slide schema", "theme", "asset jobs", "HTML/PPTX export", "overflow/contrast checks", "FFmpeg worker", "media provenance"],
+      "exit_gate": "artifact is reproducible from input hash and passes render/format/asset checks"
+    },
+    {
+      "id": 9,
+      "name": "second-brain-capture-search-links",
+      "depends_on": [2, 3, 4],
+      "primary_owner": "knowledge",
+      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English FTS5", "scope and retention"],
+      "exit_gate": "US-006 retrieves Arabic and English notes with correct project scope and no leakage"
+    },
+    {
+      "id": 10,
+      "name": "semantic-memory-and-embeddings",
+      "depends_on": [9, 5],
+      "primary_owner": "knowledge",
+      "deliverables": ["memory candidates", "consolidation", "embedding versioning", "retrieval benchmark", "optional vector adapter"],
+      "exit_gate": "every retrieval has source/version/scope and stale indexes can be rebuilt safely"
+    },
+    {
+      "id": 11,
+      "name": "optional-voice-layer",
+      "depends_on": [3, 5, 9],
+      "primary_owner": "voice",
+      "deliverables": ["audio port", "VAD", "STT", "TTS", "streaming", "barge-in", "permissions", "deletion", "Arabic benchmark"],
+      "exit_gate": "voice is optional, deletable, permissioned, and has a reliable text fallback"
+    },
+    {
+      "id": 12,
+      "name": "bounded-local-automation",
+      "depends_on": [3, 4, 5, 9],
+      "primary_owner": "automation",
+      "deliverables": ["workflow schema", "policy compiler", "manual/assisted/allowlisted autonomous modes", "scheduler", "pause", "resume", "recovery"],
+      "exit_gate": "US-008 job can be paused/resumed; retry is idempotent; failure streak stops workflow"
+    },
+    {
+      "id": 13,
+      "name": "external-integrations",
+      "depends_on": [1, 3, 5, 6, 7, 12],
+      "primary_owner": "integrations",
+      "deliverables": ["GitHub adapter", "MCP client worker", "Playwright worker", "optional search wrapper", "OpenTo contract only"],
+      "exit_gate": "each integration is disableable, scoped, auditable, and failure-isolated"
+    },
+    {
+      "id": 14,
+      "name": "performance-and-resource-governance",
+      "depends_on": [4, 5, 6, 7, 8, 9, 12],
+      "primary_owner": "performance",
+      "deliverables": ["startup benchmark", "p95 benchmark", "RSS/CPU/GPU caps", "backpressure", "worker recovery", "regression history"],
+      "exit_gate": "NFR targets are measured and no critical regression remains"
+    },
+    {
+      "id": 15,
+      "name": "security-license-supply-chain-hardening",
+      "depends_on": [1, 2, 3, 6, 7, 8, 10, 12, 13],
+      "primary_owner": "security-compliance",
+      "deliverables": ["threat tests", "Gitleaks", "Trivy", "Scorecard", "SBOM", "license report", "notices", "incident playbook"],
+      "exit_gate": "critical threats have evidence; dependencies and model/assets have license decisions"
+    },
+    {
+      "id": 16,
+      "name": "cross-platform-ci-packaging",
+      "depends_on": [2, 6, 7, 8, 11, 13, 14, 15],
+      "primary_owner": "devops",
+      "deliverables": ["Windows build", "Linux build", "macOS tier-2 path", "artifact hashes", "clean-install smoke test", "upgrade/rollback"],
+      "exit_gate": "clean install, offline mode, migration, and open-project smoke tests pass"
+    },
+    {
+      "id": 17,
+      "name": "beta-acceptance-release",
+      "depends_on": [16],
+      "primary_owner": "release",
+      "deliverables": ["US-001..US-008 e2e", "compatibility matrix", "support runbook", "backup guide", "rollback", "opt-in telemetry"],
+      "exit_gate": "no known critical blocker, user acceptance complete, rollback tested"
+    }
+  ],
+  "open_source_policy": {
+    "rules": [
+      "read LICENSE and source before adoption",
+      "record version, hash, license, notices, and classification",
+      "do not add dependency before lockfile, SBOM, security, and legal review",
+      "prefer process isolation for GPL/AGPL or unclear-license tools when legally acceptable",
+      "never copy source from reference projects without an explicit dependency or independent implementation review"
+    ],
+    "classifications": {
+      "use": ["electron/electron", "microsoft/monaco-editor", "xtermjs/xterm.js", "cli/cli", "qpdf/qpdf", "pdfcpu/pdfcpu", "playwright"],
+      "adapt_or_wrap": ["anomalyco/opencode", "NousResearch/hermes-agent", "deepseek-ai/deepseek-harness", "diegosouzapw/OmniRoute", "ollama/ollama", "ggml-org/llama.cpp", "mem0ai/mem0", "getzep/graphiti"],
+      "optional_after_benchmark": ["lancedb/lancedb", "qdrant/qdrant", "openai/whisper", "SYSTRAN/faster-whisper", "rhasspy/piper", "snakers4/silero-vad", "FFmpeg/FFmpeg"],
+      "reference_only_or_legal_review": ["logseq/logseq", "AppFlowy-IO/AppFlowy", "volcengine/OpenViking", "searxng/searxng", "Comfy-Org/ComfyUI", "n8n-io/n8n", "temporalio/temporal", "AutoGen", "LangGraph", "CrewAI"],
+      "contract_only": ["OpenTo"]
+    }
+  },
+  "quality_gates": [
+    "typecheck and unit/integration/contract tests",
+    "malformed input and negative security tests",
+    "diff, secret, license, SBOM, and dependency scans",
+    "resource benchmark and regression check",
+    "RTL/LTR, keyboard, accessibility, and Arabic mixed-layout check",
+    "migration, backup, restore, and clean-install check",
+    "local SHA equals remote GitHub SHA and worktree is clean"
+  ],
+  "mvp_scope": [
+    "Electron shell and typed preload",
+    "Workspace with File Tree, Editor, Terminal, Git, Plan, Approval, Inspector, Console",
+    "SQLite/FTS5 and backup",
+    "bounded Agent Runtime and local provider mode",
+    "embedded simulator compatibility preview",
+    "Markdown/PDF production",
+    "Second Brain notes/search/scopes",
+    "audit, logs, security gates, Windows/Linux packaging"
+  ],
+  "deferred_scope": [
+    "React Native Web/Metro parity runtime",
+    "Android Emulator and iOS Simulator native transports",
+    "PPTX/media expansion",
+    "semantic embeddings and optional vector services",
+    "voice",
+    "automation and external integrations",
+    "multi-user cloud deployment",
+    "OpenTo integration until official evidence"
+  ]
+}

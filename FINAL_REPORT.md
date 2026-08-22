@@ -65,8 +65,13 @@
 | Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
 | Presentation renderer | `df53c8cd32b5e35c25488171bdca5241770146b3`؛ final delivery state at `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
 | IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ delivery state متحقق في `c1b1613a92515b5daa186137ad48f37844834878` |
+| Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة |
 
 تم التحقق من `pnpm check` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، ثم دُفعت شريحة IPC Project Open ووثيقتها، وتطابق `git rev-parse HEAD` مع GitHub API عند `c1b1613a92515b5daa186137ad48f37844834878`، والشجرة نظيفة.
+
+## الخطة التنفيذية المعتمدة
+
+الخطة الرئيسية في `docs/45-master-implementation-plan.md` هي مصدر التنفيذ للنسخ القادمة. تبدأ بـ typed Electron preload وSQLite/observability وpolicy/security، ثم Agent Runtime وProvider Gateway، ثم Development Environment وProduction Studio وSecond Brain، ثم Voice وAutomation والتكاملات والأداء وCI/CD وBeta Release. النسخة JSON المقابلة تحفظ الاعتماديات وبوابات الخروج وMVP والميزات المؤجلة بطريقة قابلة للآلة.
 
 ## الحدود الحالية
 
