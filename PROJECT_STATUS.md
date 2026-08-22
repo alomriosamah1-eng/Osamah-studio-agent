@@ -7,8 +7,8 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `f43882953e06a87e4c8ebba32ca0041bd99ea031` |
-| حالة الشجرة | تغييرات Presentation renderer محلية، جاهزة للفحوص النهائية والـ commit |
+| آخر commit مدفوع | `df53c8cd32b5e35c25488171bdca5241770146b3` |
+| حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع Presentation renderer |
 | الإصدار المحلي | `0.4.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `19/19` اختبارًا ناجحًا |
@@ -48,6 +48,6 @@
 
 ## الإجراء التالي
 
-بعد دفع الشريحة والتحقق من تطابق `git rev-parse HEAD` مع GitHub، يبدأ commit مستقل لإضافة IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
+بعد هذه الشريحة يبدأ commit مستقل لإضافة IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

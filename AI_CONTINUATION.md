@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر delivery مدفوع هو `f43882953e06a87e4c8ebba32ca0041bd99ea031`. اكتملت شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`. اكتملت محليًا الآن شريحة Presentation renderer بإضافة renderer نقي وbrowser adapter مدمج داخل Workspace؛ نجح `pnpm check` مع `19/19` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر delivery مدفوع هو `df53c8cd32b5e35c25488171bdca5241770146b3`. اكتملت شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`. اكتملت شريحة Presentation renderer بإضافة renderer نقي وbrowser adapter مدمج داخل Workspace؛ نجح `pnpm check` مع `19/19` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -36,7 +36,7 @@ git diff --check
 
 ## التسلسل التالي
 
-تم تنفيذ SQLite schema contract وtyped IPC in-memory وEmbeddedSimulatorController وProject Preview Runtime وPresentation renderer داخل embedded panel. بعد الدفع، الخطوة التالية هي IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. بعد ذلك أضف React Native Web/Metro الحقيقي، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
+تم تنفيذ SQLite schema contract وtyped IPC in-memory وEmbeddedSimulatorController وProject Preview Runtime وPresentation renderer داخل embedded panel. الخطوة التالية هي IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. بعد ذلك أضف React Native Web/Metro الحقيقي، ثم Android doctor/ADB، ثم macOS-only iOS adapter، ثم AI visual loop بحدود iteration وapproval.
 
 ## أسئلة مفتوحة
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تنفيذ Presentation renderer bounded: `src/presentation/preview-renderer.ts`، browser adapter، ودمج `#previewTree` داخل Workspace. نجحت `pnpm check` بـ19/19، ونجح syntax/secret/diff audit، وتم التحقق بصريًا من render tree وفتح settings وrotate وFast Refresh. يلزم الآن commit/push والتحقق من hash، وليس Android/iOS native قبل اكتمال IPC project open وdoctor/resource contracts.
+تم تنفيذ Presentation renderer bounded: `src/presentation/preview-renderer.ts`، browser adapter، ودمج `#previewTree` داخل Workspace. نجحت `pnpm check` بـ19/19، ونجح syntax/secret/diff audit، وتم التحقق بصريًا من render tree وفتح settings وrotate وFast Refresh. commit `df53c8cd32b5e35c25488171bdca5241770146b3` مدفوع ومتحقق، والشجرة نظيفة. الخطوة التالية IPC project open، وليس Android/iOS native قبل اكتمال doctor/resource contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

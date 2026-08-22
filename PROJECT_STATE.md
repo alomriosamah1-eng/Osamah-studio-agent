@@ -6,11 +6,11 @@
 |---|---|
 | الإصدار | `0.4.0-presentation-renderer` |
 | المرحلة | Presentation Renderer + Project Preview Runtime + Embedded Simulator |
-| الحالة | تنفيذ محلي مكتمل؛ الفحوص النهائية والـ commit/push متبقية |
-| آخر commit مدفوع | `f43882953e06a87e4c8ebba32ca0041bd99ea031` |
+| الحالة | Presentation renderer مدفوعة ومتحقق منها؛ الشجرة نظيفة |
+| آخر commit مدفوع | `df53c8cd32b5e35c25488171bdca5241770146b3` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `19/19` اختبار Node/tsx ناجح في 2026-08-22 |
-| آخر push مؤكد | `origin/main` عند `f43882953e06a87e4c8ebba32ca0041bd99ea031` |
+| آخر push مؤكد | `origin/main` عند `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان |
 
 ## المكتمل
 
@@ -42,6 +42,6 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد دفع هذه الشريحة والتحقق من hash، يبدأ commit مستقل واحد فقط لإضافة IPC لفتح مشروع filesystem من واجهة Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
+بعد هذه الشريحة يبدأ commit مستقل واحد فقط لإضافة IPC لفتح مشروع filesystem من واجهة Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

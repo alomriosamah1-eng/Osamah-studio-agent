@@ -63,9 +63,9 @@
 | تحديث الحالة والـ handoff النهائي | `2fd2c219072d8d186460a5c02b7c70545b447cb8` |
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
 | Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
-| Presentation renderer | pending حتى إتمام الفحوص والـ push |
+| Presentation renderer | `df53c8cd32b5e35c25488171bdca5241770146b3`؛ pushed and verified |
 
-تم التحقق من `pnpm check` و`node --check` وSQLite migration و`git diff --check` وsecret scan. تحقق بصريًا من renderer داخل Workspace. شريحة Presentation renderer محلية وتحتاج commit/push والتحقق من تطابق `git rev-parse HEAD` مع GitHub API.
+تم التحقق من `pnpm check` و`node --check` وSQLite migration و`git diff --check` وsecret scan. تحقق بصريًا من renderer داخل Workspace. دُفعت شريحة Presentation renderer إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `df53c8cd32b5e35c25488171bdca5241770146b3`، والشجرة نظيفة.
 
 ## الحدود الحالية
 
