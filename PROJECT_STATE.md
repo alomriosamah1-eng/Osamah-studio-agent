@@ -6,9 +6,9 @@
 |---|---|
 | الإصدار | `0.3.0-project-preview-runtime` |
 | المرحلة | Project Preview Runtime + Embedded Simulator + typed IPC |
-| الحالة | مكتملة محليًا، جاهزة للفحوص النهائية والـ commit/push |
+| الحالة | feature commit منشأ؛ docs finalization ثم push والتحقق متبقيان |
 | أحدث commit مدفوع قبل هذه الشريحة | `f388e8957e602b96c97968feed2c3f8ebf08df23` |
-| commit الشريحة الحالية | pending حتى إتمام التحقق والدفع |
+| commit الشريحة الحالية | `cc4a35d3f621e5ab6f79e386cc9a1760e970f063` (محلي؛ لم يُدفع بعد) |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `17/17` اختبار Node/tsx ناجح في 2026-08-22 |
 | آخر push مؤكد | `origin/main` عند `f388e8957e602b96c97968feed2c3f8ebf08df23` قبل الشريحة الحالية |
@@ -43,6 +43,6 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد إتمام commit/push والتحقق من hash، يبدأ commit مستقل واحد فقط لبناء Presentation renderer داخل Embedded Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
+بعد إتمام docs finalization وpush والتحقق من hash، يبدأ commit مستقل واحد فقط لبناء Presentation renderer داخل Embedded Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد قبل الشريحة الحالية: `f388e8957e602b96c97968feed2c3f8ebf08df23`. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. commit المحلي الحالي: `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`. آخر push مؤكد قبل الشريحة الحالية: `f388e8957e602b96c97968feed2c3f8ebf08df23`. إعداد: Manus AI.

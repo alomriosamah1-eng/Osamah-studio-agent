@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md` وملفات الحالة، وإضافة Project Preview Runtime وfilesystem scanner/service واختبارات contract. نجحت `pnpm check` بـ17/17. commit الشريحة الحالية pending حتى إتمام SQLite validation وdiff/secret audit ثم push والتحقق من تطابق local/remote. بعدها يبدأ Presentation renderer، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
+تم تحديث `docs/WORK_LOG.md` و`CHANGELOG.md` وملفات الحالة، وإضافة Project Preview Runtime وfilesystem scanner/service واختبارات contract. نجحت `pnpm check` بـ17/17. feature commit الشريحة هو `cc4a35d3f621e5ab6f79e386cc9a1760e970f063` بعد نجاح SQLite validation وdiff/secret audit؛ يلزم الآن final docs commit ثم push والتحقق من تطابق local/remote. بعدها يبدأ Presentation renderer، وليس Android/iOS native قبل اكتمال embedded renderer وdoctor contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

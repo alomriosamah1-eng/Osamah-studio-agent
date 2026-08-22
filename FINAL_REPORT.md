@@ -60,9 +60,9 @@
 | مراجعة القرارات والاعتماديات | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
 | تحديث الحالة والـ handoff النهائي | `2fd2c219072d8d186460a5c02b7c70545b447cb8` |
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
-| Project Preview Runtime + filesystem scanner/service | pending حتى إتمام الفحوص والدفع |
+| Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; final docs commit وpush pending |
 
-تم التحقق من أن `git rev-parse HEAD` يطابق `git ls-remote origin refs/heads/main` عند آخر push، وأن الشجرة المحلية كانت نظيفة عند الإغلاق.
+تم التحقق من SQLite migration و`git diff --check` وsecret scan قبل الدفع. بعد final docs commit سيُعاد التحقق من أن `git rev-parse HEAD` يطابق مرجع `main` البعيد، وأن الشجرة المحلية نظيفة.
 
 ## الحدود الحالية
 
