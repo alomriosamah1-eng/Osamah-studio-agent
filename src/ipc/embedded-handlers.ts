@@ -1,5 +1,7 @@
 import type { AgentWorkCycleService } from "../application/agent-work-cycle.js";
 import type { HumanGatePort } from "../application/human-gate.js";
+import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
+import type { ProviderListItem } from "./contracts.js";
 import type { FilesystemProjectContextIndex } from "../application/project-context.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
@@ -9,6 +11,11 @@ export interface AgentIpcDependencies {
   readonly context: Pick<FilesystemProjectContextIndex, "build">;
   readonly workCycle: Pick<AgentWorkCycleService, "start" | "inspect" | "cancel">;
   readonly humanGate: Pick<HumanGatePort, "listPending" | "decide">;
+  readonly providers: {
+    readonly list: () => readonly ProviderListItem[];
+    readonly configure: (config: LocalProviderConfig) => LocalProviderConfig;
+    readonly doctor: (providerId?: LocalProviderId) => Promise<readonly ProviderDoctorReport[]>;
+  };
 }
 
 export const registerEmbeddedSimulatorHandlers = (
@@ -61,5 +68,8 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("workCycle.cancel", (request) => Promise.resolve(agentDependencies.workCycle.cancel(request.payload.cycleId)));
     transport.register("approval.listPending", (request) => Promise.resolve(agentDependencies.humanGate.listPending(request.payload.limit)));
     transport.register("approval.decide", (request) => Promise.resolve(agentDependencies.humanGate.decide(request.payload.approvalId, request.payload.decision)));
+    transport.register("provider.list", async () => agentDependencies.providers.list());
+    transport.register("provider.configure", async (request) => agentDependencies.providers.configure(request.payload));
+    transport.register("provider.doctor", async (request) => agentDependencies.providers.doctor(request.payload.providerId));
   }
 };

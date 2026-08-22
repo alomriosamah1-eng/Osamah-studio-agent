@@ -126,7 +126,7 @@ export const defaultLocalProviderConfig = (providerId: LocalProviderId, modelId:
 });
 
 type ProviderExecutionState = {
-  readonly config: LocalProviderConfig;
+  config: LocalProviderConfig;
   inFlight: number;
   requestsInWindow: number;
   windowStartedAt: number;
@@ -141,16 +141,25 @@ export class BoundedProviderExecutionPolicy implements ProviderExecutionPolicy {
 
   public constructor(configs: readonly LocalProviderConfig[], now: () => number = () => Date.now()) {
     this.clock = now;
-    for (const config of new BoundedProviderConfiguration().validateMany(configs)) {
-      this.states.set(config.providerId, {
-        config,
-        inFlight: 0,
-        requestsInWindow: 0,
-        windowStartedAt: this.clock(),
-        circuitState: "closed",
-        consecutiveFailures: 0,
-      });
+    for (const config of new BoundedProviderConfiguration().validateMany(configs)) this.configure(config);
+  }
+
+  public configure(input: LocalProviderConfig): LocalProviderConfig {
+    const config = validateLocalProviderConfig(input);
+    const existing = this.states.get(config.providerId);
+    if (existing) {
+      existing.config = config;
+      return config;
     }
+    this.states.set(config.providerId, {
+      config,
+      inFlight: 0,
+      requestsInWindow: 0,
+      windowStartedAt: this.clock(),
+      circuitState: "closed",
+      consecutiveFailures: 0,
+    });
+    return config;
   }
 
   public allow(providerId: string, nowMs = this.clock()): ProviderAdmission {
@@ -225,9 +234,11 @@ export class BoundedProviderExecutionPolicy implements ProviderExecutionPolicy {
 
 export class BoundedProviderConfiguration implements ProviderConfigurationPort {
   private readonly maxItems: number;
+  private readonly configs = new Map<LocalProviderId, LocalProviderConfig>();
 
-  public constructor(options: ProviderPolicyOptions = {}) {
+  public constructor(options: ProviderPolicyOptions = {}, initial: readonly LocalProviderConfig[] = []) {
     this.maxItems = Math.max(1, Math.min(Math.floor(options.maxConfigurations ?? maxConfigurations), maxConfigurations));
+    for (const config of this.validateMany(initial)) this.configs.set(config.providerId, config);
   }
 
   public validate(config: LocalProviderConfig): LocalProviderConfig {
@@ -244,4 +255,21 @@ export class BoundedProviderConfiguration implements ProviderConfigurationPort {
       return validated;
     });
   }
+
+  public configure(input: LocalProviderConfig): LocalProviderConfig {
+    const config = this.validate(input);
+    if (!this.configs.has(config.providerId) && this.configs.size >= this.maxItems) throw new Error("Provider configuration registry limit reached.");
+    this.configs.set(config.providerId, config);
+    return config;
+  }
+
+  public get(providerId: LocalProviderId): LocalProviderConfig | undefined {
+    return this.configs.get(providerId);
+  }
+
+  public list(): readonly LocalProviderConfig[] {
+    return [...this.configs.values()];
+  }
 }
+
+export const isLocalProviderId = (value: string): value is LocalProviderId => value === "ollama" || value === "llama.cpp";

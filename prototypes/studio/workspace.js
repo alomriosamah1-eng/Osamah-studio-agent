@@ -159,6 +159,140 @@
     window.addEventListener('beforeunload', unsubscribe, { once: true });
   };
 
+  const providerConfigs = new Map();
+  const renderProviders = (providers) => {
+    const empty = $('providerEmpty');
+    const list = $('providerList');
+    if (!empty || !list) return;
+    empty.hidden = providers.length > 0;
+    empty.textContent = providers.length ? '' : 'No local providers registered. Registration is explicit and offline-first.';
+    list.replaceChildren();
+    providers.forEach((provider) => {
+      const card = document.createElement('div');
+      card.className = 'approval-card provider-card';
+      card.dataset.providerId = provider.id;
+      const title = document.createElement('strong');
+      title.textContent = `${provider.label} · ${provider.offline ? 'offline-capable' : 'remote'}`;
+      const meta = document.createElement('div');
+      meta.className = 'approval-meta';
+      meta.textContent = `${provider.id} · ${provider.configured ? (provider.enabled ? 'enabled' : 'disabled') : 'not configured'}`;
+      const model = document.createElement('div');
+      model.className = 'approval-scope';
+      model.textContent = provider.models[0]?.id ? `Model: ${provider.models[0].id}` : 'No model metadata';
+      const form = document.createElement('div');
+      form.className = 'provider-form';
+      const baseUrl = document.createElement('input');
+      baseUrl.type = 'url';
+      baseUrl.placeholder = 'http://127.0.0.1:11434';
+      baseUrl.value = providerConfigs.get(provider.id)?.baseUrl || (provider.id === 'ollama' ? 'http://127.0.0.1:11434' : 'http://127.0.0.1:8080');
+      baseUrl.dataset.providerField = 'baseUrl';
+      const modelId = document.createElement('input');
+      modelId.type = 'text';
+      modelId.placeholder = 'model id';
+      modelId.value = providerConfigs.get(provider.id)?.modelId || provider.models[0]?.id || '';
+      modelId.dataset.providerField = 'modelId';
+      const enabled = document.createElement('input');
+      enabled.type = 'checkbox';
+      enabled.checked = providerConfigs.get(provider.id)?.enabled || provider.enabled;
+      enabled.dataset.providerField = 'enabled';
+      const enabledLabel = document.createElement('label');
+      enabledLabel.textContent = 'Enable';
+      enabledLabel.prepend(enabled);
+      const save = document.createElement('button');
+      save.className = 'allow';
+      save.textContent = 'Save config';
+      save.onclick = () => { void configureProvider(provider.id, baseUrl, modelId, enabled); };
+      const doctor = document.createElement('button');
+      doctor.className = 'deny';
+      doctor.textContent = 'Run doctor';
+      doctor.onclick = () => { void runProviderDoctor(provider.id, card); };
+      form.append(baseUrl, modelId, enabledLabel, save, doctor);
+      card.append(title, meta, model, form);
+      list.append(card);
+    });
+  };
+  const loadProviders = async () => {
+    if (!window.osamah?.dispatch) {
+      renderProviders([]);
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('provider-list'),
+      correlationId: nextRequest('provider-list-correlation'),
+      method: 'provider.list',
+      payload: {},
+    });
+    if (!response.ok) {
+      log(`provider.list_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderProviders(response.result);
+    $('rightStatus').textContent = response.result.length ? `${response.result.length} provider(s) registered` : 'No providers registered';
+  };
+  const configureProvider = async (providerId, baseUrl, modelId, enabled) => {
+    const payload = {
+      providerId,
+      enabled: enabled.checked,
+      baseUrl: baseUrl.value.trim(),
+      modelId: modelId.value.trim(),
+      timeoutMs: 15000,
+      maxInputChars: 128 * 1024,
+      maxOutputChars: 256 * 1024,
+      maxConcurrent: 1,
+      maxRequestsPerWindow: 8,
+      quotaWindowMs: 60000,
+      circuitFailureThreshold: 3,
+      circuitCooldownMs: 15000,
+    };
+    const response = await window.osamah?.dispatch?.({
+      protocolVersion: 1,
+      requestId: nextRequest('provider-configure'),
+      correlationId: nextRequest('provider-configure-correlation'),
+      method: 'provider.configure',
+      payload,
+    });
+    if (!response) {
+      log('provider.configure_unavailable', 'warn');
+      return;
+    }
+    if (!response.ok) {
+      log(`provider.configure_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    providerConfigs.set(providerId, response.result);
+    $('rightStatus').textContent = `${providerId} configuration saved`;
+    log(`provider.configured ${providerId}`, 'ok');
+    await loadProviders();
+  };
+  const runProviderDoctor = async (providerId, card) => {
+    const status = document.createElement('div');
+    status.className = 'approval-meta';
+    status.textContent = 'Checking provider…';
+    card.append(status);
+    const response = await window.osamah?.dispatch?.({
+      protocolVersion: 1,
+      requestId: nextRequest('provider-doctor'),
+      correlationId: nextRequest('provider-doctor-correlation'),
+      method: 'provider.doctor',
+      payload: { providerId },
+    });
+    if (!response) {
+      status.textContent = 'Doctor unavailable in this host.';
+      log('provider.doctor_unavailable', 'warn');
+      return;
+    }
+    if (!response.ok) {
+      status.textContent = `Doctor failed: ${response.error.message}`;
+      log(`provider.doctor_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    const report = response.result[0];
+    status.textContent = report ? `Doctor: ${report.status}${report.latencyMs === undefined ? '' : ` · ${report.latencyMs}ms`}` : 'Doctor: no report';
+    $('rightStatus').textContent = report ? `${providerId}: ${report.status}` : 'Provider doctor complete';
+    log(`provider.doctor ${providerId} ${report?.status || 'empty'}`, report?.status === 'healthy' ? 'ok' : 'warn');
+  };
+
   const chooseProjectRoot = async () => {
     const button = $('openProject');
     if (!window.osamah?.chooseProjectRoot) {
@@ -242,6 +376,40 @@
         patch: { proposalId: 'desktop-smoke-patch', operations: [{ relativePath: 'app/index.tsx', mode: 'update', content: '// desktop smoke only\\n' }] },
       },
     });
+    const providerListResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-provider-list',
+      correlationId: 'desktop-smoke-provider',
+      method: 'provider.list',
+      payload: {},
+    });
+    const providerConfigResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-provider-configure',
+      correlationId: 'desktop-smoke-provider',
+      method: 'provider.configure',
+      payload: {
+        providerId: 'ollama',
+        enabled: false,
+        baseUrl: 'http://127.0.0.1:11434',
+        modelId: 'desktop-smoke-model',
+        timeoutMs: 15000,
+        maxInputChars: 128 * 1024,
+        maxOutputChars: 256 * 1024,
+        maxConcurrent: 1,
+        maxRequestsPerWindow: 8,
+        quotaWindowMs: 60000,
+        circuitFailureThreshold: 3,
+        circuitCooldownMs: 15000,
+      },
+    });
+    const providerDoctorResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-provider-doctor',
+      correlationId: 'desktop-smoke-provider',
+      method: 'provider.doctor',
+      payload: { providerId: 'ollama' },
+    });
     const approvalResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-approval-list',
@@ -265,12 +433,14 @@
     console.log(rootPickerPassed ? 'DESKTOP_ROOT_PICKER_SMOKE=PASS' : 'DESKTOP_ROOT_PICKER_SMOKE=FAIL');
     const streamReady = typeof window.osamah.subscribe === 'function';
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
-    console.log(response.ok && approvalFlowPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
   renderProfile();
   subscribeToApprovalEvents();
   void loadPendingApprovals();
+  void loadProviders();
   void runDesktopSmoke();
 })();

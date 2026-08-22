@@ -17,6 +17,8 @@ import { isIpcEvent } from "./ipc/contracts.js";
 import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from "./ipc/contracts.js";
 import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
+import { defaultLocalProviderConfig } from "./application/provider-policy.js";
+import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
 
 const setup = () => {
   const { useCases } = createFoundation();
@@ -186,6 +188,38 @@ test("typed approval events accept safe ticket payloads and reject malformed pay
   assert.equal(isIpcEvent({ type: "approval.changed", ticket: { ...ticket, action: { ...ticket.action, kind: "terminal.unknown" } } }), false);
 });
 
+test("typed IPC lists providers, configures disabled local providers, and runs explicit doctor", async () => {
+  let fetchCalls = 0;
+  const app = createEmbeddedApplication({ providers: [new OllamaProviderAdapter({
+    baseUrl: "http://127.0.0.1:11434",
+    modelId: "local-model",
+    fetchImpl: async () => {
+      fetchCalls += 1;
+      return new Response(JSON.stringify({ models: [] }), { status: 200 });
+    },
+  })] });
+  try {
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "provider-list-1", correlationId: "provider-ui", method: "provider.list", payload: {} } as const);
+    assert.equal(listed.ok, true);
+    if (listed.ok) {
+      assert.equal(listed.result.length, 1);
+      assert.equal(listed.result[0]?.id, "ollama");
+      assert.equal(listed.result[0]?.configured, false);
+    }
+    const configured = await app.ipc.dispatch({ protocolVersion: 1, requestId: "provider-config-1", correlationId: "provider-ui", method: "provider.configure", payload: defaultLocalProviderConfig("ollama", "local-model") } as const);
+    assert.equal(configured.ok, true);
+    const doctor = await app.ipc.dispatch({ protocolVersion: 1, requestId: "provider-doctor-1", correlationId: "provider-ui", method: "provider.doctor", payload: { providerId: "ollama" } } as const);
+    assert.equal(doctor.ok, true);
+    if (doctor.ok) assert.equal(doctor.result[0]?.status, "disabled");
+    assert.equal(fetchCalls, 0);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "provider-invalid-1", correlationId: "provider-ui", method: "provider.configure", payload: { ...defaultLocalProviderConfig("ollama", "local-model"), maxConcurrent: 2 } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC rejects malformed, unknown, and duplicate requests", async () => {
   const { transport } = setup();
   const malformed = await transport.dispatch({ method: "health.get" });
@@ -203,6 +237,9 @@ test("typed IPC rejects malformed, unknown, and duplicate requests", async () =>
   const malformedApproval = await transport.dispatch({ protocolVersion: 1, requestId: "approval-invalid-1", correlationId: "c-2", method: "approval.decide", payload: { approvalId: "approval-1", decision: "unknown" } });
   assert.equal(malformedApproval.ok, false);
   if (!malformedApproval.ok) assert.equal(malformedApproval.error.code, "INVALID_REQUEST");
+  const malformedProvider = await transport.dispatch({ protocolVersion: 1, requestId: "provider-invalid-1", correlationId: "c-2", method: "provider.configure", payload: { providerId: "ollama", enabled: true } });
+  assert.equal(malformedProvider.ok, false);
+  if (!malformedProvider.ok) assert.equal(malformedProvider.error.code, "INVALID_REQUEST");
   const first = await transport.dispatch({ protocolVersion: 1, requestId: "health-duplicate", correlationId: "c-3", method: "health.get", payload: {} });
   assert.equal(first.ok, true);
   const duplicate = await transport.dispatch({ protocolVersion: 1, requestId: "health-duplicate", correlationId: "c-3", method: "health.get", payload: {} });

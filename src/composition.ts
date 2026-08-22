@@ -9,7 +9,7 @@ import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import { BoundedAuditRetentionPolicy } from "./application/audit-policy.js";
 import { DeterministicPlannerCritic } from "./application/planner-critic.js";
-import { BoundedProviderExecutionPolicy, type LocalProviderConfig } from "./application/provider-policy.js";
+import { BoundedProviderConfiguration, BoundedProviderExecutionPolicy, defaultLocalProviderConfig, isLocalProviderId, type LocalProviderConfig, type LocalProviderId } from "./application/provider-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { ProviderAdapter } from "./application/provider-contracts.js";
 import type { EventBus } from "./domain/events.js";
@@ -23,6 +23,7 @@ import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
 import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
 import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
+import type { ProviderListItem } from "./ipc/contracts.js";
 import { FilesystemProjectPreviewService } from "./application/project-preview-service.js";
 import { FilesystemProjectScanner } from "./infrastructure/filesystem-project-scanner.js";
 import { LocalAuditExportProvider } from "./infrastructure/audit-export.js";
@@ -116,9 +117,40 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
-  const providerExecutionPolicy = options.providerConfigs ? new BoundedProviderExecutionPolicy(options.providerConfigs) : undefined;
+  const providerConfiguration = new BoundedProviderConfiguration({}, options.providerConfigs ?? []);
+  const providerExecutionPolicy = new BoundedProviderExecutionPolicy(options.providerConfigs ?? []);
   const providerDoctor = new LocalProviderDoctor(options.providers ?? [], () => Date.parse(foundation.dependencies.clock.now()));
   const providerGateway = new ProviderGateway(options.providers ?? [], { audit: providerRouteAudit, executionPolicy: providerExecutionPolicy, now: () => foundation.dependencies.clock.now() });
+  const configFor = (providerId: LocalProviderId): LocalProviderConfig => {
+    const configured = providerConfiguration.get(providerId);
+    if (configured) return configured;
+    const manifest = providerGateway.listProviders().find((candidate) => candidate.id === providerId);
+    return defaultLocalProviderConfig(providerId, manifest?.models[0]?.id ?? "unconfigured-model");
+  };
+  const providerControls = {
+    list: (): readonly ProviderListItem[] => providerGateway.listProviders().map((manifest) => {
+      const configured = isLocalProviderId(manifest.id) ? providerConfiguration.get(manifest.id) : undefined;
+      return {
+        id: manifest.id,
+        label: manifest.label,
+        privacy: manifest.privacy,
+        offline: manifest.offline,
+        capabilities: [...manifest.capabilities],
+        models: manifest.models.map((model) => ({ id: model.id, capabilities: [...model.capabilities], contextWindow: model.contextWindow, streaming: model.streaming, offline: model.offline })),
+        configured: configured !== undefined,
+        enabled: configured?.enabled ?? false,
+      };
+    }),
+    configure: (input: LocalProviderConfig): LocalProviderConfig => {
+      const configured = providerConfiguration.configure(input);
+      providerExecutionPolicy.configure(configured);
+      return configured;
+    },
+    doctor: async (providerId?: LocalProviderId) => {
+      const ids = providerId ? [providerId] : providerGateway.listProviders().map((manifest) => manifest.id).filter(isLocalProviderId);
+      return Promise.all(ids.map((id) => providerDoctor.check(configFor(id))));
+    },
+  };
   const agentRuntime = new BoundedAgentRuntime(resourcePolicy, approvalWorkflow);
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter(), resourcePolicy);
   const ipc = new InMemoryIpcTransport();
@@ -145,7 +177,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, workCycle: agentWorkCycle, humanGate });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -173,6 +205,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     auditExport,
     providerGateway,
     providerDoctor,
+    providerConfiguration,
     providerExecutionPolicy,
     providerRouteAudit,
     defaultProfiles,

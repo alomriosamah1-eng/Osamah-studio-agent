@@ -6,6 +6,7 @@ import type { ProjectPreviewBundle, PreviewRenderNode } from "../mobile/preview-
 import type { AgentPlan, PatchProposal, WorkCycleResult, WorkCycleSnapshot } from "../application/agent-work-cycle.js";
 import type { ProjectContextSnapshot } from "../application/project-context.js";
 import type { ApprovalTicket } from "../application/agent-contracts.js";
+import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -18,6 +19,17 @@ export interface PreviewProjectOpenResult {
     readonly moduleCount: number;
     readonly warningCount: number;
   };
+}
+
+export interface ProviderListItem {
+  readonly id: string;
+  readonly label: string;
+  readonly privacy: "local" | "remote";
+  readonly offline: boolean;
+  readonly capabilities: readonly string[];
+  readonly models: readonly { readonly id: string; readonly capabilities: readonly string[]; readonly contextWindow: number; readonly streaming: boolean; readonly offline: boolean }[];
+  readonly configured: boolean;
+  readonly enabled: boolean;
 }
 
 export interface IpcMethodMap {
@@ -53,6 +65,9 @@ export interface IpcMethodMap {
   "workCycle.cancel": { payload: { cycleId: string }; result: { cancelled: boolean; cycle?: WorkCycleSnapshot } };
   "approval.listPending": { payload: { limit?: number }; result: readonly ApprovalTicket[] };
   "approval.decide": { payload: { approvalId: string; decision: "approved" | "denied" }; result: ApprovalTicket };
+  "provider.list": { payload: Record<string, never>; result: readonly ProviderListItem[] };
+  "provider.configure": { payload: LocalProviderConfig; result: LocalProviderConfig };
+  "provider.doctor": { payload: { providerId?: LocalProviderId }; result: readonly ProviderDoctorReport[] };
 }
 
 export interface HumanGateEvent {
@@ -142,6 +157,22 @@ const isWorkCycleStartPayload = (value: unknown): boolean => {
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
+const isLocalProviderIdPayload = (value: unknown): value is LocalProviderId => value === "ollama" || value === "llama.cpp";
+const isProviderConfigPayload = (value: unknown): value is LocalProviderConfig => isRecord(value)
+  && isLocalProviderIdPayload(value.providerId)
+  && typeof value.enabled === "boolean"
+  && isString(value.baseUrl, 256)
+  && isString(value.modelId, 256)
+  && typeof value.timeoutMs === "number" && Number.isInteger(value.timeoutMs) && value.timeoutMs > 0 && value.timeoutMs <= 120_000
+  && typeof value.maxInputChars === "number" && Number.isInteger(value.maxInputChars) && value.maxInputChars > 0 && value.maxInputChars <= 128 * 1024
+  && typeof value.maxOutputChars === "number" && Number.isInteger(value.maxOutputChars) && value.maxOutputChars > 0 && value.maxOutputChars <= 256 * 1024
+  && value.maxConcurrent === 1
+  && typeof value.maxRequestsPerWindow === "number" && Number.isInteger(value.maxRequestsPerWindow) && value.maxRequestsPerWindow > 0 && value.maxRequestsPerWindow <= 64
+  && typeof value.quotaWindowMs === "number" && Number.isInteger(value.quotaWindowMs) && value.quotaWindowMs >= 1_000 && value.quotaWindowMs <= 60 * 60 * 1000
+  && typeof value.circuitFailureThreshold === "number" && Number.isInteger(value.circuitFailureThreshold) && value.circuitFailureThreshold > 0 && value.circuitFailureThreshold <= 8
+  && typeof value.circuitCooldownMs === "number" && Number.isInteger(value.circuitCooldownMs) && value.circuitCooldownMs >= 1_000 && value.circuitCooldownMs <= 10 * 60 * 1000;
+const isProviderListPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
+const isProviderDoctorPayload = (value: unknown): boolean => isRecord(value) && (value.providerId === undefined || isLocalProviderIdPayload(value.providerId));
 
 const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (!isRecord(payload)) return false;
@@ -150,6 +181,9 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "workCycle.inspect" || method === "workCycle.cancel") return isWorkCycleIdPayload(payload);
   if (method === "approval.listPending") return isApprovalListPayload(payload);
   if (method === "approval.decide") return isApprovalDecisionPayload(payload);
+  if (method === "provider.list") return isProviderListPayload(payload);
+  if (method === "provider.configure") return isProviderConfigPayload(payload);
+  if (method === "provider.doctor") return isProviderDoctorPayload(payload);
   return true;
 };
 

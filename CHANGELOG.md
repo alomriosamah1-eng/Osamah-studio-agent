@@ -1,5 +1,24 @@
 # سجل التغييرات
 
+## [Unreleased] — Typed Provider Configuration UI وIPC
+
+### Added
+
+- عقود `provider.list` و`provider.configure` و`provider.doctor` مع validators bounded للـIDs وloopback URLs والحدود منخفضة الذاكرة.
+- ربط provider controls بـ`EmbeddedApplication` و`ProviderGateway` و`ProviderDoctor` و`BoundedProviderExecutionPolicy` مع عدم إجراء health probe أو model loading عند startup.
+- لوحة Providers داخل Workspace تعرض metadata آمنة وحقول base URL/model وEnable وSave config وRun doctor دون إدخال raw IPC أو أسرار إلى renderer.
+- توسعة desktop smoke لتدفق provider list → configure disabled → doctor disabled، وتوثيق التنفيذ في `docs/62-provider-configuration-ui-ipc.md`.
+
+### Verified
+
+- `pnpm check`: `98/98` اختبارًا ناجحًا.
+- provider IPC validation/handlers، renderer DOM safety، disabled doctor، وno-network startup: PASS.
+- Desktop IPC/root-picker/Human Gate وperformance وSQLite migration/JSON/diff/secret checks: PASS.
+
+### Boundaries
+
+- لا توجد persistence مستقلة للـprovider configuration أو model discovery أو streaming أو tool execution أو remote providers؛ التفعيل ما يزال صريحًا ومحليًا.
+
 ## [Unreleased] — Provider Policy وDoctor وQuota
 
 ### Added
@@ -12,13 +31,13 @@
 
 ### Verified
 
-- `pnpm check`: `97/97` اختبارًا ناجحًا.
+- `pnpm check`: `98/98` اختبارًا ناجحًا.
 - configuration وdoctor وquota وcircuit وGateway admission وdisabled handling: PASS.
 - Desktop IPC وperformance smoke وSQLite migration/JSON/diff/secret checks: PASS.
 
 ### Boundaries
 
-- لا توجد model discovery أو streaming أو tool execution أو circuit persistence أو cross-process quota؛ لا يبدأ provider أو model تلقائيًا عند startup.
+- لا توجد persistence مستقلة للـprovider configuration أو model discovery أو streaming أو tool execution أو circuit persistence أو cross-process quota؛ لا يبدأ provider أو model تلقائيًا عند startup.
 
 ## [Unreleased] — Local Provider Adapters
 
@@ -30,7 +49,7 @@
 
 ### Verified
 
-- `pnpm check`: `97/97` اختبارًا ناجحًا.
+- `pnpm check`: `98/98` اختبارًا ناجحًا.
 - Ollama/llama.cpp mapping، malformed output، HTTP auth failure، model mismatch، timeout/cancellation، وloopback security: PASS.
 - Desktop IPC وperformance smoke وSQLite migration/JSON/diff/secret checks: PASS.
 
@@ -49,7 +68,7 @@
 
 ### Verified
 
-- `pnpm check`: `97/97` اختبارًا ناجحًا.
+- `pnpm check`: `98/98` اختبارًا ناجحًا.
 - Desktop IPC smoke وWorkCycle approval flow بعد تحديث fixture بخطة صالحة: PASS.
 - Planner/Critic bounded validation وfail-closed filesystem guard: PASS.
 
@@ -76,7 +95,7 @@
 
 ### Verified
 
-- `pnpm check`: `97/97` اختبارًا ناجحًا.
+- `pnpm check`: `98/98` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
 - approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.
