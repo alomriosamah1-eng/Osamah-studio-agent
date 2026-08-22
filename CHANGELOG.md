@@ -34,6 +34,7 @@
 
 - `pnpm check`: `195/195` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
 - desktop smoke تحقق من create/preview/explicit activate ورفض token-shaped payload، مع عدم إنشاء tool أو provider access أو approval ticket.
+- feature commit `d35084225c3444608653e87b9a46c76e11c28d06` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل لهذه التسليمة.
 
 ### Boundaries
 
