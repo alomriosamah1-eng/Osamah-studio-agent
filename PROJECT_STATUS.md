@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Typed Provider Configuration UI/IPC منفذة محليًا؛ full gate ناجح وقيد commit/push، ثم الخطوة التالية ربط adapters بمسار Planner/Critic |
+| حالة الشجرة | Typed Provider Configuration UI/IPC منفذة ومدفوعة ومتحقق منها عند `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`؛ الخطوة التالية ربط adapters بمسار Planner/Critic |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `98/98` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `98/98` اختبارًا؛ full gate وGitHub verification ناجحان في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -77,7 +77,7 @@
 | Planner/Critic | bounded plan generation وwarnings وunsafe target/byte mismatch/duplicate step rejection وWorkCycle no-mutation guard PASS؛ delivery `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`، local == `origin/main` |
 | Local Provider Adapters | Ollama/llama.cpp mapping وhealth وloopback security وHTTP errors وtimeout/cancellation وoptional composition registration PASS؛ delivery `c18b6befcaf82acc4679f9ed72899659d00d6a11`، local == `origin/main` |
 | Provider Policy/Doctor/Quota | bounded configuration وdisabled/blocked/healthy doctor وconcurrency/rate/circuit وGateway admission PASS؛ delivery `8be5293f29c8e2c520cd422a54226d9f7f31128a`، local == `origin/main` |
-| Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery pending commit |
+| Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
 
@@ -92,4 +92,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `8be5293f29c8e2c520cd422a54226d9f7f31128a`؛ Typed Provider Configuration UI/IPC قيد commit/push.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`؛ Typed Provider Configuration UI/IPC مدفوعة ومتحقق منها، local == `origin/main`.
