@@ -6,6 +6,7 @@ import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
 import { FixedClock, InMemoryEventBus, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
 import { createSqliteApplicationStorage, type SqliteApplicationStorage } from "./infrastructure/sqlite.js";
+import { FileProfileLock, resolveProfilePaths, type ProfileLock, type ProfilePaths } from "./infrastructure/profile-storage.js";
 import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
 import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
@@ -18,6 +19,13 @@ export type EmbeddedApplicationStorageOptions =
   | {
       readonly kind: "sqlite";
       readonly databasePath: string;
+      readonly migrationsPath: string;
+      readonly allowFallback?: boolean;
+    }
+  | {
+      readonly kind: "sqlite-profile";
+      readonly userDataDirectory: string;
+      readonly profileId?: string;
       readonly migrationsPath: string;
       readonly allowFallback?: boolean;
     };
@@ -50,21 +58,30 @@ const createPersistence = (options: EmbeddedApplicationOptions): {
   readonly sqlite?: SqliteApplicationStorage;
   readonly storageKind: "memory" | "sqlite";
   readonly storageFallbackReason?: "sqlite_initialization_failed";
+  readonly profilePaths?: ProfilePaths;
+  readonly profileLock?: ProfileLock;
 } => {
   const storage = options.storage ?? { kind: "memory" as const };
   if (storage.kind === "memory") return { repositories: new InMemoryRepositories(), events: new InMemoryEventBus(), storageKind: "memory" };
 
   const ids = new IncrementingIds();
+  const profilePaths = storage.kind === "sqlite-profile" ? resolveProfilePaths({ userDataDirectory: storage.userDataDirectory, profileId: storage.profileId }) : undefined;
+  const databasePath = storage.kind === "sqlite-profile" ? profilePaths!.databasePath : storage.databasePath;
+  const migrationsPath = storage.migrationsPath;
+  let profileLock: FileProfileLock | undefined;
   try {
-    const sqlite = createSqliteApplicationStorage({ databasePath: storage.databasePath, migrationsPath: storage.migrationsPath }, ids);
-    return { repositories: sqlite.repositories, events: sqlite.events, sqlite, storageKind: "sqlite" };
+    if (profilePaths) profileLock = FileProfileLock.acquire(profilePaths.profileDirectory, profilePaths.lockPath);
+    const sqlite = createSqliteApplicationStorage({ databasePath, migrationsPath }, ids);
+    return { repositories: sqlite.repositories, events: sqlite.events, sqlite, storageKind: "sqlite", profilePaths, profileLock };
   } catch (error) {
+    profileLock?.release();
     if (!storage.allowFallback) throw error;
     return {
       repositories: new InMemoryRepositories(),
       events: new InMemoryEventBus(),
       storageKind: "memory",
       storageFallbackReason: "sqlite_initialization_failed",
+      profilePaths,
     };
   }
 };
@@ -91,6 +108,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     if (closed) return;
     closed = true;
     persistence.sqlite?.database.close();
+    persistence.profileLock?.release();
   };
   return {
     ...foundation,
@@ -104,6 +122,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     sqlite: persistence.sqlite,
     storageKind: persistence.storageKind,
     storageFallbackReason: persistence.storageFallbackReason,
+    profilePaths: persistence.profilePaths,
     close,
   };
 };

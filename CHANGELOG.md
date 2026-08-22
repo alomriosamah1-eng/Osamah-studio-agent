@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Profile Path Policy وExclusive Lock
+
+### Added
+
+- `resolveProfilePaths` لمسارات profile قياسية deterministic تحت `userDataDirectory/profiles/<profileId>` مع database وlock وbackups paths.
+- `validateProfileId` لرفض traversal والمسافات ومعرّفات profile غير الآمنة، ورفض filesystem root كـuser-data root.
+- `FileProfileLock` بقفل حصري `wx` و`ProfileLockedError` typed وmetadata محدودة وrelease يتحقق من ownership token ويعمل idempotently.
+- `sqlite-profile` storage composition التي تربط profile paths وexclusive lock بدورة SQLite، وتطلق lock عند `close()` أو فشل initialization/fallback.
+- `docs/51-profile-path-policy.md` و`src/profile-storage.test.ts` واختبار composition lifecycle للقفل وإعادة الفتح.
+
+### Verified
+
+- `pnpm check`: `53/53` اختبارًا ناجحًا.
+- profile path tests وexclusive-lock/release lifecycle وcomposition lock lifecycle: PASS.
+- `pnpm typecheck`: PASS.
+
+### Boundaries
+
+- لا يوجد stale-lock cleanup تلقائي أو تشفير أو key management في هذه الشريحة؛ recovery الصريح أكثر أمانًا من حذف lock حي.
+- `sqlite` raw path يبقى مدعومًا للتوافق، بينما `sqlite-profile` هو المسار الذي يفرض policy والقفل. لا تُشغّل project scripts أو native toolchains تلقائيًا.
+
 ## [Unreleased] — Optional SQLite Composition
 
 ### Added
@@ -13,13 +34,13 @@
 
 ### Verified
 
-- `pnpm check`: `50/50` اختبارًا ناجحًا.
+- `pnpm check`: `53/53` اختبارًا ناجحًا.
 - `pnpm performance:smoke`: PASS مع `low_memory` وبدون تغيير preview budgets.
 - `pnpm desktop:smoke`: PASS، وSQLite migration validator وJSON validation وsecret scan PASS.
 
 ### Boundaries
 
-- SQLite opt-in حاليًا ولا يحفظ profile path تلقائيًا من OS app-data؛ production profile locking وencryption وbackup UX تبقى خطوات لاحقة.
+- SQLite opt-in حاليًا؛ `sqlite-profile` يفرض مسار profile وقفلًا حصريًا، بينما encryption وbackup UX المتكامل وkey management تبقى خطوات لاحقة.
 - لا يبدأ التطبيق SQLite أو workers أو local models تلقائيًا، ولا يتحول migration checksum failure إلى نجاح صامت.
 
 ## [Unreleased] — Production Root Picker

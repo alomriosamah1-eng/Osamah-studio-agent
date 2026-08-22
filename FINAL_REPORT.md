@@ -2,9 +2,10 @@
 
 ## الخلاصة
 
-تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite adapter وobservability وbackup/restore bounded**. المحاكي المدمج أصبح جزءًا من بيئة التطوير نفسها إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console. لم يُدّعَ اكتمال Desktop MVP أو Android Emulator أو iOS Simulator؛ هذه المسارات ما تزال adapters وخططًا لاحقة بحدود واضحة.
+تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite adapter وobservability وbackup/restore bounded**. أضيفت profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، مع إبقاء التطبيق lightweight وmemory default عند عدم طلب persistence.
+ المحاكي المدمج أصبح جزءًا من بيئة التطوير نفسها إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console. لم يُدّعَ اكتمال Desktop MVP أو Android Emulator أو iOS Simulator؛ هذه المسارات ما تزال adapters وخططًا لاحقة بحدود واضحة.
 
-أُغلقت شريحة SQLite محليًا خلف ports مستقلة: `node:sqlite` / `DatabaseSync`، migration runner بــchecksums، repositories وpersistent event bus، structured observability مع redaction، وbackup/restore بــmanifest وSHA-256 وmigration dry-run على profile منفصل. الدفع النهائي لهذه الشريحة يظل مشروطًا بالفحوص الأخيرة وتطابق local وremote SHA.
+أُغلقت شريحة SQLite محليًا خلف ports مستقلة: `node:sqlite` / `DatabaseSync`، migration runner بــchecksums، repositories وpersistent event bus، structured observability مع redaction، وbackup/restore بــmanifest وSHA-256 وmigration dry-run على profile منفصل. أضيف `sqlite-profile` بمسارات `studio.sqlite` و`.profile.lock` و`backups/`، ورفض profile IDs غير الآمنة، وقفل حصري يطلق عند close أو initialization failure. الدفع النهائي لهذه الشريحة يظل مشروطًا بالفحوص الأخيرة وتطابق local وremote SHA.
 
 المستودع: [alomriosamah1-eng/Osamah-studio-agent](https://github.com/alomriosamah1-eng/Osamah-studio-agent).
 
@@ -29,6 +30,7 @@
 | SQLite adapter وmigration | `node:sqlite` / `DatabaseSync`، migrations 001/002، repositories، event bus، checksums، transactions، validator |
 | Observability | `SqliteObservabilitySink` و`InMemoryObservabilitySink` مع structured logs وrecursive redaction وbounded listing |
 | Backup وRestore | `LocalSqliteBackupProvider` مع atomic `VACUUM INTO` snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore profile |
+| Profile Storage | `resolveProfilePaths` و`validateProfileId` و`FileProfileLock` و`sqlite-profile` composition مع release idempotent |
 | CI | GitHub Actions لتثبيت lockfile وتشغيل typecheck/test وJSON validation وdiff hygiene |
 | Knowledge system | 16 reference maps، `PROJECT_STATE.md`، `PROJECT_STATUS.md`، `AI_CONTINUATION.md`، و`docs/WORK_LOG.md` |
 | Review | مراجعات مستقلة للمعمارية والأمن والأداء والتراخيص وUX والموبايل والـ AI والوثائق وGitHub |
@@ -41,13 +43,14 @@
 
 ## الاختبارات والفحوص
 
-نجحت جميع الاختبارات الحالية. يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، preview orientation/screenshot contract، bundle/runtime، blocked imports، filesystem scanner، ProjectPreviewService، Presentation renderer semantic mapping/escaping/depth guard، وIPC project open وpath traversal guard.
+نجحت جميع الاختبارات الحالية، بما فيها اختبارات deterministic لمسارات profile والقفل الحصري وإعادة فتح profile بعد `close()`.
+ يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، preview orientation/screenshot contract، bundle/runtime، blocked imports، filesystem scanner، ProjectPreviewService، Presentation renderer semantic mapping/escaping/depth guard، وIPC project open وpath traversal guard.
 
 | الفحص | النتيجة |
 |---|---|
 | `pnpm install --frozen-lockfile` | ناجح |
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `31/31` ناجحة |
+| `pnpm test` | `53/53` ناجحة |
 | `pnpm check` | ناجح |
 | SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، migration count `2`، schema `002`، 10 tables، 16 index entries |
 | SQLite restart/backup contracts | repositories وevent bus وobservability وtransactions وchecksum mismatch وbackup/restore وtampering ناجحة |
@@ -76,8 +79,10 @@
 | Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
 | Production Root Picker | main-process `dialog.showOpenDialog` بخاصية `openDirectory`، typed preload، trusted sender، canonical path validation، وroot-picker desktop smoke؛ delivery `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
 | Optional SQLite Composition | `createEmbeddedApplication({ storage })` مع memory default، SQLite opt-in، restart persistence، explicit fallback، idempotent close، وUUID event IDs؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
+| Profile Path Policy + Exclusive Lock | `sqlite-profile`، مسارات profile قياسية، unsafe-ID rejection، قفل `wx` حصري، ownership-token release، واختبارات composition lifecycle؛ delivery pending full gate |
 
-تم التحقق من `pnpm check` بـ50/50، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
+تم التحقق من `pnpm check` بـ53/53، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback وprofile lock lifecycle و`git diff --check` وJSON validation وsecret scan.
+ شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
 
@@ -85,11 +90,13 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. SQLite adapter مربوط اختياريًا بـ`createEmbeddedApplication` مع memory default وrestart persistence وexplicit fallback، لكن profile path policy وprofile locking والتشفير لم تُحسم بعد. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. SQLite adapter مربوط اختياريًا بـ`createEmbeddedApplication` مع memory default وrestart persistence وexplicit fallback، ومسار `sqlite-profile` يطبق profile path policy وprofile locking الحصري. لا يوجد بعد تشفير أو key management أو backup UX متكامل.
+ أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي profile path policy وbackup UX وprofile locking وencryption/key management عند الحاجة، ثم توسيع bounded Agent Runtime بعقود provider/approval. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي توسيع bounded Agent Runtime بعقود provider/approval وaudit trail fail-closed، ثم Provider Gateway. يأتي backup UX وencryption/key management عند الحاجة، مع إبقاء استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة.
+ لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
 
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.

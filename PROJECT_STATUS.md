@@ -2,7 +2,7 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles.
 
 | البند | الحالة |
 |---|---|
@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | تغييرات الحالة التوثيقية الأخيرة قيد الدفع بعد التحقق البرمجي |
+| حالة الشجرة | profile storage code والاختبارات والتوثيق المحلي قيد بوابة الإغلاق والدفع |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `50/50` اختبارًا، و`pnpm performance:smoke` وroot-picker desktop smoke ناجحان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `53/53` اختبارًا؛ full gate قيد التنفيذ في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -38,6 +38,8 @@
 
 أضيف optional SQLite composition wiring: `createEmbeddedApplication({ storage })` يبقي memory default، ويفتح SQLite فقط عند opt-in، ويدعم restart persistence وfallback صريحًا و`close()` idempotent. عولجت event ID collision المحتملة باستخدام UUID وإغلاق الاتصال عند initialization failure.
 
+أضيفت profile path policy وexclusive lock: `sqlite-profile` يحسب مسارات `studio.sqlite` و`.profile.lock` و`backups/` تحت profile آمن، ويرفض IDs غير الآمنة والجذر، ويمنع فتح profile نفسه مرتين، مع release idempotent عند close أو initialization failure.
+
 أضيف `LocalSqliteBackupProvider` الذي ينشئ snapshot atomic عبر `VACUUM INTO`، ويكتب manifest مع SHA-256، ويتحقق من schema وforeign keys وmigration dry-run على نسخة مؤقتة، ويستعيد إلى profile منفصل دون overwrite للقاعدة الحية.
 
 ## المعمارية الحالية
@@ -51,7 +53,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `50/50` ناجحة |
+| `pnpm test` | `53/53` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
@@ -62,16 +64,17 @@
 | secret scan | `SECRET_SCAN=PASS` |
 | desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
+| profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery pending full gate |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وProvider Gateway وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy موجودان كـapplication slice، لكن agent/provider integrations الكاملة ما زالت لاحقة. SQLite مربوط الآن اختياريًا داخل `createEmbeddedApplication`، بينما profile path policy وprofile locking وbackup UX والتشفير ما زالت لاحقة.
+ما زال FTS5 وobject store وcontent hashing وProvider Gateway وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy موجودان كـapplication slice، لكن agent/provider integrations الكاملة ما زالت لاحقة. SQLite مربوط اختياريًا داخل `createEmbeddedApplication`، ومسار `sqlite-profile` يفرض profile path policy وexclusive locking؛ backup UX والتشفير ما زالا لاحقين.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
 ## القرار والخطوة التالية
 
-بعد إغلاق SQLite composition wiring، تبدأ profile path policy وprofile locking وbackup UX والتشفير عند الحاجة. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
+بعد إغلاق profile path policy وexclusive lock، تُوسّع BoundedAgentRuntime بعقود provider/approval ثم Provider Gateway. يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain وفق الخطة؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

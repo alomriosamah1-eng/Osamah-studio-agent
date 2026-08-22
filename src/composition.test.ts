@@ -43,6 +43,28 @@ test("composition opts into SQLite and preserves workspace data across restart",
   }
 });
 
+test("composition uses a standard profile path and releases its exclusive lock", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-composition-profile-"));
+  const storage = { kind: "sqlite-profile" as const, userDataDirectory: root, profileId: "workspace", migrationsPath };
+  try {
+    const first = createEmbeddedApplication({ storage });
+    assert.equal(first.storageKind, "sqlite");
+    assert.equal(first.profilePaths?.databasePath, join(root, "profiles", "workspace", "studio.sqlite"));
+    assert.throws(() => createEmbeddedApplication({ storage }), /already locked/);
+    first.close();
+
+    const second = createEmbeddedApplication({ storage });
+    try {
+      assert.equal(second.storageKind, "sqlite");
+      assert.ok(second.profilePaths);
+    } finally {
+      second.close();
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("composition falls back to memory only when explicitly allowed", async () => {
   const root = await mkdtemp(join(tmpdir(), "osamah-composition-fallback-"));
   const databasePath = join(root, "not-a-database");

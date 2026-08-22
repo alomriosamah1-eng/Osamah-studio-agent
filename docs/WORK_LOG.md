@@ -33,3 +33,4 @@
 لا يُغلق السطر حتى يُكتب commit hash ويُتحقق من remote hash. عند فشل test أو push، يضاف سطر جديد يشرح الفشل والإصلاح، ولا يُستبدل التاريخ بصمت.
 
 إعداد: Manus AI.
+| 2026-08-22 | Profile Storage | إضافة `resolveProfilePaths` و`validateProfileId` و`FileProfileLock` وربط `sqlite-profile` بـcomposition | تثبيت ownership حصري ومسارات profile آمنة ومنع فتح SQLite نفسه مرتين، مع الحفاظ على memory default وخفة Ubuntu RAM 8GB | `src/infrastructure/profile-storage.ts`, `src/profile-storage.test.ts`, `src/composition.ts`, `src/composition.test.ts`, `docs/51-profile-path-policy.md`, `CHANGELOG.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `AI_CONTINUATION.md`, `FINAL_REPORT.md` | `pnpm check`: 53/53؛ profile paths وunsafe IDs وexclusive lock وidempotent release وcomposition reopen PASS؛ full gate pending | pending | pending | next: provider/approval contracts ثم Provider Gateway |
