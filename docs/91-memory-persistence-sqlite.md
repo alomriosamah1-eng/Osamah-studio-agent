@@ -100,7 +100,7 @@ SQLite profile: memory_entries + memory_candidates
 
 ## ما يلي هذه الشريحة
 
-الخطوة التالية في Second Brain هي تقييم **local retrieval محدود**، مثل FTS أو فهرسة نصية اختيارية، بعد تحليل أثرها على Ubuntu 8GB وحدود الخصوصية. لا يبدأ هذا التقييم embeddings أو vector database أو provider sharing. ويظل Virtual Human / AI Avatar موثقًا ومؤجلًا حتى مرحلته في الخطة الرئيسية؛ persistence الحالية لا تفتح voice أو avatar runtime.
+أُضيفت بعد هذه الشريحة شريحة **local lexical retrieval bounded** في feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`: تطبيع عربي/إنجليزي وترتيب deterministic داخل `searchLocal`، دون FTS أو semantic retrieval. أظهر capability check أن FTS5 غير متوفر في `node:sqlite` الحالي (`no such module: fts5`)، لذلك يبقى FTS/فهرس نصي دائم خيارًا مستقلًا مشروطًا بمراجعة runtime وbuild/legal/security. لا تبدأ embeddings أو vector database أو provider sharing. ويظل Virtual Human / AI Avatar موثقًا ومؤجلًا حتى مرحلته في الخطة الرئيسية؛ persistence الحالية لا تفتح voice أو avatar runtime.
 
 إعداد: Manus AI. تاريخ التحديث: 2026-08-22.
 

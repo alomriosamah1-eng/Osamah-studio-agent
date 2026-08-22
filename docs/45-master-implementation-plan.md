@@ -10,9 +10,9 @@
 
 ## 2. الوضع الحالي ونقطة الانطلاق
 
-حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، BoundedAgentRuntime slice، production root picker، optional SQLite composition wiring، Agent WorkCycle وHuman Gate، شرائح Development Environment وProduction Studio bounded، Second Brain Memory Capture/Review، Agent Definition Contract وBounded Agent Catalog، ReportDocument bounded، وArabic-first Application Settings وControl Center، وExternal Accounts metadata-only، وStorage Settings read-only، وSelf-development Candidate Review وRule Overlay bounded، وMemory Consolidation bounded من مصادر مؤكدة، ثم SQLite persistence اختيارية ومحدودة لـ`MemoryEntry` و`MemoryCandidate`. آخر حالة موثقة هي الإصدار `0.6.0` مع **204/204 اختبارًا ناجحًا** وrestart persistence وexplicit fallback؛ hierarchical orchestrator وOAuth/MCP/GitHub/Google integrations وstorage mutation flows وFTS/embeddings/semantic retrieval وsemantic self-development control plane ما زالت غير منفذة.
+حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، BoundedAgentRuntime slice، production root picker، optional SQLite composition wiring، Agent WorkCycle وHuman Gate، شرائح Development Environment وProduction Studio bounded، Second Brain Memory Capture/Review، Agent Definition Contract وBounded Agent Catalog، ReportDocument bounded، وArabic-first Application Settings وControl Center، وExternal Accounts metadata-only، وStorage Settings read-only، وSelf-development Candidate Review وRule Overlay bounded، وMemory Consolidation bounded من مصادر مؤكدة، ثم SQLite persistence اختيارية ومحدودة لـ`MemoryEntry` و`MemoryCandidate`. آخر حالة موثقة هي الإصدار `0.6.0` مع **205/205 اختبارًا ناجحًا** وrestart persistence وexplicit fallback وlocal lexical retrieval عربي/إنجليزي؛ hierarchical orchestrator وOAuth/MCP/GitHub/Google integrations وstorage mutation flows وFTS5 وembeddings/semantic retrieval وsemantic self-development control plane ما زالت غير منفذة.
 
-لذلك لا تعيد الخطة بناء الأساس من الصفر. أُغلقت شريحة **Arabic-first Application Settings وControl Center** عند feature `d9a746c7deecb38488a5f632599be16c48c8e8cb`، ثم **External Accounts metadata-only** عند feature `1b7d9df2d997776fe5453c7d8ea7c4e4c8fc3a4b`، ثم **Storage Settings read-only** عند feature `fa6486a3a14784d03dd00a868fb5e98c4ff4d2eb`. أُغلقت الآن **Self-development Candidate Review وRule Overlay bounded** بعقد `self-development.*` وخدمة in-memory، ثم **Memory Consolidation bounded** بعقد `memory-candidate.*` من مصادر `confirmed` فقط، دون تنفيذ النصوص أو تعديل core policy أو رفع الصلاحيات أو provider access. أُغلقت persistence الاختيارية عند feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad` عبر migration 005؛ وتنتقل الخطوة التالية إلى تقييم local retrieval محدود، مثل FTS، وفق ترتيب الخطة وقرار المالك، مع إبقاء embeddings/vector services وexternal providers خلف consent وpolicy. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
+لذلك لا تعيد الخطة بناء الأساس من الصفر. أُغلقت شريحة **Arabic-first Application Settings وControl Center** عند feature `d9a746c7deecb38488a5f632599be16c48c8e8cb`، ثم **External Accounts metadata-only** عند feature `1b7d9df2d997776fe5453c7d8ea7c4e4c8fc3a4b`، ثم **Storage Settings read-only** عند feature `fa6486a3a14784d03dd00a868fb5e98c4ff4d2eb`. أُغلقت الآن **Self-development Candidate Review وRule Overlay bounded** بعقد `self-development.*` وخدمة in-memory، ثم **Memory Consolidation bounded** بعقد `memory-candidate.*` من مصادر `confirmed` فقط، دون تنفيذ النصوص أو تعديل core policy أو رفع الصلاحيات أو provider access. أُغلقت persistence الاختيارية عند feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad` عبر migration 005، ثم أُغلقت شريحة local lexical retrieval عند feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`. أثبت runtime الحالي أن FTS5 غير متوفر (`no such module: fts5`)، لذلك تنتقل الخطوة التالية إلى relational links وscope/visibility filtering أو FTS adapter اختياري بعد مراجعة مستقلة، مع إبقاء embeddings/vector services وexternal providers خلف consent وpolicy. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
 
 ## 3. الرؤية الوظيفية للأقسام الثلاثة
 
@@ -250,7 +250,7 @@ src/
 
 1. تثبيت Inbox للملاحظات والملفات والمهام والقرارات والمصادر فوق Memory Capture وSQLite persistence الاختيارية الحالية.
 2. بناء relational links بين note وproject وtask وfile وsession وdecision بدل فرض graph database في MVP، مع إبقاء `MemoryEntry` و`MemoryCandidate` مصدرَي بيانات محليين bounded.
-3. تشغيل FTS5 للعربية والإنجليزية مع stemming/normalization محسوبين واحتفاظ بالنص الأصلي.
+3. تشغيل local lexical retrieval للعربية والإنجليزية مع normalization محسوب وترتيب deterministic واحتفاظ بالنص الأصلي؛ يبقى FTS5 مشروطًا بruntime يدعمه.
 4. إضافة scopes وvisibility وretention و`searchable_by_agent` و`sendable_to_provider`.
 5. تنفيذ note lifecycle: capture → parse/classify → link → index → retrieve → human review → consolidate.
 6. منع تسريب scope إلى agent أو provider، وإضافة delete propagation للفهارس والembeddings والمخازن المؤقتة.
@@ -260,7 +260,7 @@ src/
 
 ### المرحلة 10 — Second Brain: Memory وEmbeddings وKnowledge Graph
 
-**حالة البدء:** Memory candidates وconsolidation وSQLite persistence الاختيارية أصبحت منفذة ومراجعة؛ embeddings وvector retrieval وknowledge graph لم تبدأ بعد.
+**حالة البدء:** Memory candidates وconsolidation وSQLite persistence الاختيارية وlocal lexical retrieval أصبحت منفذة ومراجعة؛ FTS5 وembeddings وvector retrieval وknowledge graph لم تبدأ بعد.
 
 **الهدف:** إضافة retrieval دلالي تدريجيًا دون تحويل vector index إلى مصدر حقيقة.
 
@@ -555,13 +555,14 @@ Trigger
 | 8 | `feat: add slide and media pipeline` | slide schema/render/media workers |
 | 9 | `feat: add second brain search and links` | notes/FTS/scopes |
 | 10 | `feat: persist bounded second-brain memory` | SQLite migration 005 وrestart hydration وredaction وfail-closed validation |
-| 11 | `feat: add optional semantic memory` | embeddings/providers/benchmarks |
-| 12 | `feat: add optional voice pipeline` | VAD/STT/TTS/permissions |
-| 13 | `feat: add bounded local automation` | workflows/scheduler/recovery |
-| 14 | `feat: add external integration adapters` | GitHub/MCP/browser/OpenTo contract |
-| 15 | `perf: add resource governance and benchmarks` | caps/regressions/recovery |
-| 16 | `security: harden release boundary` | Electron/CI/SBOM/licenses |
-| 17 | `release: package beta artifacts` | installers/migrations/smoke tests |
+| 11 | `feat: add bounded local lexical retrieval` | Arabic/English normalization وall-token matching وdeterministic ranking، مع تأجيل FTS5 عند غياب module |
+| 12 | `feat: add optional semantic memory` | embeddings/providers/benchmarks |
+| 13 | `feat: add optional voice pipeline` | VAD/STT/permissions |
+| 14 | `feat: add bounded local automation` | workflows/scheduler/recovery |
+| 15 | `feat: add external integration adapters` | GitHub/MCP/browser/OpenTo contract |
+| 16 | `perf: add resource governance and benchmarks` | caps/regressions/recovery |
+| 17 | `security: harden release boundary` | Electron/CI/SBOM/licenses |
+| 18 | `release: package beta artifacts` | installers/migrations/smoke tests |
 
 بعد كل commit: `pnpm check`، migration validation، `git diff --check`، secret scan، license/security checks المناسبة، ثم `git push` ومقارنة `LOCAL_SHA` مع GitHub `REMOTE_SHA`. لا يعلن عن نجاح الدفع دون تطابق hash ونظافة الشجرة.
 

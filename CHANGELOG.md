@@ -23,6 +23,27 @@
 - `confirmed` و`consolidated` قرارات محلية صريحة وليست تحققًا خارجيًا، ولا تغيّر `providerAccess=never` أو provenance أو المصدر الأصلي، ولا تنشئ approval ticket أو network/provider call.
 - backup الحالي يلتقط SQLite ضمن حدوده المحلية، لكن تشفير backup وkey management وrestore إلى profile حي وdelete propagation وretention enforcement الدائم شِرائح مستقلة لاحقة.
 
+## [Unreleased] — Second Brain Local Lexical Retrieval bounded
+
+### Added
+
+- تحسين `brain.memory.searchLocal` عبر normalization عربي/إنجليزي، all-token matching، وترتيب deterministic يفضل title ثم tags ثم content.
+- استمرار البحث المحلي للـMemoryEntry المستعادة من SQLite بعد restart عبر typed IPC، مع بقاء النص الأصلي وstate وvisibility وproviderAccess وprovenance دون تغيير.
+- اختبار capability مستقل يثبت أن FTS5 غير متوفر في `node:sqlite` الحالي برسالة `no such module: fts5`؛ لذلك لم تُضف migration أو native extension أو SQLite driver جديد.
+- `docs/92-memory-local-retrieval-bounded.md` و`research/memory-retrieval-fts-design-2026-08-22.md` لتوثيق التصميم والحدود والبدائل.
+
+### Verified
+
+- `pnpm check`: `205/205` اختبارًا ناجحًا، بما في ذلك normalization العربي، ترتيب النتائج، multi-token matching، واستمرار البحث بعد restart.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ low-memory profile دون model/provider loading عند startup.
+- SQLite validator: `MIGRATION_COUNT=5` و`SCHEMA_VERSION=005` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `57376c3363b7d3b0670f7395bc61ea5e2613738b` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- هذه الشريحة **lexical bounded** وليست FTS أو semantic retrieval؛ لا stemming أو embeddings أو vector services أو provider sharing أو automatic consolidation.
+- لا يرسل البحث query أو content إلى network/provider، ولا يغير scope أو privacy أو Human Gate. FTS5 يبقى مشروطًا بتوفر runtime مدعوم ومراجعة build/legal/security وقياس Ubuntu 8GB.
+
 
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 

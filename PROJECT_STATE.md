@@ -5,7 +5,7 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | SQLite memory persistence bounded مكتملة؛ المسار التالي local retrieval/FTS review؛ Virtual Human study موثقة فقط وdeferred |
+| المرحلة | SQLite memory persistence وlocal lexical retrieval bounded مكتملتان؛ المسار التالي relational links وscope/visibility review؛ Virtual Human study موثقة فقط وdeferred |
 | الحالة | Memory Consolidation bounded منفذة في `docs/90-memory-consolidation-bounded.md`؛ feature `f30c257faafb1159f7c34344504312b3eef16119` دُفع وتحقق local==remote؛ docs-close توثيقي مستقل قيد الإعداد. Self-development Candidate Review منفذة في `docs/89-self-development-candidate-review.md`؛ feature `d35084225c3444608653e87b9a46c76e11c28d06` وdocs-close مستقل متحققان. External Accounts metadata-only منفذة في `docs/87-external-accounts-metadata-only.md` وStorage Settings في `docs/88-storage-settings-read-only.md`. Virtual Human / AI Avatar docs `84–86` وresearch metadata مكتملة كـDOCUMENTED ONLY؛ commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` دُفع وتحقق local==remote؛ لا Avatar implementation أو packages/models/assets. Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. Audit documentation feature/docs-close متحققان عند `7ede715dfbd8f9e4d030848573b11e94790ba580` و`f0c3d86c329f45335cd22cc1465ba673435fea87`. Agent Catalog feature/docs-close متحققان عند `56eebb97267c1e5979ea2e53c9f3fa9ec988d192` و`bc6c9ea3bf430e9586307390e0843fa5fe7c0b5d`. ReportDocument feature/docs-close متحققان عند `24144c4f2495354b5d2d8a5a880192dc251173ff` و`56db328b51b42b64ea59830979df3e262d126237`. Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` دُفع وتحقق local==remote؛ docs-close توثيقي مستقل لهذه التسليمة |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
@@ -15,7 +15,7 @@
 | آخر commit Provider وApproval | `c833f0e9c37cfaa1800aa9fcc300881984ab6878` (`feat: add provider gateway and approval contracts`) |
 | آخر commit Agent Work Cycle | `fb5d93ec87939125373dd8c450d1195af50fc911` (`feat: add bounded agent work cycle`) |
 | آخر commit Typed WorkCycle IPC | `786ea0b888634742936f546431c4d1e7251495e0` (`feat: expose bounded work cycle over typed ipc`) |
-| آخر فحص | full gate بعد SQLite memory persistence ناجح؛ `pnpm check` بـ`204/204`، build وdesktop/performance smoke وSQLite/JSON/Node syntax/diff/secret validation PASS؛ log في `research/memory-persistence-full-gate-output-2026-08-22.txt` |
+| آخر فحص | full gate بعد local retrieval ناجح؛ `pnpm check` بـ`205/205`، build وdesktop/performance smoke وSQLite/JSON/Node syntax/diff/secret validation PASS؛ logs في `research/memory-retrieval-full-gate-output-2026-08-22.txt` و`research/memory-persistence-docs-close-gate-output-2026-08-22.txt` |
 | schema | migrations `001` ثم `002` ثم `003` ثم `004` ثم `005_memory_persistence.sql`، schema version `005`؛ 14 جدولًا و30 فهرسًا |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | Git Read-only feature `6a0db8a180298030fe77ad53f8fc54667de4258f` ثم docs-close `0db944f48fed37ae54c3ec8f5fca400c0bbdd7d4`؛ verified |
@@ -29,6 +29,8 @@
 | حالة push لشريحة Persistent Audit وHuman Gate | `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة Approval hydration | `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 | حالة push لشريحة External Accounts | `1b7d9df2d997776fe5453c7d8ea7c4e4c8fc3a4b`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main`؛ docs-close مستقل قيد الإعداد |
+| حالة push لشريحة SQLite memory persistence | feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad` وdocs-close `939a7e07078a0a14d743f3e2e5d23435d2906150`؛ local == remote وGitHub API SHA match |
+| حالة push لشريحة local lexical retrieval | feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`؛ local == remote وGitHub API SHA match؛ docs-close مستقل قيد الإعداد |
 
 ## المكتمل
 
@@ -73,10 +75,10 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `204/204` ناجحة |
+| `pnpm test` | `205/205` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 14ms، heap delta حوالي 0.1MB، RSS delta حوالي 3.4MB، تحت V8 heap 768MB |
-| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` وtask.preview وSource Registry وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy وMemory Capture/Review no-mutation PASS |
+| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` وtask.preview وSource Registry وContent Plan وAsset Catalog/Creative Brief وArtifact Assembly وRender Policy وMemory Capture/Review وlocal retrieval no-mutation PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -100,7 +102,8 @@
 | Production Studio: Render Job Policy وValidation Preview | `RenderPolicyPort` و`InMemoryRenderPolicy` وlow-memory budget/format/destination guards وtyped IPC وWorkspace Render Readiness panel وblocked/no-execution/no-mutation؛ feature `8dfd98f2a32751dca7b36d70b60eddb2c00345b3`، docs-close مستقل |
 | Second Brain: Memory Capture وKnowledge Entry Review | `MemoryCapturePort` و`InMemoryMemoryCapture` وredaction/source provenance/local search وtyped IPC وWorkspace capture panel وno-provider/no-network/no-mutation؛ feature `39bd89c7f4242abab76fd624045b493b72e48088`، docs-close مستقل |
 | Second Brain: Memory Review وExplicit Confirmation | `MemoryReviewPort` وconfirm/archive transitions وexact-key validators وtyped IPC وWorkspace review queue وno-provider/no-approval/no-mutation؛ feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، docs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` |
-| Second Brain: SQLite Memory Persistence bounded | migration 005 وrepositories اختيارية لـ`MemoryEntry` و`MemoryCandidate`، restart hydration، redaction، fail-closed JSON/source validation، دون FTS أو embeddings أو vector/provider sharing؛ feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`، docs-close قيد الإعداد |
+| Second Brain: SQLite Memory Persistence bounded | migration 005 وrepositories اختيارية لـ`MemoryEntry` و`MemoryCandidate`، restart hydration، redaction، fail-closed JSON/source validation، دون FTS أو embeddings أو vector/provider sharing؛ feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`، docs-close `939a7e07078a0a14d743f3e2e5d23435d2906150` |
+| Second Brain: Local Lexical Retrieval bounded | تطبيع عربي/إنجليزي، all-token matching، title/tag/content deterministic ranking، وبحث entry المستعادة بعد restart؛ FTS5 capability check فشل مغلقًا في runtime الحالي، دون semantic/vector/provider calls؛ feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`، docs-close مستقل قيد الإعداد |
 | Comprehensive Project Audit وArchitecture Gaps | inventory فعلي وcoverage matrix لـ46 Agent ودورة lifecycle وتدقيق Port Forwarding/Playwright/OAuth/Google/MCP/dependencies/docs وقرارات مطلوبة؛ docs 76–79 وresearch source log، دون external connector implementation |
 | approval hydration | schema 004 وApprovalStore وSQLite round-trip وpending hydration وduplicate prevention وdecision persistence PASS؛ delivery `fd248891cc5cd68818cc5fa13319bc2a133a2565`، local == `origin/main` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `5`، schema `005`، 14 جدولًا، 30 فهرسًا |
@@ -111,7 +114,7 @@
 
 ## الحدود الحالية
 
-أصبح SQLite مربوطًا اختياريًا بـ`createEmbeddedApplication` مع profile path policy وقفل حصري عند استخدام `sqlite-profile`. أضيف Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وlocal Ollama/llama.cpp adapters وprovider policy/doctor/quota وtyped provider configuration UI/IPC وSQLite memory persistence bounded كـapplication/desktop slices؛ لم يُنفذ بعد FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. Memory persistence لا تشمل embeddings أو vector services أو provider sharing أو automatic consolidation.
+أصبح SQLite مربوطًا اختياريًا بـ`createEmbeddedApplication` مع profile path policy وقفل حصري عند استخدام `sqlite-profile`. أضيف Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وlocal Ollama/llama.cpp adapters وprovider policy/doctor/quota وtyped provider configuration UI/IPC وSQLite memory persistence وlocal lexical retrieval bounded كـapplication/desktop slices؛ لم يُنفذ بعد FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. Memory persistence وlexical retrieval لا تشمل embeddings أو vector services أو provider sharing أو automatic consolidation.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
@@ -119,9 +122,9 @@
 
 ## الخطوة التالية الدقيقة
 
-دراسة Virtual Human داخل Second Brain أُغلقت توثيقيًا فقط في docs `84–86`، مع roadmap 0–11 وLicense Matrix وstate/event design وprivacy/performance budget. لا يبدأ تنفيذها أو تثبيت حزم/نماذج أو تغيير Electron/TypeScript/typed IPC إلا بعد قرار مالك منفصل. بعد إغلاق SQLite memory persistence تبدأ الشريحة التقنية التالية **تقييم local retrieval محدود/FTS**؛ تبقى embeddings/vector services وOAuth/MCP/Playwright/tunnels خلف gates مستقلة.
+دراسة Virtual Human داخل Second Brain أُغلقت توثيقيًا فقط في docs `84–86`، مع roadmap 0–11 وLicense Matrix وstate/event design وprivacy/performance budget. لا يبدأ تنفيذها أو تثبيت حزم/نماذج أو تغيير Electron/TypeScript/typed IPC إلا بعد قرار مالك منفصل. أُغلقت local lexical retrieval في feature `57376c3363b7d3b0670f7395bc61ea5e2613738b`، وأثبت runtime أن FTS5 غير متوفر؛ الخطوة التقنية التالية **relational links وscope/visibility filtering** أو FTS adapter اختياري بعد مراجعة مستقلة. تبقى embeddings/vector services وOAuth/MCP/Playwright/tunnels خلف gates مستقلة.
  يأتي backup UX وencryption/key management عند الحاجة، ويظل استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة؛ لا يبدأ Android/iOS native قبل doctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Avatar study docs `84–86` مكتملة توثيقيًا فقط وdeferred، ولا Avatar implementation. Memory Review feature/docs-close `4f1709cd927b77627c4532ec396f572f3bbedb2c`/`04e49b1590fe7df529636e8c721f5b57b86d439f`، وSQLite memory persistence feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد. Audit documentation feature/docs-close `7ede715dfbd8f9e4d030848573b11e94790ba580`/`f0c3d86c329f45335cd22cc1465ba673435fea87`، وAgent Catalog feature/docs-close `56eebb97267c1e5979ea2e53c9f3fa9ec988d192`/`bc6c9ea3bf430e9586307390e0843fa5fe7c0b5d`، وReportDocument feature/docs-close `24144c4f2495354b5d2d8a5a880192dc251173ff`/`56db328b51b42b64ea59830979df3e262d126237` متحققون؛ Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` متحقق local==remote.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Avatar study docs `84–86` مكتملة توثيقيًا فقط وdeferred، ولا Avatar implementation. Memory Review feature/docs-close `4f1709cd927b77627c4532ec396f572f3bbedb2c`/`04e49b1590fe7df529636e8c721f5b57b86d439f`، وSQLite memory persistence feature/docs-close `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`/`939a7e07078a0a14d743f3e2e5d23435d2906150` متحققان local==remote. Local lexical retrieval feature `57376c3363b7d3b0670f7395bc61ea5e2613738b` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد. Audit documentation feature/docs-close `7ede715dfbd8f9e4d030848573b11e94790ba580`/`f0c3d86c329f45335cd22cc1465ba673435fea87`، وAgent Catalog feature/docs-close `56eebb97267c1e5979ea2e53c9f3fa9ec988d192`/`bc6c9ea3bf430e9586307390e0843fa5fe7c0b5d`، وReportDocument feature/docs-close `24144c4f2495354b5d2d8a5a880192dc251173ff`/`56db328b51b42b64ea59830979df3e262d126237` متحققون؛ Settings feature `d9a746c7deecb38488a5f632599be16c48c8e8cb` متحقق local==remote.

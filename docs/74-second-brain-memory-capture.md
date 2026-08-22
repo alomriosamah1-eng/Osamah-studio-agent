@@ -48,7 +48,7 @@ export interface MemoryCapturePort {
 }
 ```
 
-الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محدود في الذاكرة، case-insensitive، ولا يستدعي provider أو vector database؛ ولا تمثل هذه الإضافة FTS أو semantic retrieval.
+الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محلي bounded في الذاكرة؛ يطبع العربية والإنجليزية، يشترط تطابق جميع كلمات الاستعلام، ويرتب title/tag/content ترتيبًا deterministic. لا يستدعي provider أو vector database، ولا تمثل هذه الإضافة FTS أو semantic retrieval. التفاصيل في `docs/92-memory-local-retrieval-bounded.md`.
 
 ## Provenance ودرجة اليقين
 
