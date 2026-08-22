@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   DESKTOP_CONTENT_SECURITY_POLICY,
+  APPROVAL_EVENTS_CHANNEL,
   PROJECT_ROOT_PICKER_CHANNEL,
   isAllowedWorkspaceUrl,
   isTrustedIpcSender,
@@ -18,6 +19,7 @@ test("desktop security policy allows only same file workspace URL", () => {
   assert.match(DESKTOP_CONTENT_SECURITY_POLICY, /script-src 'self'/);
   assert.doesNotMatch(DESKTOP_CONTENT_SECURITY_POLICY, /script-src[^;]*unsafe-inline/);
   assert.equal(PROJECT_ROOT_PICKER_CHANNEL, "osamah:choose-project-root");
+  assert.equal(APPROVAL_EVENTS_CHANNEL, "osamah:approval-events");
 });
 
 test("desktop IPC trusts only the expected renderer sender and URL", () => {

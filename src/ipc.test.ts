@@ -13,6 +13,7 @@ import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
 import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
 import { buildProjectPreviewBundle } from "./mobile/preview-runtime.js";
 import type { PreviewSession } from "./domain/entities.js";
+import { isIpcEvent } from "./ipc/contracts.js";
 import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from "./ipc/contracts.js";
 import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
@@ -169,6 +170,20 @@ test("typed IPC can cancel a waiting work cycle before approval", async () => {
     app.close();
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("typed approval events accept safe ticket payloads and reject malformed payloads", () => {
+  const ticket = {
+    approvalId: "approval-event",
+    correlationId: "correlation-event",
+    action: { actionId: "action-event", sessionId: "session-event", kind: "filesystem.write" as const, risk: "high" as const, scope: "src/app.ts", idempotencyKey: "idem-event" },
+    status: "requested" as const,
+    createdAt: "2026-08-22T10:10:00.000Z",
+  };
+  assert.equal(isIpcEvent({ type: "approval.changed", ticket }), true);
+  assert.equal(isIpcEvent({ type: "approval.changed", ticket: { ...ticket, action: { ...ticket.action, scope: "" } } }), false);
+  assert.equal(isIpcEvent({ type: "approval.changed", ticket: { ...ticket, status: "expired" } }), false);
+  assert.equal(isIpcEvent({ type: "approval.changed", ticket: { ...ticket, action: { ...ticket.action, kind: "terminal.unknown" } } }), false);
 });
 
 test("typed IPC rejects malformed, unknown, and duplicate requests", async () => {

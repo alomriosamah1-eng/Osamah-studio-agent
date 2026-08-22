@@ -1,4 +1,4 @@
-import type { IpcMethod, IpcMethodMap, IpcRequest, IpcResponse } from "../ipc/contracts.js";
+import type { IpcEvent, IpcMethod, IpcMethodMap, IpcRequest, IpcResponse } from "../ipc/contracts.js";
 import type { RootPickerResult } from "./root-picker.js";
 
 export interface OsamahPreloadApi {
@@ -6,6 +6,7 @@ export interface OsamahPreloadApi {
     request: IpcRequest<M>,
   ): Promise<IpcResponse<IpcMethodMap[M]["result"]>>;
   chooseProjectRoot(): Promise<RootPickerResult>;
+  subscribe(listener: (event: IpcEvent) => void): () => void;
 }
 
 export type TypedIpcDispatch = OsamahPreloadApi["dispatch"];

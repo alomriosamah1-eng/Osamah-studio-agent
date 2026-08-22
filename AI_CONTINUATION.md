@@ -6,9 +6,9 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming منفذة محليًا وقيد commit/push.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`78/78` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart؛ schema 004 وredaction/restart وpending/decide contracts ناجحة، والشريحة مدفوعة ومتحقق منها.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`79/79` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart، ثم `IpcEvent` وpreload subscribe وWorkspace Human Gate panel؛ schema 004 وredaction/restart وpending/decide وapproval.changed contracts ناجحة، وdesktop smoke يثبت وصول event callback فعليًا.
 
 validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `4`، schema version `004`، 12 جدولًا و24 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail وApprovalStore restart/redaction وHuman Gate fail-closed. full gate وGitHub push verification ناجحان؛ `local_sha == remote_sha`.
 
@@ -28,9 +28,9 @@ Mobile subsystem له LightweightPreview وFixturePreview في compatibility mod
 
 `src/infrastructure/fixture-provider.ts` و`src/infrastructure/in-memory.ts` يوفران adapters deterministic خفيفة. composition يصدر `approvalWorkflow` و`auditTrail` و`providerGateway` و`providerRouteAudit`، مع registry فارغ فلا توجد network calls أو model loading عند الإقلاع.
 
-`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail` و`SqliteApprovalStore`، مع migrations 003 و004 لجدولي audit وapproval tickets. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل. `src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` و`src/ipc/embedded-handlers.ts` يعرّفان approval pending/decide.
+`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail` و`SqliteApprovalStore`، مع migrations 003 و004 لجدولي audit وapproval tickets. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل. `src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` يعرّف approval methods و`IpcEvent`، و`src/ipc/embedded-handlers.ts` يعرّف approval pending/decide، و`src/desktop/main.ts` و`src/desktop/preload.cjs` يربطان event stream allowlisted.
 
-التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md` و`docs/56-approval-hydration.md`.
+التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md` و`docs/56-approval-hydration.md` و`docs/57-human-gate-ui-event-stream.md`.
 
 ## القواعد
 
@@ -63,7 +63,7 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 ## التسلسل التالي
 
-بعد إغلاق ApprovalStore وhydration، تُنفذ Human Gate UI وevent streaming وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
+بعد إغلاق Human Gate UI وevent streaming، تُنفذ audit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة

@@ -55,6 +55,13 @@ export interface IpcMethodMap {
   "approval.decide": { payload: { approvalId: string; decision: "approved" | "denied" }; result: ApprovalTicket };
 }
 
+export interface HumanGateEvent {
+  readonly type: "approval.changed";
+  readonly ticket: ApprovalTicket;
+}
+
+export type IpcEvent = HumanGateEvent;
+
 export interface IpcRequest<M extends IpcMethod = IpcMethod> {
   readonly protocolVersion: 1;
   readonly requestId: string;
@@ -88,6 +95,20 @@ export interface PreviewInspection {
 const isString = (value: unknown, max = 4096): value is string => typeof value === "string" && value.length > 0 && value.length <= max && !value.includes("\u0000");
 const isStringArray = (value: unknown, maxItems: number, maxItemLength = 512): value is readonly string[] => Array.isArray(value) && value.length <= maxItems && value.every((item) => isString(item, maxItemLength));
 const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+
+const isApprovalTicketPayload = (value: unknown): value is ApprovalTicket => {
+  if (!isRecord(value) || !isString(value.approvalId, 256) || !isString(value.correlationId, 256) || !isString(value.createdAt, 128)) return false;
+  if (value.status !== "requested" && value.status !== "approved" && value.status !== "denied") return false;
+  if (value.resolvedAt !== undefined && !isString(value.resolvedAt, 128)) return false;
+  if (!isRecord(value.action) || !isString(value.action.actionId, 256) || !isString(value.action.sessionId, 256) || !isString(value.action.scope, 512)) return false;
+  if (!["filesystem.read", "filesystem.write", "terminal.exec", "git.commit", "github.push", "mcp.tool", "browser.submit", "media.publish", "provider.invoke"].includes(value.action.kind as string)) return false;
+  if (!["low", "medium", "high", "critical"].includes(value.action.risk as string)) return false;
+  return value.action.idempotencyKey === undefined || isString(value.action.idempotencyKey, 256);
+};
+
+export const isIpcEvent = (value: unknown): value is IpcEvent => isRecord(value)
+  && value.type === "approval.changed"
+  && isApprovalTicketPayload(value.ticket);
 
 const isAgentPlanPayload = (value: unknown): value is AgentPlan => {
   if (!isRecord(value) || !isString(value.summary, 2048) || !Array.isArray(value.steps) || value.steps.length > 16) return false;

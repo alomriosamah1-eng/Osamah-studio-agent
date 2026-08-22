@@ -1,5 +1,6 @@
 export const DESKTOP_IPC_CHANNEL = "osamah:dispatch";
 export const PROJECT_ROOT_PICKER_CHANNEL = "osamah:choose-project-root";
+export const APPROVAL_EVENTS_CHANNEL = "osamah:approval-events";
 
 export const DESKTOP_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",

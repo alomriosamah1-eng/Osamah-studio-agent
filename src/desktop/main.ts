@@ -2,9 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createEmbeddedApplication } from "../composition.js";
-import { invalidRequest, isIpcRequest } from "../ipc/contracts.js";
+import { invalidRequest, isIpcRequest, type IpcEvent } from "../ipc/contracts.js";
 import { chooseProjectRoot } from "./root-picker.js";
-import { DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender, PROJECT_ROOT_PICKER_CHANNEL } from "./security.js";
+import { APPROVAL_EVENTS_CHANNEL, DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender, PROJECT_ROOT_PICKER_CHANNEL } from "./security.js";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const workspacePath = join(currentDirectory, "../../prototypes/studio/index.html");
@@ -12,6 +12,7 @@ const workspaceUrl = pathToFileURL(workspacePath).toString();
 const embeddedApplication = createEmbeddedApplication();
 if (process.env.OSAMAH_DISABLE_GPU === "1") app.disableHardwareAcceleration();
 let mainWindow: BrowserWindow | undefined;
+let unsubscribeApprovalEvents: (() => void) | undefined;
 
 const requestIdOf = (value: unknown): string => {
   if (!value || typeof value !== "object") return "unknown";
@@ -55,6 +56,17 @@ const registerIpcBridge = (): void => {
     return chooseProjectRoot({
       showOpenDialog: (_options) => dialog.showOpenDialog(ownerWindow, { properties: ["openDirectory"] }),
     });
+  });
+};
+
+const installApprovalEventStream = (): void => {
+  if (unsubscribeApprovalEvents) return;
+  unsubscribeApprovalEvents = embeddedApplication.dependencies.events.subscribe((event) => {
+    if (event.type !== "ApprovalRequested" && event.type !== "ApprovalResolved") return;
+    const ticket = embeddedApplication.humanGate.get(event.approvalId);
+    if (!ticket) return;
+    const payload: IpcEvent = { type: "approval.changed", ticket };
+    mainWindow?.webContents.send(APPROVAL_EVENTS_CHANNEL, payload);
   });
 };
 
@@ -117,12 +129,19 @@ void app.whenReady().then(() => {
   installContentSecurityPolicy();
   registerIpcBridge();
   mainWindow = createWindow();
+  installApprovalEventStream();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
   });
 }).catch((error: unknown) => {
   console.error("Osamah Studio Agent failed to start.", error);
   app.quit();
+});
+
+app.on("before-quit", () => {
+  unsubscribeApprovalEvents?.();
+  unsubscribeApprovalEvents = undefined;
+  embeddedApplication.close();
 });
 
 app.on("window-all-closed", () => {

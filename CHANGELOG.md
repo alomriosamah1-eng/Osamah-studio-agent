@@ -12,16 +12,19 @@
 - IPC methods typed جديدة: `approval.listPending` و`approval.decide`، مع tests لتدفق pending → decision → WorkCycle resume.
 - `docs/55-persistent-audit-human-gate.md` واختبارات SQLite restart/redaction وHuman Gate policy.
 - `ApprovalStore` و`InMemoryApprovalStore` و`SqliteApprovalStore` مع hydration bounded إلى `InMemoryApprovalWorkflow` عند فتح SQLite profile، وتوثيق `docs/56-approval-hydration.md`.
+- عقد `IpcEvent` و`approval.changed`، قناة `osamah:approval-events`، وpreload `subscribe()` مع filter وunsubscribe.
+- لوحة Human Gate داخل Workspace تعرض pending tickets حتى 8 عناصر وتنفذ Approve/Deny عبر typed `approval.decide`؛ وثيقة التنفيذ `docs/57-human-gate-ui-event-stream.md`.
 
 ### Verified
 
-- `pnpm check`: `78/78` اختبارًا ناجحًا.
+- `pnpm check`: `79/79` اختبارًا ناجحًا.
 - SQLite migration validator: `MIGRATION_COUNT=4` و`SCHEMA_VERSION=004` و12 جدولًا و24 index entry.
 - persistent audit redaction/restart وHuman Gate pending/approved/denied/invalid: PASS.
+- approval event contract وdesktop smoke لتدفق WorkCycle → pending → decide → renderer callback: PASS.
 
 ### Boundaries
 
-- Human Gate UI وevent streaming وaudit export/retention policy وmulti-user identity ما زالت مؤجلة. approval ticket hydration بعد restart أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
+- audit export/retention policy وmulti-user identity ما زالت مؤجلة. Human Gate UI وapproval event streaming وapproval ticket hydration بعد restart أصبحت منفذة bounded؛ لا تُدّعى crash-resumability لــWorkCycle checkpoint نفسه.
 
 ## [Unreleased] — Typed Agent WorkCycle IPC Boundary
 

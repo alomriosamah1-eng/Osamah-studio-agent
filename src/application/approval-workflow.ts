@@ -161,11 +161,11 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
     if (!currentEntity) throw new ApprovalPolicyError(`Approval ${approvalIdValue} repository record was not found.`);
     const resolvedAt = this.dependencies.clock.now();
     const entity = resolveApproval(currentEntity, decision);
-    this.dependencies.approvals.save(entity);
-    this.dependencies.events.publish({ type: "ApprovalResolved", approvalId: entity.id, decision, occurredAt: resolvedAt });
     const resolved: ApprovalTicket = { ...current, status: decision, resolvedAt };
+    this.dependencies.approvals.save(entity);
     this.tickets.set(approvalIdValue, resolved);
     this.approvalStore.save(resolved);
+    this.dependencies.events.publish({ type: "ApprovalResolved", approvalId: entity.id, decision, occurredAt: resolvedAt });
     this.appendAudit({
       action: resolved.action,
       correlationId: resolved.correlationId,
