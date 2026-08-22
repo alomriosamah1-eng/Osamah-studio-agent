@@ -33,6 +33,7 @@
 
 - `pnpm check`: `189/189` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
 - desktop smoke تحقق من memory snapshot، ورفض action payload، وعدم إنشاء filesystem mutation أو backup/restore.
+- feature commit `fa6486a3a14784d03dd00a868fb5e98c4ff4d2eb` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل لهذه التسليمة.
 
 ### Boundaries
 
