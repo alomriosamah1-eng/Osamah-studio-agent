@@ -20,6 +20,25 @@
 - هذه الشريحة **RESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION ONLY**؛ لم تُضف حزمة أو model أو voice أو asset أو native toolchain، ولم يُعدّل runtime أو typed IPC أو Electron shell لأجل Avatar.
 - Avatar planned/deferred داخل Second Brain، والميكروفون وwake word والـoverlay معطلة افتراضيًا في التصميم؛ Human Gate وtext fallback وUbuntu 8GB degradation إلزامية لأي تنفيذ لاحق.
 
+## [Unreleased] — Storage Settings Read-only Snapshot
+
+### Added
+
+- `StorageSettings` و`StorageSettingsPort` و`StaticStorageSettings` مع snapshot واضح لـmemory وSQLite وprofile وschema وlock وbackup وretention وquota.
+- `storage.get` عبر typed IPC exact-key validation، مع منع `databasePath` و`lockPath` والعمليات التنفيذية من الوصول إلى renderer.
+- Control Center Storage panel يعرض الحالة والسياسة فقط، دون نقل أو حذف أو migration destructive أو backup/restore.
+- `docs/88-storage-settings-read-only.md` لتوثيق العقد والحدود ومعايير القبول.
+
+### Verified
+
+- `pnpm check`: `189/189` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+- desktop smoke تحقق من memory snapshot، ورفض action payload، وعدم إنشاء filesystem mutation أو backup/restore.
+
+### Boundaries
+
+- الشريحة read-only؛ لا تغيّر backend ولا تنشئ persistence جديدة ولا تكشف مسارات النظام أو محتوى المستخدم.
+- encryption/key management وbackup UX وquota/retention mutation وdestructive migrations تبقى خلف سياسات ومسارات مستقلة.
+
 ## [Unreleased] — External Accounts Metadata-only
 
 ### Added

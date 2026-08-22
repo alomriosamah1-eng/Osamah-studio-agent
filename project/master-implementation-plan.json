@@ -30,10 +30,11 @@
       "agent-definition-contract-and-catalog",
       "report-document-bounded-reporting",
       "arabic-first-application-settings-control-center",
-      "external-accounts-metadata-only"
+      "external-accounts-metadata-only",
+      "storage-settings-read-only"
     ],
-    "tests": "185/185",
-    "next_phase": "storage-settings-or-self-development-candidate-review",
+    "tests": "189/189",
+    "next_phase": "self-development-candidate-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

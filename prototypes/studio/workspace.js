@@ -473,6 +473,52 @@
       if (button) button.disabled = false;
     }
   };
+  const renderStorageSettings = (settings) => {
+    const list = $('storageSettingsList');
+    const status = $('storageSettingsStatus');
+    if (!list || !status) return;
+    const rows = [
+      ['Backend', settings.backend],
+      ['Location', settings.location],
+      ['Profile', settings.profileId || '—'],
+      ['Database file', settings.databaseFile || '—'],
+      ['Schema', settings.schemaVersion ? `v${settings.schemaVersion}` : 'not active'],
+      ['Lock', settings.lockState],
+      ['Fallback', settings.fallbackReason || 'none'],
+      ['Backup', settings.backupState],
+      ['Retention', settings.retentionState],
+      ['Quota', settings.quotaState],
+    ];
+    list.replaceChildren();
+    rows.forEach(([label, value]) => {
+      const row = document.createElement('div');
+      row.className = 'kv';
+      const key = document.createElement('span');
+      key.textContent = label;
+      const content = document.createElement('span');
+      content.textContent = value;
+      row.append(key, content);
+      list.append(row);
+    });
+    status.textContent = settings.backend === 'memory' ? 'التخزين الحالي مؤقت في الذاكرة؛ لا persistence في هذا المضيف.' : 'التخزين SQLite مفعّل؛ backup/restore لا يبدأان من هذه اللوحة.';
+  };
+  const loadStorageSettings = async () => {
+    if (!window.osamah?.dispatch) return;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('storage-get'),
+      correlationId: nextRequest('storage-get-correlation'),
+      method: 'storage.get',
+      payload: {},
+    });
+    if (!response.ok) {
+      $('storageSettingsStatus').textContent = `فشل تحميل حالة التخزين: ${response.error.message}`;
+      log(`storage.get_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderStorageSettings(response.result);
+    log(`storage.loaded backend=${response.result.backend} · read-only`, 'ok');
+  };
   const selectControlSection = (section) => {
     document.querySelectorAll('[data-control-section]').forEach((button) => button.classList.toggle('active', button.dataset.controlSection === section));
     document.querySelectorAll('[data-control-panel]').forEach((panel) => { panel.hidden = panel.dataset.controlPanel !== section; });
@@ -1616,6 +1662,20 @@
       method: 'settings.update',
       payload: { locale: 'ar', unknown: true },
     });
+    const storageResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-storage-get',
+      correlationId: 'desktop-smoke-storage',
+      method: 'storage.get',
+      payload: {},
+    });
+    const storageMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-storage-malformed',
+      correlationId: 'desktop-smoke-storage',
+      method: 'storage.get',
+      payload: { action: 'backup' },
+    });
     const accountRegisterResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-account-register',
@@ -2023,6 +2083,7 @@
     const settingsPassed = settingsDefaultResponse.ok && settingsDefaultResponse.result.locale === 'ar' && settingsDefaultResponse.result.direction === 'rtl' && settingsDefaultResponse.result.theme === 'dark' && settingsUpdateResponse.ok && settingsUpdateResponse.result.locale === 'en' && settingsUpdateResponse.result.direction === 'ltr' && settingsUpdateResponse.result.theme === 'light' && settingsUpdateResponse.result.fontScale === 1.25 && settingsUpdateResponse.result.density === 'compact' && settingsMalformedResponse.ok === false;
     const settingsNoMutationPassed = settingsPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const accountPassed = accountRegisterResponse.ok && accountRegisterResponse.result.status === 'disconnected' && accountRegisterResponse.result.consentState === 'required' && accountRegisterResponse.result.verificationState === 'unknown' && accountListResponse.ok && accountListResponse.result.length === 1 && accountMalformedResponse.ok === false;
+    const storagePassed = storageResponse.ok && storageResponse.result.backend === 'memory' && storageResponse.result.location === 'ephemeral_memory' && storageResponse.result.lockState === 'not_applicable' && storageResponse.result.backupState === 'not_configured' && storageMalformedResponse.ok === false;
     const agentCatalogPassed = agentCatalogResponse.ok && agentCatalogResponse.result.length === 46 && agentCatalogResponse.result.find((definition) => definition.agentId === 'api-architect')?.executionStatus === 'bounded_capability' && agentDefinitionResponse.ok && agentDefinitionResponse.result?.agentId === 'security' && agentDefinitionResponse.result?.memoryRequirements.providerAccess === 'never';
     const agentCatalogNoMutationPassed = agentCatalogPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
@@ -2052,7 +2113,7 @@
     const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && storagePassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -2062,6 +2123,7 @@
   void loadAgentCatalog();
   void loadApplicationSettings();
   void loadExternalAccounts();
+  void loadStorageSettings();
   void loadReportDocuments();
   void loadProviders();
   void loadSources();

@@ -25,6 +25,7 @@ import type { ArtifactDraft } from "./application/artifact-assembly.js";
 import type { RenderPolicyPreview } from "./application/render-policy.js";
 import type { MemoryEntry } from "./application/memory-capture.js";
 import type { ExternalAccountRecord } from "./application/external-account-registry.js";
+import type { StorageSettings } from "./application/storage-settings.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -156,6 +157,23 @@ test("typed IPC registers external account metadata without network, secrets, or
     assert.equal(invalidExpiry.ok, false);
   } finally {
     globalThis.fetch = originalFetch;
+    app.close();
+  }
+});
+
+test("typed IPC exposes read-only storage metadata without filesystem operations", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const response = await app.ipc.dispatch({ protocolVersion: 1, requestId: "storage-get-1", correlationId: "storage-1", method: "storage.get", payload: {} } as const) as IpcResponse<StorageSettings>;
+    assert.equal(response.ok, true);
+    if (!response.ok) return;
+    assert.equal(response.result.backend, "memory");
+    assert.equal(response.result.location, "ephemeral_memory");
+    assert.equal(response.result.lockState, "not_applicable");
+    assert.equal(response.result.backupState, "not_configured");
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "storage-malformed-1", correlationId: "storage-1", method: "storage.get", payload: { action: "backup" } } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
     app.close();
   }
 });

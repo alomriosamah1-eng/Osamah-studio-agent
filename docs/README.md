@@ -53,6 +53,7 @@
 | `85-virtual-human-architecture-and-contracts.md` | المعمارية المقترحة، state machine، العقود، الخصوصية، الأداء، والـOverlay |
 | `86-virtual-human-licensing-roadmap-and-decisions.md` | License Matrix وDecision Log وخارطة Avatar المستقبلية 0–11 |
 | `87-external-accounts-metadata-only.md` | تنفيذ metadata-only للحسابات الخارجية دون OAuth أو network أو secrets |
+| `88-storage-settings-read-only.md` | عرض حالة التخزين والسياسة فقط دون نقل أو حذف أو backup أو restore |
 
 ## ملفات الحالة خارج هذا المجلد
 

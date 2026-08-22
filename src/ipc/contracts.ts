@@ -22,6 +22,7 @@ import type { AgentDefinition } from "../application/agent-catalog.js";
 import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
 import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
 import type { ExternalAccountRecord, RegisterExternalAccountRequest } from "../application/external-account-registry.js";
+import type { StorageSettings, StorageSettingsPort } from "../application/storage-settings.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -96,6 +97,7 @@ export interface IpcMethodMap {
   "settings.update": { payload: UpdateApplicationSettingsRequest; result: ApplicationSettings };
   "external.account.register": { payload: RegisterExternalAccountRequest; result: ExternalAccountRecord };
   "external.account.list": { payload: { limit?: number }; result: readonly ExternalAccountRecord[] };
+  "storage.get": { payload: Record<string, never>; result: StorageSettings };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -428,6 +430,7 @@ const isExternalAccountRegisterPayload = (value: unknown): boolean => isRecord(v
 const isExternalAccountListPayload = (value: unknown): boolean => isRecord(value)
   && hasOnlyKeys(value, ["limit"])
   && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
+const isStorageGetPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
 const isSettingsUpdatePayload = (value: unknown): value is UpdateApplicationSettingsRequest => {
   if (!isRecord(value) || !hasOnlyKeys(value, ["locale", "theme", "fontScale", "density", "reduceMotion"])) return false;
   if (value.locale !== undefined && value.locale !== "ar" && value.locale !== "en") return false;
@@ -475,6 +478,7 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "settings.update") return isSettingsUpdatePayload(payload);
   if (method === "external.account.register") return isExternalAccountRegisterPayload(payload);
   if (method === "external.account.list") return isExternalAccountListPayload(payload);
+  if (method === "storage.get") return isStorageGetPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);
