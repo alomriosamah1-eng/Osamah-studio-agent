@@ -7,10 +7,10 @@
 | الإصدار | `0.4.0-presentation-renderer` |
 | المرحلة | Presentation Renderer + Project Preview Runtime + Embedded Simulator |
 | الحالة | Presentation renderer مدفوعة ومتحقق منها؛ الشجرة نظيفة |
-| آخر commit مدفوع | `df53c8cd32b5e35c25488171bdca5241770146b3` |
+| آخر commit مدفوع | `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `19/19` اختبار Node/tsx ناجح في 2026-08-22 |
-| آخر push مؤكد | `origin/main` عند `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان |
+| آخر push مؤكد | `origin/main` عند `bce549bb675ee6d0f2c83f950a5c9aae987c61d7`؛ local وGitHub متطابقان |
 
 ## المكتمل
 
@@ -44,4 +44,4 @@
 
 بعد هذه الشريحة يبدأ commit مستقل واحد فقط لإضافة IPC لفتح مشروع filesystem من واجهة Workspace. يجب أن يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `bce549bb675ee6d0f2c83f950a5c9aae987c61d7`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.

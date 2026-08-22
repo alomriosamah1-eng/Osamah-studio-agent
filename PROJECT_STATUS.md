@@ -7,7 +7,7 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `df53c8cd32b5e35c25488171bdca5241770146b3` |
+| آخر commit مدفوع | `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
 | حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع Presentation renderer |
 | الإصدار المحلي | `0.4.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
@@ -50,4 +50,4 @@
 
 بعد هذه الشريحة يبدأ commit مستقل لإضافة IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `df53c8cd32b5e35c25488171bdca5241770146b3`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `bce549bb675ee6d0f2c83f950a5c9aae987c61d7`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
