@@ -98,10 +98,10 @@
 | Local Provider Adapters | Ollama/llama.cpp health/invoke mapping وloopback security وHTTP errors وtimeout/cancellation وoptional startup registration؛ delivery `c18b6befcaf82acc4679f9ed72899659d00d6a11`، local == `origin/main` |
 | Provider Policy/Doctor/Quota | configuration وdisabled/blocked/healthy doctor وconcurrency/rate/circuit وGateway admission؛ delivery `8be5293f29c8e2c520cd422a54226d9f7f31128a`، local == `origin/main` |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor validators وhandlers وWorkspace panel وElectron smoke وno-network startup؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
-| Provider-backed Planner/WorkCycle | LlmPlanner وprovider/model/offline selection وstrict JSON وplan-less generation وHuman Gate/resume guards وElectron fixture smoke؛ delivery pending commit |
+| Provider-backed Planner/WorkCycle | LlmPlanner وprovider/model/offline selection وstrict JSON وplan-less generation وHuman Gate/resume guards وElectron fixture smoke؛ delivery `358e339e52f1a07e95c5e266f18bd37ba36072e3`، local == `origin/main` |
 | Persistent Audit وHuman Gate | schema 003 وSqliteAuditTrail وredaction/restart وpending/decide fail-closed؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
 
-تم التحقق من `pnpm check` بـ105/105، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وapproval event callback وAudit Export NDJSON/manifest/redaction/destination safety وRetention age/count وPlanner/Critic no-mutation guard وLlmPlanner strict JSON/provider routing وOllama/llama.cpp mapping/health/loopback/timeout وprovider configuration/doctor/quota/circuit وtyped provider list/configure/doctor وcomposition opt-in/no-network-startup وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. full gate لشريحة Provider-backed Planner/WorkCycle ناجح؛ delivery قيد commit/push.
+تم التحقق من `pnpm check` بـ105/105، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وapproval event callback وAudit Export NDJSON/manifest/redaction/destination safety وRetention age/count وPlanner/Critic no-mutation guard وLlmPlanner strict JSON/provider routing وOllama/llama.cpp mapping/health/loopback/timeout وprovider configuration/doctor/quota/circuit وtyped provider list/configure/doctor وcomposition opt-in/no-network-startup وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. full gate لشريحة Provider-backed Planner/WorkCycle ناجح، ودفع GitHub متحقق مع تطابق local وremote SHA.
  شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
@@ -123,4 +123,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`؛ Provider-backed Planner/WorkCycle قيد commit/push.
+إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `358e339e52f1a07e95c5e266f18bd37ba36072e3`؛ Provider-backed Planner/WorkCycle مدفوعة ومتحقق منها، local == `origin/main`.

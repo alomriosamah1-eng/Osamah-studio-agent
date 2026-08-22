@@ -48,7 +48,7 @@
 | Electron smoke | Provider list/configure/doctor، provider-backed plan، root picker، Human Gate وIPC: PASS |
 | Performance/security | low-memory profile، no startup network، migration/JSON/diff/secret scans: PASS |
 
-الـcommit التنفيذي هو `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، والـcommit الحالي للشريحة مع التوثيق اللاحق سيُثبت بعد إغلاق التغييرات الحالية.
+الـcommit التنفيذي للشريحة هو `358e339e52f1a07e95c5e266f18bd37ba36072e3`، وهو متطابق مع `origin/main` بعد نجاح full gate؛ وسيأتي commit توثيق الحالة اللاحق لتثبيت التسليم الحي.
 
 ## الحدود
 
