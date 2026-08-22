@@ -7,6 +7,7 @@ import type { AgentPlan, PatchProposal, WorkCycleResult, WorkCycleSnapshot } fro
 import type { ProjectContextSnapshot } from "../application/project-context.js";
 import type { ProjectTreeResult, WorkspaceFileContent } from "../application/project-explorer.js";
 import type { DocumentSnapshot, EditProposal } from "../application/editor-document.js";
+import type { TerminalCommandRequest, TerminalPolicyDecision } from "../application/terminal-policy.js";
 import type { ApprovalTicket } from "../application/agent-contracts.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 
@@ -52,6 +53,7 @@ export interface IpcMethodMap {
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
   "editor.propose": { payload: { rootPath: string; relativePath: string; content: string; expectedSha256: string }; result: EditProposal };
+  "terminal.inspect": { payload: TerminalCommandRequest; result: TerminalPolicyDecision };
   "workCycle.start": {
     payload: {
       cycleId: string;
@@ -174,6 +176,15 @@ const isEditorProposePayload = (value: unknown): boolean => isRecord(value)
   && isString(value.relativePath, 512)
   && typeof value.content === "string" && value.content.length <= 1_500_000 && !value.content.includes("\u0000")
   && typeof value.expectedSha256 === "string" && /^[a-f0-9]{64}$/i.test(value.expectedSha256);
+const isTerminalInspectPayload = (value: unknown): value is TerminalCommandRequest => isRecord(value)
+  && isString(value.requestId, 256)
+  && isString(value.sessionId, 256)
+  && isString(value.rootPath, 4096)
+  && isString(value.cwd, 512)
+  && isString(value.executable, 128)
+  && isStringArray(value.args, 64, 4096)
+  && (value.timeoutMs === undefined || (typeof value.timeoutMs === "number" && Number.isInteger(value.timeoutMs) && value.timeoutMs >= 1_000 && value.timeoutMs <= 120_000))
+  && (value.maxOutputBytes === undefined || (typeof value.maxOutputBytes === "number" && Number.isInteger(value.maxOutputBytes) && value.maxOutputBytes >= 4 * 1024 && value.maxOutputBytes <= 256 * 1024));
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -201,6 +212,7 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);
   if (method === "editor.propose") return isEditorProposePayload(payload);
+  if (method === "terminal.inspect") return isTerminalInspectPayload(payload);
   if (method === "workCycle.start") return isWorkCycleStartPayload(payload);
   if (method === "workCycle.inspect" || method === "workCycle.cancel") return isWorkCycleIdPayload(payload);
   if (method === "approval.listPending") return isApprovalListPayload(payload);

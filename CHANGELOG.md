@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Terminal Policy Preview وCommand Boundary
+
+### Added
+
+- `TerminalPolicyPort` و`BoundedTerminalPolicy` لتصنيف الأوامر محليًا مع `deny-by-default` وcommand digest bounded.
+- رفض shell wrappers وshell metacharacters وnull bytes وcwd traversal وnative/toolchain/privileged/unknown commands دون spawn.
+- typed IPC method `terminal.inspect` مع payload/resource guards، وربطه بالـcomposition والـElectron smoke.
+- Workspace Terminal Policy panel بوضع Inspect only؛ لا يوجد `terminal.exec` أو PTY أو xterm.js أو process execution.
+- توثيق الشريحة في `docs/66-terminal-policy-preview.md`.
+
+### Verified
+
+- `pnpm check`: `124/124` اختبارًا ناجحًا.
+- policy classification وHuman Gate metadata وsecret display redaction وdeterministic digest وbounded input: PASS.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+
+### Boundaries
+
+- كل `read_only` command يحتاج Human Gate في القرار، ولا يعني `approval_required` أنه نُفذ. التعديل وtoolchains وnative والامتيازات والأوامر المجهولة مرفوضة.
+- التنفيذ الفعلي يحتاج لاحقًا Terminal Worker مع process isolation وcancellation وresource admission وaudit.
+
 ## [Unreleased] — Safe Editor Document Boundary وDiff Preview
 
 ### Added

@@ -428,6 +428,33 @@
     log(`provider.doctor ${providerId} ${report?.status || 'empty'}`, report?.status === 'healthy' ? 'ok' : 'warn');
   };
 
+  const inspectTerminalPolicy = async () => {
+    const executable = $('terminalExecutable').value.trim();
+    const rawArgs = $('terminalArgs').value.trim();
+    const args = rawArgs ? rawArgs.split(/\s+/u) : [];
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('terminalPolicyResult').textContent = 'Desktop IPC is unavailable; no command was inspected or executed.';
+      log('terminal.inspect_unavailable', 'warn');
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('terminal-inspect'),
+      correlationId: nextRequest('terminal-inspect-correlation'),
+      method: 'terminal.inspect',
+      payload: { requestId: nextRequest('terminal-policy-request'), sessionId: 'workspace-terminal', rootPath: currentRoot || '.', cwd: '.', executable, args },
+    });
+    if (!response.ok) {
+      $('terminalPolicyResult').textContent = `Request rejected: ${response.error.message}`;
+      log(`terminal.inspect_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    const decision = response.result;
+    $('terminalPolicyResult').textContent = `${decision.decision.toUpperCase()} · ${decision.commandClass}\n${decision.displayCommand}\n${decision.reason}\nHuman Gate: ${decision.requiresHumanGate ? 'required' : 'not available'}`;
+    $('rightStatus').textContent = `Terminal policy: ${decision.decision}`;
+    log(`terminal.inspect ${decision.commandClass} · ${decision.decision} · no process started`, decision.decision === 'denied' ? 'warn' : 'ok');
+  };
+
   const proposeEditorDiff = async () => {
     const content = $('editorBuffer').value;
     if (!currentRoot || !currentDocument) {
@@ -495,6 +522,7 @@
 
   $('openProject').onclick = () => { void chooseProjectRoot(); };
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
+  $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
   $('editorBuffer').addEventListener('input', () => {
     if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
   });
@@ -552,6 +580,13 @@
         payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx', content: `${editorOpenResponse.result.content}\n// desktop smoke proposal\n`, expectedSha256: editorOpenResponse.result.sha256 },
       })
       : { ok: false };
+    const terminalInspectResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-terminal-inspect',
+      correlationId: 'desktop-smoke-terminal',
+      method: 'terminal.inspect',
+      payload: { requestId: 'desktop-smoke-terminal-request', sessionId: 'desktop-smoke-terminal-session', rootPath: 'fixtures/mobile-expo', cwd: '.', executable: 'pnpm', args: ['test'] },
+    });
     const cycleResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-cycle-start',
@@ -647,7 +682,8 @@
     const providerPlannerPassed = providerPlannerResponse.ok && providerPlannerResponse.result.cycle.stage === 'checkpointed' && providerPlannerResponse.result.plan.summary === 'Electron smoke plan';
     const explorerPassed = projectTreeResponse.ok && projectTreeResponse.result.fileCount > 0 && projectFileResponse.ok && projectFileResponse.result?.relativePath === 'app/index.tsx' && projectFileResponse.result.content.includes('react-native');
     const editorPassed = editorOpenResponse.ok && Boolean(editorOpenResponse.result?.sha256) && editorProposeResponse.ok && editorProposeResponse.result?.diffTruncated === false;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && editorPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const terminalPassed = terminalInspectResponse.ok && terminalInspectResponse.result?.decision === 'denied' && terminalInspectResponse.result?.commandClass === 'toolchain';
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && editorPassed && terminalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

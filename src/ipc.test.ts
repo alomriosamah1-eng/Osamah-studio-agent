@@ -162,6 +162,47 @@ test("typed IPC rejects project entries that escape the selected root", async ()
   if (!blocked.ok) assert.match(blocked.error.message, /Unsafe preview path/);
 });
 
+test("typed IPC inspects terminal commands without starting a process", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const readOnly = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "terminal-inspect-1",
+      correlationId: "terminal-1",
+      method: "terminal.inspect",
+      payload: { requestId: "terminal-request-1", sessionId: "terminal-session-1", rootPath: "/tmp/project", cwd: ".", executable: "pwd", args: [] },
+    } as const) as IpcResponse<import("./application/terminal-policy.js").TerminalPolicyDecision>;
+    assert.equal(readOnly.ok, true);
+    if (readOnly.ok) {
+      assert.equal(readOnly.result.decision, "approval_required");
+      assert.equal(readOnly.result.commandClass, "read_only");
+      assert.equal(readOnly.result.requiresHumanGate, true);
+    }
+    const denied = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "terminal-inspect-2",
+      correlationId: "terminal-1",
+      method: "terminal.inspect",
+      payload: { requestId: "terminal-request-2", sessionId: "terminal-session-1", rootPath: "/tmp/project", cwd: ".", executable: "pnpm", args: ["test"] },
+    } as const) as IpcResponse<import("./application/terminal-policy.js").TerminalPolicyDecision>;
+    assert.equal(denied.ok, true);
+    if (denied.ok) {
+      assert.equal(denied.result.decision, "denied");
+      assert.equal(denied.result.commandClass, "toolchain");
+    }
+    const malformed = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "terminal-inspect-3",
+      correlationId: "terminal-1",
+      method: "terminal.inspect",
+      payload: { requestId: "terminal-request-3", sessionId: "terminal-session-1", rootPath: "/tmp/project", cwd: "../outside", executable: "pwd", args: [] },
+    } as const);
+    assert.equal(malformed.ok, false);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC exposes project context and a full guarded work cycle", async () => {
   const root = await mkdtemp(join(tmpdir(), "osamah-ipc-cycle-"));
   const app = createEmbeddedApplication();
