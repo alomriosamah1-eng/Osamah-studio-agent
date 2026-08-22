@@ -11,6 +11,7 @@ import type { TerminalCommandRequest, TerminalPolicyDecision } from "../applicat
 import type { GitDiffResult, GitReadOnlyPort, GitStatusSnapshot } from "../application/git-read-only.js";
 import type { ApprovalTicket } from "../application/agent-contracts.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
+import type { AgentTaskPreviewRequest, AgentTaskPreviewResult } from "../application/agent-task-preview.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -50,6 +51,7 @@ export interface IpcMethodMap {
   "preview.stop": { payload: { sessionId: PreviewSessionId }; result: { stopped: true } };
   "device.get": { payload: { deviceProfileId: DeviceProfileId }; result: DeviceProfile };
   "context.index": { payload: { rootPath: string }; result: ProjectContextSnapshot };
+  "task.preview": { payload: AgentTaskPreviewRequest; result: AgentTaskPreviewResult };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -192,6 +194,18 @@ const isGitStatusPayload = (value: unknown): boolean => isRecord(value) && isStr
 const isGitDiffPayload = (value: unknown): boolean => isRecord(value)
   && isString(value.rootPath, 4096)
   && (value.relativePath === undefined || isString(value.relativePath, 512));
+const isSafeRelativePath = (value: string): boolean => !value.startsWith("/")
+  && !value.includes("\\")
+  && value.split("/").every((segment) => segment.length > 0 && segment !== "." && segment !== "..");
+const isTaskPreviewPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.rootPath, 4096)
+  && isString(value.goal, 2_000)
+  && isStringArray(value.constraints, 32, 2_000)
+  && isStringArray(value.targetedPaths, 24, 512)
+  && value.targetedPaths.every(isSafeRelativePath)
+  && (value.providerId === undefined || isString(value.providerId, 256))
+  && (value.modelId === undefined || isString(value.modelId, 256))
+  && (value.offlineMode === undefined || typeof value.offlineMode === "boolean");
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -215,6 +229,7 @@ const isProviderDoctorPayload = (value: unknown): boolean => isRecord(value) && 
 const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (!isRecord(payload)) return false;
   if (method === "context.index") return isString(payload.rootPath, 4096);
+  if (method === "task.preview") return isTaskPreviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

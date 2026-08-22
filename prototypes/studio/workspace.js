@@ -541,6 +541,74 @@
     log(`git.status_loaded ${response.result.branch || 'not-a-repository'} · ${response.result.staged.length + response.result.unstaged.length + response.result.untracked.length} changes`, response.result.isRepository ? 'ok' : 'warn');
   };
 
+  const renderTaskReview = (result) => {
+    $('taskReviewStatus').textContent = `${result.safeToProceed ? 'ACCEPTED' : 'BLOCKED'} · preview-only · no patch, command, runtime, or approval ticket`;
+    $('taskContextFiles').textContent = String(result.context.files.length);
+    $('taskContextManifests').textContent = String(result.context.manifests.length);
+    $('taskTargetCount').textContent = String(result.targetedFiles.length);
+    $('taskContextState').textContent = result.context.truncated ? 'truncated · review warnings' : (result.context.warnings.length ? 'warning-bearing' : 'bounded');
+    const renderItems = (id, items, emptyText, className = 'task-review-item') => {
+      const list = $(id);
+      list.replaceChildren();
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'approval-empty';
+        empty.textContent = emptyText;
+        list.append(empty);
+        return;
+      }
+      items.forEach((item) => {
+        const element = document.createElement('div');
+        element.className = className;
+        element.textContent = item;
+        list.append(element);
+      });
+    };
+    renderItems('taskTargetList', result.targetedFiles.map((file) => `${file.relativePath} · ${file.bytes} bytes · sha256 ${file.sha256.slice(0, 12)}…`), 'No targeted file metadata.');
+    renderItems('taskPlanList', result.plan.steps.map((step, index) => `${index + 1}. ${step.title}\n${step.description}`), 'No plan preview.');
+    const critiqueItems = result.critique.issues.map((issue) => `${issue.severity.toUpperCase()} · ${issue.code}${issue.stepId ? ` · ${issue.stepId}` : ''}\n${issue.message}`);
+    renderItems('taskCritiqueList', critiqueItems, result.critique.accepted ? 'No blocking critique issues.' : 'Critique blocked this preview.', 'task-review-item ' + (result.critique.accepted ? 'warning' : 'blocking'));
+  };
+
+  const previewCurrentTask = async () => {
+    if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
+      $('taskReviewStatus').textContent = 'Select a project root in Electron before requesting task review.';
+      log('task.preview_unavailable', 'warn');
+      return;
+    }
+    const button = $('reviewTask');
+    button.disabled = true;
+    $('taskReviewStatus').textContent = 'Reading bounded context and preparing deterministic review…';
+    try {
+      const response = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('task-preview'),
+        correlationId: nextRequest('task-preview-correlation'),
+        method: 'task.preview',
+        payload: {
+          rootPath: currentRoot,
+          goal: 'Review the selected project context before any change.',
+          constraints: ['Do not execute scripts or mutate files.', 'Wait for explicit Human Gate before any future mutation.'],
+          targetedPaths: currentRelativePath ? [currentRelativePath] : [],
+          offlineMode: true,
+        },
+      });
+      if (!response.ok) {
+        $('taskReviewStatus').textContent = `Task preview rejected: ${response.error.message}`;
+        log(`task.preview_rejected ${response.error.message}`, 'warn');
+        return;
+      }
+      renderTaskReview(response.result);
+      $('rightStatus').textContent = response.result.safeToProceed ? 'Task review ready' : 'Task review blocked';
+      log(`task.preview_ready ${response.result.targetedFiles.length} target(s) · no mutation`, response.result.safeToProceed ? 'ok' : 'warn');
+    } catch (error) {
+      $('taskReviewStatus').textContent = `Task preview failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('task.preview_failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   const proposeEditorDiff = async () => {
     const content = $('editorBuffer').value;
     if (!currentRoot || !currentDocument) {
@@ -610,6 +678,7 @@
   $('openProject').onclick = () => { void chooseProjectRoot(); };
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
   $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
+  $('reviewTask').onclick = () => { void previewCurrentTask(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
     if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
@@ -665,6 +734,19 @@
       correlationId: 'desktop-smoke-explorer',
       method: 'file.openText',
       payload: { rootPath: 'fixtures/mobile-expo', relativePath: 'app/index.tsx' },
+    });
+    const taskPreviewResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-task-preview',
+      correlationId: 'desktop-smoke-task-preview-correlation',
+      method: 'task.preview',
+      payload: {
+        rootPath: 'fixtures/mobile-expo',
+        goal: 'Review the bounded project before any mutation.',
+        constraints: ['Do not execute scripts or mutate files.', 'Wait for explicit Human Gate before mutation.'],
+        targetedPaths: ['app/index.tsx'],
+        offlineMode: true,
+      },
     });
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -786,7 +868,14 @@
     const gitPassed = gitStatusResponse.ok && gitStatusResponse.result.isRepository && gitDiffResponse.ok && gitDiffResponse.result.relativePath === 'app/index.tsx' && gitDiffResponse.result.rawUnavailable !== true;
     const editorPassed = editorOpenResponse.ok && Boolean(editorOpenResponse.result?.sha256) && editorProposeResponse.ok && editorProposeResponse.result?.diffTruncated === false;
     const terminalPassed = terminalInspectResponse.ok && terminalInspectResponse.result?.decision === 'denied' && terminalInspectResponse.result?.commandClass === 'toolchain';
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const taskPreviewPassed = taskPreviewResponse.ok
+      && taskPreviewResponse.result.safeToProceed
+      && taskPreviewResponse.result.targetedFiles[0]?.relativePath === 'app/index.tsx'
+      && taskPreviewResponse.result.plan.steps.length > 0
+      && taskPreviewResponse.result.critique.accepted
+      && taskPreviewResponse.result.warnings.every((warning) => typeof warning === 'string');
+    const taskPreviewNoApprovalPassed = taskPreviewResponse.ok && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

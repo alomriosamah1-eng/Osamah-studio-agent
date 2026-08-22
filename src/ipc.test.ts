@@ -20,6 +20,7 @@ import type { DocumentSnapshot, EditProposal } from "./application/editor-docume
 import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { GitDiffResult, GitStatusSnapshot } from "./application/git-read-only.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
+import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
 import { FixtureProviderAdapter } from "./infrastructure/fixture-provider.js";
@@ -426,4 +427,49 @@ test("typed IPC rejects malformed, unknown, and duplicate requests", async () =>
   const duplicate = await transport.dispatch({ protocolVersion: 1, requestId: "health-duplicate", correlationId: "c-3", method: "health.get", payload: {} });
   assert.equal(duplicate.ok, false);
   if (!duplicate.ok) assert.equal(duplicate.error.code, "DUPLICATE_REQUEST");
+});
+
+test("typed IPC previews context and task plan without mutation or approval ticket", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-ipc-task-preview-"));
+  const app = createEmbeddedApplication();
+  try {
+    await writeFile(join(root, "app.ts"), "export const value = 1;\n");
+    const before = await readFile(join(root, "app.ts"), "utf8");
+    const preview = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "task-preview-1",
+      correlationId: "task-preview-correlation",
+      method: "task.preview",
+      payload: { rootPath: root, goal: "Review the local app", constraints: ["Do not execute scripts."], targetedPaths: ["app.ts"], offlineMode: true },
+    } as const) as IpcResponse<AgentTaskPreviewResult>;
+    assert.equal(preview.ok, true);
+    if (!preview.ok) return;
+    assert.equal(preview.result.safeToProceed, true);
+    assert.equal(preview.result.targetedFiles[0]?.relativePath, "app.ts");
+    assert.equal(preview.result.plan.steps.some((step) => step.id === "verify"), true);
+    assert.equal((await readFile(join(root, "app.ts"), "utf8")), before);
+    const pending = await app.ipc.dispatch({ protocolVersion: 1, requestId: "task-preview-approval-list", correlationId: "task-preview-approval", method: "approval.listPending", payload: { limit: 8 } } as const);
+    assert.equal(pending.ok, true);
+    if (pending.ok) assert.equal(pending.result.length, 0);
+  } finally {
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("typed IPC rejects malformed task.preview paths before application access", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const malformed = await app.ipc.dispatch({
+      protocolVersion: 1,
+      requestId: "task-preview-malformed",
+      correlationId: "task-preview-malformed-correlation",
+      method: "task.preview",
+      payload: { rootPath: "/tmp/project", goal: "Review", constraints: [], targetedPaths: ["../secret"] },
+    } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+  } finally {
+    app.close();
+  }
 });

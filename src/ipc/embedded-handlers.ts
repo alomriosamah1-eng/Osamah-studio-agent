@@ -8,11 +8,13 @@ import type { EditorDocumentPort } from "../application/editor-document.js";
 import type { TerminalPolicyPort } from "../application/terminal-policy.js";
 import type { GitReadOnlyPort } from "../application/git-read-only.js";
 import type { ProjectPreviewService } from "../application/project-preview-service.js";
+import type { AgentTaskPreviewService } from "../application/agent-task-preview.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
 export interface AgentIpcDependencies {
   readonly context: Pick<FilesystemProjectContextIndex, "build">;
+  readonly taskPreview: Pick<AgentTaskPreviewService, "preview">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -72,6 +74,7 @@ export const registerEmbeddedSimulatorHandlers = (
   });
   if (agentDependencies) {
     transport.register("context.index", (request) => agentDependencies.context.build(request.payload.rootPath));
+    transport.register("task.preview", (request) => agentDependencies.taskPreview.preview(request.payload));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

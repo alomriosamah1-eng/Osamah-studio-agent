@@ -2,7 +2,7 @@
 
 ## ملخص الحالة
 
-بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت الآن Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **Lightweight Web Preview مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت شريحة SQLite adapter وobservability وbackup/restore bounded، وأضيفت Resource Policy وGeneral Project Detection وBoundedAgentRuntime مع إبقاء native emulators اختيارية، ثم profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، ثم Provider وApproval contracts وProviderGateway bounded، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC boundary، ثم Persistent Audit وHuman Gate وApproval hydration، ثم Human Gate UI وapproval event streaming، ثم Planner/Critic وLocal Provider Adapters وProvider Policy/Doctor/Quota وTyped Provider Configuration UI/IPC وProject Explorer/File Reader وSafe Editor Document Boundary وTerminal Policy Preview وGit Read-only Integration وContext/Agent Task Review Panel.
 
 | البند | الحالة |
 |---|---|
@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Git read-only status/diff وtyped IPC وWorkspace Git panel منفذة ومدفوعة ومتحقق منها عند `6a0db8a180298030fe77ad53f8fc54667de4258f` |
+| حالة الشجرة | Context/Agent Task Review Panel منفذة محليًا فوق Git read-only؛ feature/docs-close SHAs ستسجل بعد push والتحقق |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `130/130` اختبارًا؛ full gate وGitHub verification للشريحة الحالية ناجحان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm test` ناجح، `136/136` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` ناجحة، وfull gate النهائي قيد الإغلاق في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -35,6 +35,8 @@
 أضيفت شريحة الأداء الخفيف: `ProjectKind` و`PreviewCapability` و`GeneralProjectDetector` للمشاريع العامة، low-memory `ResourcePolicy`، hard limits للـ preview، latest-only refresh، و`BoundedAgentRuntime` بconcurrency واحد وqueue/history bounded وtimeout/cancellation تعاونيين. لا تشغل هذه الشريحة project scripts أو native toolchains عند الإقلاع.
 
 أضيفت typed provider configuration UI/IPC: `provider.list` و`provider.configure` و`provider.doctor` مع loopback وlow-memory validators، وربط provider controls في composition، ولوحة Providers في Workspace تعرض metadata آمنة وتنفذ Save config وRun doctor. توسع desktop smoke إلى list → configure disabled → doctor disabled دون network.
+
+أضيفت شريحة Context وAgent Task Review: `AgentTaskPreviewService` يقرأ snapshot وtargeted files bounded، ويستخدم deterministic planner/critic افتراضيًا، ولا يستخدم provider إلا عند اختيار صريح مع dependency provider-backed. أضيف `task.preview` إلى typed IPC مع رفض traversal والقيود غير الصالحة قبل Application، وربطت Workspace لوحة تعرض counters وmetadata/hash مختصرًا والخطة والنقد، دون patch أو command أو runtime أو approval ticket.
 
 أضيف provider-backed planning: `AsyncPlannerPort` و`LlmPlanner` و`ProviderBackedPlannerCritic`، واختيار `providerId`/`modelId`/`offlineMode` في WorkCycle وIPC. الاستجابة JSON strict ومحدودة، وprovider selection الصريح يمنع fallback، بينما تبقى الكتابة خلف Human Gate و`submitGuarded`. Electron smoke يثبت plan-less generation عبر fixture provider وعدم mutation.
 
@@ -59,7 +61,7 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `79/79` ناجحة |
+| `pnpm test` | `136/136` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 11ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.1MB، تحت V8 heap 768MB |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `4`، schema `004`، 12 جدولًا، 24 index entries |
@@ -68,7 +70,7 @@
 | backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
 | `git diff --check` | ناجح |
 | secret scan | `SECRET_SCAN=PASS` |
-| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
+| desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`؛ task.preview review-only PASS |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
 | profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 | provider/approval | default-deny وguarded queue وapproval matching وlocal-first/offline/fallback/idempotency/route audit PASS؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
@@ -86,6 +88,7 @@
 | Development Environment: Safe Editor Document Boundary | EditorDocumentPort وInMemoryEditorDocumentStore وeditor.open/propose وbounded diff وstale/path/NUL/size guards وElectron no-mutation smoke PASS؛ delivery `d989960112307b92185f18d1046506a620460887`، local == `origin/main` |
 | Development Environment: Terminal Policy Preview | TerminalPolicyPort وBoundedTerminalPolicy وterminal.inspect وclassification/deny-by-default/redaction/bounds وWorkspace Inspect-only وElectron no-process smoke PASS؛ delivery `18b980a4e3b76de01e919c959a5771e8a67475a9`، local == `origin/main` |
 | Development Environment: Git Read-only Integration | GitReadOnlyPort وFilesystemGitReadOnlyAdapter وgit.status/git.diff وbounded diff/truncation/path guards وWorkspace read-only panel وElectron smoke PASS؛ delivery `6a0db8a180298030fe77ad53f8fc54667de4258f`، local == `origin/main` |
+| Development Environment: Context وAgent Task Review | `AgentTaskPreviewService` و`task.preview` typed IPC وdeterministic default planner وexplicit provider boundary وbounded path/input validation وWorkspace context/plan/critique panel وno-mutation/no-approval smoke PASS؛ feature/docs-close SHAs قيد الإغلاق |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor contracts وhandlers وWorkspace panel وElectron smoke وno-network startup PASS؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 
 ## العمل المتبقي
@@ -97,8 +100,8 @@
 
 ## القرار والخطوة التالية
 
-بعد إغلاق شريحة Terminal Policy Preview، تأتي شريحة Git/read-only integration وفق الترتيب المعتمد؛ ثم Production Studio وSecond Brain، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق شريحة Context وAgent Task Review Panel، تأتي بقية Development Environment أو Production Studio وفق الأولوية المعتمدة، ثم Second Brain، ويبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `6a0db8a180298030fe77ad53f8fc54667de4258f`؛ Git Read-only Integration مدفوعة ومتحقق منها، local == `origin/main`.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: Context وAgent Task Review Panel قيد commit/push والتحقق النهائي؛ لا يُعلن SHA قبل تطابق local وremote ونظافة working tree.

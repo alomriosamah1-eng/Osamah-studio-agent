@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Project Context وAgent Task Review Panel
+
+### Added
+
+- `AgentTaskPreviewService` يربط `ProjectContextSnapshot` وtargeted reads مع `DeterministicPlannerCritic` افتراضيًا، ويتيح provider-backed planner فقط عند provider/model selection صريح.
+- typed IPC method `task.preview` مع validators bounded للـroot والهدف والقيود والمسارات، ورفض traversal وmalformed payload قبل Application.
+- Workspace Context/Agent Task Review panel يعرض context counters وtargeted metadata/hash مختصرًا والخطة والنقد باستخدام `textContent` و`replaceChildren`، دون patch أو command أو runtime أو approval ticket.
+- اختبارات Application وIPC وElectron smoke تثبت no-mutation وno-approval، وتوثيق المعمارية في `docs/68-project-context-agent-task-review.md`.
+
+### Verified
+
+- `pnpm typecheck` و`pnpm test`: `136/136` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke`: PASS؛ `DESKTOP_IPC_SMOKE=PASS` و`DESKTOP_SMOKE=PASS`.
+- task.preview bounded context/target/plan/critique وtraversal rejection وno-mutation/no-approval: PASS.
+
+### Boundaries
+
+- task.preview review-only؛ لا ينشئ checkpoint أو Human Gate ticket ولا يستدعي WorkCycle أو patch apply أو terminal أو Git mutation.
+- لا توجد provider/network/model calls من panel الافتراضي؛ Lightweight Web Preview وnative toolchains وProduction Studio وSecond Brain تبقى ضمن المراحل اللاحقة.
+
 ## [Unreleased] — Git Read-only Integration وRepository Boundary
 
 ### Added
