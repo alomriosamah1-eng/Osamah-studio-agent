@@ -1,6 +1,6 @@
 # Second Brain: Memory Capture وKnowledge Entry Review
 
-**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `39bd89c7f4242abab76fd624045b493b72e48088`؛ docs-close مستقل ويحدّث summaries فقط. تضيف الشريحة التقاط معرفة محليًا ومراجعة entry bounded، ولا تبني embeddings أو FTS أو مزامنة network أو autosave من renderer.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `39bd89c7f4242abab76fd624045b493b72e48088`، ثم أضيفت لها persistence اختيارية ومحدودة في feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`. تضيف الشريحة التقاط معرفة محليًا ومراجعة entry bounded؛ ويمكن لملف SQLite المفعّل حفظ الـentries واستعادتها بعد restart، بينما يبقى backend الافتراضي in-memory. لا تبني embeddings أو FTS أو مزامنة network أو autosave من renderer.
 
 ## الغرض
 
@@ -48,7 +48,7 @@ export interface MemoryCapturePort {
 }
 ```
 
-الـadapter الأول `InMemoryMemoryCapture` deterministic وbounded. لا يكتب SQLite في هذه الشريحة حتى تثبت contract والخصوصية؛ persistence وFTS migration شريحة لاحقة. `searchLocal` بحث نصي محدود في الذاكرة، case-insensitive، ولا يستدعي provider أو vector database.
+الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محدود في الذاكرة، case-insensitive، ولا يستدعي provider أو vector database؛ ولا تمثل هذه الإضافة FTS أو semantic retrieval.
 
 ## Provenance ودرجة اليقين
 
@@ -66,6 +66,6 @@ export interface MemoryCapturePort {
 
 تثبت اختبارات Application حدود الطول والقوائم والـredaction والـprovenance unknown IDs والبحث المحلي وdeduplication وعدم mutation. تثبت اختبارات IPC أن malformed payload يفشل قبل Application، وأن `providerAccess=never` لا يستدعي provider، وأن entry لا تكتب ملفات ولا تنشئ approval ticket ولا network request. يثبت Electron smoke capture/list/search وsafe rendering، ويقاس الأداء تحت `low_memory` مع إبقاء الإدخالات والنتائج bounded.
 
-تبقى SQLite persistence وFTS5/vector embeddings وGraphiti/Mem0/OpenViking providers وsemantic retrieval وautomatic consolidation وprovider sharing وHuman confirmation شريحة مستقلة لاحقة. لا يُسمح لهذه الشريحة أن تتحول إلى خدمة ذاكرة خفية أو قناة exfiltration.
+أصبحت SQLite persistence الاختيارية المحدودة لـ`MemoryEntry` منفذة عبر migration 005، مع بقاء FTS5/vector embeddings وGraphiti/Mem0/OpenViking providers وsemantic retrieval وautomatic consolidation وprovider sharing شِرائح لاحقة. Human confirmation هو review محلي صريح ولا يتحول إلى تحقق خارجي. لا يُسمح لهذه الشريحة أن تتحول إلى خدمة ذاكرة خفية أو قناة exfiltration.
 
 إعداد: Manus AI. تاريخ التحديث: 2026-08-22.

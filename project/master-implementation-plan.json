@@ -33,10 +33,11 @@
       "external-accounts-metadata-only",
       "storage-settings-read-only",
       "self-development-candidate-review-bounded",
-      "memory-consolidation-bounded"
+      "memory-consolidation-bounded",
+      "sqlite-memory-persistence-bounded"
     ],
-    "tests": "201/201",
-    "next_phase": "memory-persistence-sqlite-or-semantic-retrieval-review",
+    "tests": "204/204",
+    "next_phase": "second-brain-local-retrieval-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [
@@ -155,7 +156,7 @@
       "name": "second-brain-capture-search-links",
       "depends_on": [2, 3, 4],
       "primary_owner": "knowledge",
-      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English FTS5", "scope and retention"],
+      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English FTS5", "scope and retention", "optional bounded SQLite memory persistence"],
       "exit_gate": "US-006 retrieves Arabic and English notes with correct project scope and no leakage"
     },
     {
@@ -163,7 +164,7 @@
       "name": "semantic-memory-and-embeddings",
       "depends_on": [9, 5],
       "primary_owner": "knowledge",
-      "deliverables": ["memory candidates", "consolidation", "embedding versioning", "retrieval benchmark", "optional vector adapter"],
+      "deliverables": ["memory candidates", "consolidation", "bounded SQLite persistence prerequisite", "embedding versioning", "retrieval benchmark", "optional vector adapter"],
       "exit_gate": "every retrieval has source/version/scope and stale indexes can be rebuilt safely"
     },
     {

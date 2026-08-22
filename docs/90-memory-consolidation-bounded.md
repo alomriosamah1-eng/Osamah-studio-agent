@@ -15,7 +15,7 @@
 | النطاق | `second-brain` افتراضيًا؛ scope يتضمن provider/external يُحظر محافظًا |
 | الحساسية | `routine` أو `personal` أو `sensitive` أو `secret_shaped` |
 | المصدر الأصلي | لا يتغير عند create أو consolidate أو rollback |
-| التخزين | in-memory فقط؛ لا SQLite migration أو ملف أو autosave في هذه الشريحة |
+| التخزين | candidate in-memory افتراضيًا؛ persistence اختيارية عبر SQLite profile في migration 005، دون autosave من renderer |
 | البحث الدلالي | `embeddingIndex=not_configured` و`retrievalEffects=[none]` |
 
 ## دورة الحياة
@@ -42,7 +42,7 @@
 
 النص يمر عبر `sanitizeAuditText` قبل تخزين candidate في الذاكرة، ويُقص المحتوى إلى 16,000 حرف، والمصادر إلى ثمانية IDs، والأهمية إلى 1–5، والـreview reason إلى 512 حرفًا. لا تُسجل النصوص الخام في logs من خلال الشريحة. لا يفتح النظام provider أو network أو microphone أو Avatar/voice runtime، ولا يرسل محتوى candidate إلى External Accounts.
 
-يبقى الفرق واضحًا بين `confirmed` محليًا و`externally_verified`. تأكيد MemoryEntry لا يجعلها حقيقة خارجية، وconsolidation لا يرفع الثقة أو provider access. persistence وdelete propagation وaudit الدائم وscope enforcement عبر SQLite وsemantic redaction مراحل لاحقة تحتاج تصميمًا مستقلًا.
+يبقى الفرق واضحًا بين `confirmed` محليًا و`externally_verified`. تأكيد MemoryEntry لا يجعلها حقيقة خارجية، وconsolidation لا يرفع الثقة أو provider access. persistence أصبحت اختيارية ومحدودة عبر `MemoryCandidatePersistencePort` وSQLite profile، مع redaction وhydration fail-closed وrestart round-trip. أما delete propagation وaudit الدائم وsemantic redaction المتقدم وscope enforcement عبر خدمات خارجية فتحتاج تصميمًا مستقلًا.
 
 ## الأداء والذاكرة
 
@@ -52,7 +52,7 @@
 
 تغطي اختبارات Application حفظ source provenance، منع المصادر غير المؤكدة، منع الحساسية وscope escape وsecret-shaped content، bounded inputs، explicit consolidate، المحافظة على المصدر، وrollback. وتغطي اختبارات IPC create/preview/review ورفض `token` أو الحقول الزائدة. ويغطي desktop smoke التسلسل من MemoryEntry المؤكد إلى candidate preview ثم consolidate ثم rollback مع فحص أن المصدر لم يتغير.
 
-نجحت البوابة في 2026-08-22: `pnpm check` بـ`201/201`، و`pnpm build`، و`pnpm desktop:smoke`، و`pnpm performance:smoke`، وSQLite migration/JSON/diff/secret validation. نتائج الأداء هي نتائج smoke للمشروع والمسار الحالي وليست قياسًا لفهرس متجهي أو نموذج semantic.
+نجحت بوابة شريحة persistence في 2026-08-22: `pnpm check` بـ`204/204`، و`pnpm build`، و`pnpm desktop:smoke`، و`pnpm performance:smoke`، وSQLite migration/JSON/Node syntax/diff/secret validation. أثبت validator: `MIGRATION_COUNT=5` و`SCHEMA_VERSION=005` و`TABLE_COUNT=14` و`INDEX_COUNT=30`. تغطي الاختبارات round-trip بعد restart وfail-closed للـJSON والمصادر غير المتسقة. نتائج الأداء smoke للمشروع والمسار الحالي وليست قياسًا لفهرس متجهي أو نموذج semantic.
 
 ## الملفات والحدود
 
@@ -67,6 +67,6 @@
 | `prototypes/studio/index.html` | لوحة Second Brain |
 | `prototypes/studio/workspace.js` | العرض والإنشاء والمراجعة وdesktop smoke |
 
-تبقى **SQLite persistence، migrations الخاصة بالمرشحات، FTS/semantic retrieval، embeddings، vector database، deduplication الدلالي، external verification، provider sharing، automatic consolidation، وحقن النتائج في Agent Runtime** خارج النطاق. كما يبقى Virtual Human / AI Avatar موثقًا ومؤجلًا حسب الخطة، ولا يتأثر بهذه الشريحة.
+تبقى **FTS/semantic retrieval، embeddings، vector database، deduplication الدلالي، external verification، provider sharing، automatic consolidation، وحقن النتائج في Agent Runtime** خارج النطاق. SQLite persistence المنفذة هنا اختيارية ومحدودة إلى `MemoryEntry` و`MemoryCandidate`، ولا تضيف FTS أو vector retrieval أو provider sharing أو automatic consolidation. كما يبقى Virtual Human / AI Avatar موثقًا ومؤجلًا حسب الخطة، ولا يتأثر بهذه الشريحة.
 
-إعداد: Manus AI. تاريخ التنفيذ: 2026-08-22.
+إعداد: Manus AI. تاريخ التنفيذ: 2026-08-22. feature: `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`.

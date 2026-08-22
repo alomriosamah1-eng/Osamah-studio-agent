@@ -1,6 +1,6 @@
 # Second Brain: Memory Entry Review وExplicit Confirmation
 
-**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`؛ docs-close مستقل ويحدّث summaries فقط. تضيف الشريحة مراجعة بشرية صريحة وانتقالات state bounded فوق Memory Capture، ولا تمنح provider access أو تنشئ mutation خارج سجل الذاكرة.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c`، مع persistence اختيارية للـentry في feature `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad`. تضيف الشريحة مراجعة بشرية صريحة وانتقالات state bounded فوق Memory Capture؛ وعند SQLite profile يستمر state وreview metadata بعد restart، دون منح provider access أو إنشاء mutation خارج سجل الذاكرة.
 
 ## الغرض
 
@@ -16,7 +16,7 @@
 | `confirmed` | `archive` | المستخدم اختار تأكيدها؛ لا تتغير provenance تلقائيًا |
 | `archived` | لا انتقال | مخفية من البحث الافتراضي ولا تحذف سجلها في هذه الشريحة |
 
-لا توجد عملية `edit` أو `delete` أو `share` عامة في هذه الشريحة. تعديل المحتوى ينشئ entry جديدة مرتبطة بالأصل لاحقًا، والحذف الدائم يحتاج retention contract مستقل. confirmation لا ينشئ Human Gate ticket لأنه mutation داخل memory store محلي، لكنه يسجل `reviewReason` bounded و`reviewedAt` ويمكن تدقيقه محليًا.
+لا توجد عملية `edit` أو `delete` أو `share` عامة في هذه الشريحة. تعديل المحتوى ينشئ entry جديدة مرتبطة بالأصل لاحقًا، والحذف الدائم يحتاج retention contract مستقل. confirmation لا ينشئ Human Gate ticket لأنه mutation داخل memory store محلي، لكنه يسجل `reviewReason` bounded و`reviewedAt` ويمكن تدقيقه محليًا. إذا كان SQLite profile مفعّلًا تُحفظ هذه الحقول في `memory_entries` وتعود عند إعادة فتح التطبيق؛ أما backend الافتراضي in-memory فلا يَعِد ببقاء البيانات عبر restart.
 
 ## العقود
 
@@ -52,6 +52,6 @@ export interface MemoryReviewPort {
 
 تثبت اختبارات Application أن confirmation لا يعمل من `archived`، وأن archive لا يعيد entry إلى review، وأن السبب redacted وbounded، وأن providerAccess وprovenance والـcontent لا تتغير. تثبت اختبارات IPC fail-closed ورفض duplicate/unknown fields، وتثبت Electron smoke أن المراجعة لا تنشئ approval ticket ولا network request ولا ملفًا. يقاس listForReview تحت `low_memory` مع history bounded.
 
-تبقى persistence في SQLite، FTS/vector embeddings، semantic retrieval، consolidation، provider sharing، deletion/retention enforcement، وسجل audit دائم شرائح مستقلة لاحقة.
+أصبحت persistence الاختيارية المحدودة في SQLite منفذة للـentries، بينما تبقى FTS/vector embeddings، semantic retrieval، consolidation، provider sharing، deletion/retention enforcement، وسجل audit دائم شرائح مستقلة لاحقة. confirmation يظل قرارًا محليًا ولا يساوي تحققًا خارجيًا.
 
 إعداد: Manus AI. تاريخ التحديث: 2026-08-22.

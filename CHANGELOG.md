@@ -1,5 +1,29 @@
 # سجل التغييرات
 
+## [Unreleased] — Second Brain SQLite Memory Persistence bounded
+
+### Added
+
+- migration `005_memory_persistence.sql` لإضافة `memory_entries` و`memory_candidates` مع القيود والفهارس bounded، ورفع schema version إلى `005`.
+- `MemoryEntryPersistencePort` و`MemoryCandidatePersistencePort` اختياريان خلف خدمات Application؛ memory backend الافتراضي بقي in-memory، وSQLite لا يُنشأ إلا عند opt-in أو profile صريح.
+- `SqliteMemoryEntryRepository` و`SqliteMemoryCandidateRepository` مع redaction قبل الكتابة، JSON serialization bounded، hydration validators، وفشل مغلق للـenums والقوائم والمصادر غير المتسقة.
+- restart hydration عبر composition وtyped IPC من دون تغيير عقود `brain.memory.*` أو `memory-candidate.*` ومن دون كشف SQL أو filesystem للـrenderer.
+- `docs/91-memory-persistence-sqlite.md` لتوثيق المعمارية ونموذج البيانات والخصوصية والbackup boundaries ومعايير القبول.
+
+### Verified
+
+- `pnpm check`: `204/204` اختبارًا ناجحًا، بما في ذلك repository round-trip وEmbedded Application restart end-to-end وmalformed JSON/source consistency fail-closed.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS، مع low-memory profile وعدم تحميل model أو provider عند startup.
+- SQLite validator: `MIGRATION_COUNT=5` و`SCHEMA_VERSION=005` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `48daaf1f83bbc4cc7f01ff2a4e873c5e1a9a31ad` دُفع إلى `origin/main` وتحقق تطابق `LOCAL_SHA` و`REMOTE_SHA` وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- persistence اختيارية ومحدودة إلى `MemoryEntry` و`MemoryCandidate` داخل SQLite profile؛ لا FTS، ولا embeddings، ولا vector services، ولا semantic retrieval، ولا provider sharing، ولا automatic consolidation.
+- `confirmed` و`consolidated` قرارات محلية صريحة وليست تحققًا خارجيًا، ولا تغيّر `providerAccess=never` أو provenance أو المصدر الأصلي، ولا تنشئ approval ticket أو network/provider call.
+- backup الحالي يلتقط SQLite ضمن حدوده المحلية، لكن تشفير backup وkey management وrestore إلى profile حي وdelete propagation وretention enforcement الدائم شِرائح مستقلة لاحقة.
+
+
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 
 ### Added
