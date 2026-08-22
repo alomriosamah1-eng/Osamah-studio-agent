@@ -826,7 +826,9 @@
     }
   };
 
+  let activeArtifact;
   const renderArtifact = (draft) => {
+    activeArtifact = draft;
     $('artifactStatus').textContent = `Draft ${draft.artifactId} · assembly review only · no render/export/file write`;
     $('artifactReviewState').textContent = draft.reviewState;
     $('artifactClaimCount').textContent = String(draft.manifest.claims.length);
@@ -840,6 +842,54 @@
     item.textContent = `State: ${draft.reviewState}\nClaims: ${draft.manifest.claims.join(', ') || 'none'}\nAssets: ${draft.manifest.assets.join(', ') || 'none'}\nSources: ${draft.manifest.sources.join(', ') || 'none'}\nTools invoked: ${draft.manifest.tools.length ? draft.manifest.tools.join(', ') : 'none'}\nWarnings: ${draft.warnings.length ? draft.warnings.join(', ') : 'none'}`;
     list.append(item);
   };
+  const previewRenderPolicy = async () => {
+    if (!activeArtifact) {
+      $('renderPolicyStatus').textContent = 'Build an artifact manifest first; no renderer was started.';
+      log('production.render.policy.missing_artifact', 'warn');
+      return;
+    }
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('renderPolicyStatus').textContent = 'Desktop IPC unavailable; no render policy was evaluated.';
+      log('production.render.policy.unavailable', 'warn');
+      return;
+    }
+    const button = $('previewRenderPolicy');
+    button.disabled = true;
+    $('renderPolicyStatus').textContent = 'Evaluating bounded policy preview…';
+    try {
+      const response = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('production-render-policy'),
+        correlationId: nextRequest('production-render-policy-correlation'),
+        method: 'production.render.policy.preview',
+        payload: { artifactId: activeArtifact.artifactId, format: $('renderFormat').value, relativeDestination: 'preview/policy-only-output' },
+      });
+      if (!response.ok) {
+        $('renderPolicyStatus').textContent = `Render policy rejected: ${response.error.message}`;
+        log(`production.render.policy_rejected ${response.error.message}`, 'warn');
+        return;
+      }
+      $('renderPolicyStatus').textContent = `Policy ${response.result.decision} · no renderer started · no output file`;
+      $('renderDecision').textContent = response.result.decision;
+      $('renderAdapter').textContent = response.result.adapter;
+      $('renderMemoryBudget').textContent = `${response.result.budget.maxMemoryMb} MB · ${response.result.budget.timeoutMs} ms`;
+      $('renderExecutionStarted').textContent = String(response.result.executionStarted);
+      const checks = $('renderChecksList');
+      checks.replaceChildren();
+      const item = document.createElement('div');
+      item.className = `artifact-item ${response.result.decision === 'allowed_preview' ? 'ready' : response.result.decision === 'blocked' ? 'blocked' : 'review'}`;
+      item.textContent = `Checks: ${response.result.checks.join(', ') || 'none'}\nWarnings: ${response.result.warnings.length ? response.result.warnings.join(', ') : 'none'}`;
+      checks.append(item);
+      $('rightStatus').textContent = `Render policy ${response.result.decision}`;
+      log(`production.render.policy ${response.result.decision} · executionStarted=false`, response.result.decision === 'blocked' ? 'warn' : 'ok');
+    } catch (error) {
+      $('renderPolicyStatus').textContent = `Render policy failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('production.render.policy_failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   const createArtifactDraft = async () => {
     if (!activeContentPlan) {
       $('artifactStatus').textContent = 'Create a content plan preview first; no assembly was attempted.';
@@ -1076,6 +1126,7 @@
   $('refreshAssets').onclick = () => { void loadAssets(); };
   $('createCreativeBrief').onclick = () => { void createCreativeBrief(); };
   $('createArtifactDraft').onclick = () => { void createArtifactDraft(); };
+  $('previewRenderPolicy').onclick = () => { void previewRenderPolicy(); };
   $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
@@ -1269,6 +1320,20 @@
       method: 'production.artifact.draft.get',
       payload: { artifactId: artifactDraftResponse.result.artifactId },
     }) : { ok: false };
+    const renderPolicyResponse = artifactDraftResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-render-policy',
+      correlationId: 'desktop-smoke-render-policy',
+      method: 'production.render.policy.preview',
+      payload: { artifactId: artifactDraftResponse.result.artifactId, format: 'pdf', relativeDestination: 'preview/policy-only-output' },
+    }) : { ok: false };
+    const renderPolicyMalformedResponse = artifactDraftResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-render-policy-invalid',
+      correlationId: 'desktop-smoke-render-policy',
+      method: 'production.render.policy.preview',
+      payload: { artifactId: artifactDraftResponse.result.artifactId, format: 'pdf', relativeDestination: '/tmp/output.pdf' },
+    }) : { ok: false };
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -1404,7 +1469,9 @@
     const assetBriefNoMutationPassed = assetBriefPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const artifactPassed = artifactDraftResponse.ok && artifactDraftResponse.result.reviewState === 'blocked' && artifactDraftResponse.result.manifest.tools.length === 0 && artifactDraftResponse.result.warnings.some((warning) => warning.includes('no_citation')) && artifactGetResponse.ok && artifactGetResponse.result?.artifactId === artifactDraftResponse.result.artifactId;
     const artifactNoMutationPassed = artifactPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const renderPolicyPassed = renderPolicyResponse.ok && renderPolicyResponse.result.decision === 'blocked' && renderPolicyResponse.result.executionStarted === false && renderPolicyResponse.result.adapter === 'none' && renderPolicyResponse.result.checks.includes('artifact_review_blocked');
+    const renderPolicyNoMutationPassed = renderPolicyPassed && renderPolicyMalformedResponse.ok === false && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

@@ -22,6 +22,7 @@ import type { GitDiffResult, GitStatusSnapshot } from "./application/git-read-on
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js";
 import type { ArtifactDraft } from "./application/artifact-assembly.js";
+import type { RenderPolicyPreview } from "./application/render-policy.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -542,6 +543,25 @@ test("typed IPC rejects malformed task.preview paths before application access",
     } as const);
     assert.equal(malformed.ok, false);
     if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC exposes render policy preview without starting a renderer", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const missing = await app.ipc.dispatch({ protocolVersion: 1, requestId: "render-policy-missing", correlationId: "render-policy", method: "production.render.policy.preview", payload: { artifactId: "missing", format: "pdf" } } as const) as IpcResponse<RenderPolicyPreview>;
+    assert.equal(missing.ok, true);
+    if (missing.ok) {
+      assert.equal(missing.result.decision, "blocked");
+      assert.equal(missing.result.executionStarted, false);
+      assert.equal(missing.result.adapter, "none");
+    }
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "render-policy-invalid", correlationId: "render-policy", method: "production.render.policy.preview", payload: { artifactId: "missing", format: "pdf", relativeDestination: "/tmp/output.pdf" } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
   } finally {
     app.close();
   }

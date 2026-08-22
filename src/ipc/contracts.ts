@@ -16,6 +16,7 @@ import type { AddCitationRequest, CitationRecord, RegisterSourceRequest, SourceR
 import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequest, ContentPlan, CreateContentPlanRequest } from "../application/content-plan.js";
 import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
 import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactDraftRequest } from "../application/artifact-assembly.js";
+import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyRequest } from "../application/render-policy.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -73,6 +74,7 @@ export interface IpcMethodMap {
   "production.brief.asset.attach": { payload: AttachAssetRequest; result: CreativeBrief };
   "production.artifact.draft.create": { payload: CreateArtifactDraftRequest; result: ArtifactDraft };
   "production.artifact.draft.get": { payload: { artifactId: string }; result: ArtifactDraft | undefined };
+  "production.render.policy.preview": { payload: RenderPolicyRequest; result: RenderPolicyPreview };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -312,6 +314,18 @@ const isArtifactDraftCreatePayload = (value: unknown): boolean => isRecord(value
   && (value.claimIds === undefined || isUniqueBoundedStringList(value.claimIds, 128, 256))
   && (value.assetIds === undefined || isUniqueBoundedStringList(value.assetIds, 64, 256));
 const isArtifactDraftGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.artifactId, 256);
+const isRenderFormatPayload = (value: unknown): value is RenderFormat => value === "markdown" || value === "html" || value === "pptx" || value === "pdf" || value === "image" || value === "video";
+const isRenderBudgetPayload = (value: unknown): boolean => isRecord(value)
+  && (value.timeoutMs === undefined || (typeof value.timeoutMs === "number" && Number.isSafeInteger(value.timeoutMs) && value.timeoutMs >= 1 && value.timeoutMs <= 30_000))
+  && (value.maxMemoryMb === undefined || (typeof value.maxMemoryMb === "number" && Number.isSafeInteger(value.maxMemoryMb) && value.maxMemoryMb >= 1 && value.maxMemoryMb <= 512))
+  && (value.maxOutputBytes === undefined || (typeof value.maxOutputBytes === "number" && Number.isSafeInteger(value.maxOutputBytes) && value.maxOutputBytes >= 1 && value.maxOutputBytes <= 64 * 1024 * 1024))
+  && (value.maxPages === undefined || (typeof value.maxPages === "number" && Number.isSafeInteger(value.maxPages) && value.maxPages >= 1 && value.maxPages <= 100));
+const isSafeRelativeDestinationPayload = (value: unknown): boolean => value === undefined || (isString(value, 512) && !value.startsWith("/") && !value.startsWith("~") && !value.includes("\\") && !value.includes("..") && !value.includes(":") && !value.includes("\u0000"));
+const isRenderPolicyPreviewPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.artifactId, 256)
+  && isRenderFormatPayload(value.format)
+  && isSafeRelativeDestinationPayload(value.relativeDestination)
+  && (value.budget === undefined || isRenderBudgetPayload(value.budget));
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -353,6 +367,7 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.brief.asset.attach") return isBriefAssetAttachPayload(payload);
   if (method === "production.artifact.draft.create") return isArtifactDraftCreatePayload(payload);
   if (method === "production.artifact.draft.get") return isArtifactDraftGetPayload(payload);
+  if (method === "production.render.policy.preview") return isRenderPolicyPreviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

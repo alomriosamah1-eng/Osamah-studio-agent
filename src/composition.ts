@@ -37,6 +37,7 @@ import { InMemorySourceRegistry } from "./application/source-registry.js";
 import { InMemoryContentPlanService } from "./application/content-plan.js";
 import { InMemoryAssetCatalog } from "./application/asset-catalog.js";
 import { InMemoryArtifactAssembly } from "./application/artifact-assembly.js";
+import { InMemoryRenderPolicy } from "./application/render-policy.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -185,6 +186,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const contentPlan = new InMemoryContentPlanService(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const assetCatalog = new InMemoryAssetCatalog(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const artifactAssembly = new InMemoryArtifactAssembly(contentPlan, assetCatalog, assetCatalog, sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
+  const renderPolicy = new InMemoryRenderPolicy(artifactAssembly);
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,
@@ -203,7 +205,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -232,6 +234,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     contentPlan,
     assetCatalog,
     artifactAssembly,
+    renderPolicy,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,
