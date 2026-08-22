@@ -99,7 +99,7 @@ export interface WorkspaceFileReaderPort {
 | Workspace/Electron | dynamic tree وsafe file rendering وdesktop smoke لـtree/file open/root picker/Human Gate: PASS |
 | Performance/security | low-memory profile، `PERF_SMOKE=PASS`، migration/JSON/diff/secret scans: PASS |
 
-لا تزال الشريحة bounded؛ لا تدعي توفير Monaco أو LSP أو terminal أو Git write أو test runner. commit التنفيذ والتوثيق يثبتان بعد إغلاق GitHub verification.
+لا تزال الشريحة bounded؛ لا تدعي توفير Monaco أو LSP أو terminal أو Git write أو test runner. التنفيذ مدفوع في `a72b2c7b85bf4abc934be638aa911577a20547ab`، وتوثيق الإغلاق النهائي يأتي في commit مستقل مع تحقق SHA مطابق.
 
 ## الحدود المفتوحة
 

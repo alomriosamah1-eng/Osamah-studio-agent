@@ -99,7 +99,7 @@
 | Provider Policy/Doctor/Quota | configuration وdisabled/blocked/healthy doctor وconcurrency/rate/circuit وGateway admission؛ delivery `8be5293f29c8e2c520cd422a54226d9f7f31128a`، local == `origin/main` |
 | Typed Provider Configuration UI/IPC | provider.list/configure/doctor validators وhandlers وWorkspace panel وElectron smoke وno-network startup؛ delivery `cb70b17f1b5d9350e22855bf8da98efd0f8eb226`، local == `origin/main` |
 | Provider-backed Planner/WorkCycle | LlmPlanner وprovider/model/offline selection وstrict JSON وplan-less generation وHuman Gate/resume guards وElectron fixture smoke؛ delivery `358e339e52f1a07e95c5e266f18bd37ba36072e3`، local == `origin/main` |
-| Development Environment: Project Explorer/File Reader | `ProjectExplorerPort` و`WorkspaceFileReaderPort` وfilesystem adapters bounded و`project.tree`/`file.openText` typed IPC وWorkspace dynamic tree وsafe DOM text rendering؛ delivery pending commit |
+| Development Environment: Project Explorer/File Reader | `ProjectExplorerPort` و`WorkspaceFileReaderPort` وfilesystem adapters bounded و`project.tree`/`file.openText` typed IPC وWorkspace dynamic tree وsafe DOM text rendering؛ delivery `a72b2c7b85bf4abc934be638aa911577a20547ab`، local == `origin/main` |
 | Persistent Audit وHuman Gate | schema 003 وSqliteAuditTrail وredaction/restart وpending/decide fail-closed؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
 
 تم التحقق من `pnpm check` بـ111/111، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وapproval event callback وAudit Export NDJSON/manifest/redaction/destination safety وRetention age/count وPlanner/Critic no-mutation guard وLlmPlanner strict JSON/provider routing وProject Explorer/File Reader ordering/hash/size/binary/symlink/secret guards وOllama/llama.cpp mapping/health/loopback/timeout وprovider configuration/doctor/quota/circuit وtyped provider list/configure/doctor/tree/file.openText وcomposition opt-in/no-network-startup وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. full gate لشريحة Project Explorer/File Reader ناجح، ودفع GitHub قيد الإغلاق.
@@ -124,4 +124,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `358e339e52f1a07e95c5e266f18bd37ba36072e3`؛ Project Explorer/File Reader قيد commit/push.
+إعداد: Manus AI. تاريخ التحديث: 2026-08-22. آخر delivery: `a72b2c7b85bf4abc934be638aa911577a20547ab`؛ Project Explorer/File Reader مدفوعة ومتحقق منها، local == `origin/main`.
