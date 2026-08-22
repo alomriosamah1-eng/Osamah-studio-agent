@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر delivery مدفوع هو `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`. اكتملت شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`. اكتملت شريحة Presentation renderer بإضافة renderer نقي وbrowser adapter مدمج داخل Workspace. اكتملت شريحة IPC project open بإضافة `preview.openProject` لقراءة filesystem وبناء bundle وبدء session؛ نجح `pnpm check` مع `21/21` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
+المستودع كان وثائقيًا فقط عند بداية هذه المرحلة. أضيف Foundation slice TypeScript في `src/`، وEmbeddedSimulatorController، وtyped IPC transport/handlers، وSQLite migration contract، وWorkspace prototype في `prototypes/studio/index.html`. آخر delivery مدفوع هو `c1b1613a92515b5daa186137ad48f37844834878`. اكتملت شريحة Project Preview Runtime بإضافة `ProjectPreviewBundle` و`FixturePreviewRuntime` و`FilesystemProjectScanner` و`FilesystemProjectPreviewService`. اكتملت شريحة Presentation renderer بإضافة renderer نقي وbrowser adapter مدمج داخل Workspace. اكتملت شريحة IPC project open بإضافة `preview.openProject` لقراءة filesystem وبناء bundle وبدء session؛ نجح `pnpm check` مع `21/21` اختبارًا. لا يوجد Electron shell أو SQLite native driver أو Metro/native runtime حتى الآن.
 
 ## المعمارية
 
@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تنفيذ `preview.openProject` عبر typed in-memory IPC: بناء bundle من `fixtures/mobile-expo`، بدء embedded session، inspect للـ summary، ورفض entry الذي يتجاوز root. نجحت `pnpm check` بـ21/21، ونجحت SQLite/diff/secret audits، وcommit `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` مدفوع ومتحقق، والشجرة نظيفة. الخطوة التالية typed preload وCSP/sandbox، وليس Android/iOS native قبل اكتمال doctor/resource contracts.
+تم تنفيذ `preview.openProject` عبر typed in-memory IPC: بناء bundle من `fixtures/mobile-expo`، بدء embedded session، inspect للـ summary، ورفض entry الذي يتجاوز root. نجحت `pnpm check` بـ21/21، ونجحت SQLite/diff/secret audits، وcommit `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` مدفوع، وآخر delivery state `c1b1613a92515b5daa186137ad48f37844834878` مدفوع ومتحقق، والشجرة نظيفة. الخطوة التالية typed preload وCSP/sandbox، وليس Android/iOS native قبل اكتمال doctor/resource contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

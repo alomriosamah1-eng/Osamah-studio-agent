@@ -7,10 +7,10 @@
 | الإصدار | `0.5.0-ipc-project-open` |
 | المرحلة | IPC Project Open + Presentation Renderer + Project Preview Runtime |
 | الحالة | IPC project open مدفوعة ومتحقق منها؛ الشجرة نظيفة |
-| آخر commit مدفوع | `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` |
+| آخر commit مدفوع | `c1b1613a92515b5daa186137ad48f37844834878` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `21/21` اختبار Node/tsx ناجح في 2026-08-22 |
-| آخر push مؤكد | `origin/main` عند `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`؛ local وGitHub متطابقان |
+| آخر push مؤكد | `origin/main` عند `c1b1613a92515b5daa186137ad48f37844834878`؛ local وGitHub متطابقان |
 
 ## المكتمل
 

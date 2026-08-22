@@ -7,7 +7,7 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981` |
+| آخر commit مدفوع | `c1b1613a92515b5daa186137ad48f37844834878` |
 | حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع IPC project open |
 | الإصدار المحلي | `0.5.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
@@ -50,4 +50,4 @@
 
 بعد هذه الشريحة يبدأ typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `2aad1bc8d55adb1f3f79cb11d9cbfefaf4dd3981`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `c1b1613a92515b5daa186137ad48f37844834878`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
