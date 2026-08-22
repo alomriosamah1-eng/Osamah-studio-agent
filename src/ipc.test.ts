@@ -676,6 +676,39 @@ test("typed IPC exposes bounded report documents with provenance and explicit re
   }
 });
 
+test("typed IPC exposes Arabic-first application settings with bounded updates", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const defaults = await app.ipc.dispatch({ protocolVersion: 1, requestId: "settings-get-default", correlationId: "settings-ipc", method: "settings.get", payload: {} } as const);
+    assert.equal(defaults.ok, true);
+    if (defaults.ok) {
+      assert.equal(defaults.result.locale, "ar");
+      assert.equal(defaults.result.direction, "rtl");
+      assert.equal(defaults.result.theme, "dark");
+      assert.equal(defaults.result.fontScale, 1);
+    }
+    const updated = await app.ipc.dispatch({ protocolVersion: 1, requestId: "settings-update-en", correlationId: "settings-ipc", method: "settings.update", payload: { locale: "en", theme: "light", fontScale: 1.25, density: "compact", reduceMotion: true } } as const);
+    assert.equal(updated.ok, true);
+    if (updated.ok) {
+      assert.equal(updated.result.locale, "en");
+      assert.equal(updated.result.direction, "ltr");
+      assert.equal(updated.result.theme, "light");
+      assert.equal(updated.result.fontScale, 1.25);
+      assert.equal(updated.result.density, "compact");
+      assert.equal(updated.result.reduceMotion, true);
+    }
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "settings-invalid", correlationId: "settings-ipc", method: "settings.update", payload: { locale: "ar", unknown: true } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    const retained = await app.ipc.dispatch({ protocolVersion: 1, requestId: "settings-get-retained", correlationId: "settings-ipc", method: "settings.get", payload: {} } as const);
+    assert.equal(retained.ok, true);
+    if (retained.ok) assert.equal(retained.result.locale, "en");
+    assert.equal(app.humanGate.listPending(8).length, 0);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC exposes render policy preview without starting a renderer", async () => {
   const app = createEmbeddedApplication();
   try {

@@ -47,6 +47,8 @@
 | `79-documentation-traceability-reporting.md` | taxonomy التوثيق وخريطة التتبع وReportDocument وhandoff |
 | `80-agent-definition-contract-catalog.md` | عقد تعريف الوكيل والكتالوج bounded وحالات التنفيذ والحدود |
 | `81-report-document-contract.md` | عقد التقرير المحلي وprovenance وclaims والمراجعة وحدود عدم التصدير |
+| `82-application-settings-control-center.md` | عقد إعدادات التطبيق واللغة والمظهر ومركز التحكم والإدارات |
+| `83-control-center-external-storage-self-development.md` | إدارة الحسابات الخارجية والتخزين والتطوير الذاتي وقواعد consent وHuman Gate |
 
 ## ملفات الحالة خارج هذا المجلد
 

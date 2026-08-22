@@ -41,6 +41,7 @@ import { InMemoryRenderPolicy } from "./application/render-policy.js";
 import { InMemoryMemoryCapture } from "./application/memory-capture.js";
 import { InMemoryAgentCatalog } from "./application/agent-catalog.js";
 import { InMemoryReportDocumentService } from "./application/report-document.js";
+import { InMemoryApplicationSettings } from "./application/application-settings.js";
 
 export type EmbeddedApplicationStorageOptions =
   | { readonly kind: "memory" }
@@ -193,6 +194,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const agentCatalog = new InMemoryAgentCatalog();
   const reportDocument = new InMemoryReportDocumentService(sourceRegistry, contentPlan, artifactAssembly, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
+  const applicationSettings = new InMemoryApplicationSettings();
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,
@@ -211,7 +213,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
   ];
   defaultProfiles.forEach((profile) => controller.registerProfile(profile));
-  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
+  registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService, { context: projectContextIndex, taskPreview, sourceRegistry, contentPlan, assetCatalog, creativeBrief: assetCatalog, artifactAssembly, renderPolicy, memoryCapture, agentCatalog, reportDocument, settings: applicationSettings, explorer: projectExplorer, fileReader: workspaceFileReader, editorDocuments, terminalPolicy, gitReadOnly, workCycle: agentWorkCycle, humanGate, providers: providerControls });
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -244,6 +246,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
     memoryCapture,
     agentCatalog,
     reportDocument,
+    applicationSettings,
     resourcePolicy,
     agentRuntime,
     approvalWorkflow,

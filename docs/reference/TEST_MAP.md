@@ -15,6 +15,7 @@
 | IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect/openProject وAgent Catalog methods | منفذ: `src/ipc.test.ts` |
 | Agent Definition Catalog | 46 definitions، schema/privacy/handoff/status/bounds وread-only IPC | منفذ: `src/agent-catalog.test.ts` و`src/ipc.test.ts` و`pnpm desktop:smoke` |
 | ReportDocument | provenance من Content Plan/Source/Artifact، claim states، redaction، local review، bounded IPC وno-export boundary | منفذ: `src/report-document.test.ts` و`src/ipc.test.ts` و`pnpm desktop:smoke` |
+| Application Settings وControl Center | Arabic-first locale/direction، theme، font scale، density، reduce motion، exact-key IPC وno-provider/no-approval | منفذ: `src/application-settings.test.ts` و`src/ipc.test.ts` و`pnpm desktop:smoke` |
 | Desktop security | CSP، context isolation، sender URL/id، preload bridge | منفذ: `src/desktop/security.test.ts` و`pnpm desktop:smoke` |
 | Preview runtime security | blocked imports/path traversal/source hash/diagnostics | منفذ: `src/preview-runtime.test.ts` و`src/ipc.test.ts` |
 | Project open integration | filesystem root → bundle → embedded session → inspect | منفذ: `src/ipc.test.ts` |

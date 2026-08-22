@@ -341,6 +341,58 @@
     log(`agent.catalog.loaded ${response.result.length} definition(s) · no execution`, 'ok');
   };
 
+  let activeApplicationSettings;
+  const renderApplicationSettings = (settings) => {
+    activeApplicationSettings = settings;
+    document.documentElement.lang = settings.locale;
+    document.documentElement.dir = settings.direction;
+    document.documentElement.dataset.theme = settings.theme;
+    document.documentElement.dataset.density = settings.density;
+    document.documentElement.style.setProperty('--font-scale', String(settings.fontScale));
+    $('appLocale').value = settings.locale;
+    $('appTheme').value = settings.theme;
+    $('appFontScale').value = String(settings.fontScale);
+    $('appDensity').value = settings.density;
+    $('appReduceMotion').checked = settings.reduceMotion;
+    $('settingsStatus').textContent = settings.locale === 'ar' ? `الإعدادات المحلية مفعلة · عربي · ${settings.theme === 'dark' ? 'داكن' : 'فاتح'} · ${Math.round(settings.fontScale * 100)}%` : `Local settings active · English · ${settings.theme} · ${Math.round(settings.fontScale * 100)}%`;
+  };
+  const loadApplicationSettings = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('settingsStatus').textContent = 'تعذر الوصول إلى إعدادات سطح المكتب؛ لم يحدث تغيير.';
+      return;
+    }
+    const response = await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('settings-get'), correlationId: nextRequest('settings-correlation'), method: 'settings.get', payload: {} });
+    if (!response.ok) {
+      $('settingsStatus').textContent = `فشل تحميل الإعدادات: ${response.error.message}`;
+      log(`settings.get_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderApplicationSettings(response.result);
+    log(`settings.loaded locale=${response.result.locale} theme=${response.result.theme}`, 'ok');
+  };
+  const updateApplicationSettings = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') return;
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('settings-update'),
+      correlationId: nextRequest('settings-correlation'),
+      method: 'settings.update',
+      payload: { locale: $('appLocale').value, theme: $('appTheme').value, fontScale: Number($('appFontScale').value), density: $('appDensity').value, reduceMotion: $('appReduceMotion').checked },
+    });
+    if (!response.ok) {
+      $('settingsStatus').textContent = `رُفض تحديث الإعدادات: ${response.error.message}`;
+      if (activeApplicationSettings) renderApplicationSettings(activeApplicationSettings);
+      log(`settings.update_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderApplicationSettings(response.result);
+    log(`settings.updated locale=${response.result.locale} theme=${response.result.theme} fontScale=${response.result.fontScale}`, 'ok');
+  };
+  const selectControlSection = (section) => {
+    document.querySelectorAll('[data-control-section]').forEach((button) => button.classList.toggle('active', button.dataset.controlSection === section));
+    document.querySelectorAll('[data-control-panel]').forEach((panel) => { panel.hidden = panel.dataset.controlPanel !== section; });
+  };
+
   const providerConfigs = new Map();
   const renderProviders = (providers) => {
     const empty = $('providerEmpty');
@@ -1431,6 +1483,14 @@
   $('capture').onclick = () => { log('ScreenshotCaptured: artifact created', 'ok'); };
   $('approve').onclick = () => { void loadPendingApprovals(); log('approval.queue_refreshed'); };
   $('refreshAgentCatalog').onclick = () => { void loadAgentCatalog(); };
+  document.querySelectorAll('[data-control-section]').forEach((button) => {
+    button.addEventListener('click', () => selectControlSection(button.dataset.controlSection || 'general'));
+  });
+  $('appLocale').onchange = () => { void updateApplicationSettings(); };
+  $('appTheme').onchange = () => { void updateApplicationSettings(); };
+  $('appFontScale').onchange = () => { void updateApplicationSettings(); };
+  $('appDensity').onchange = () => { void updateApplicationSettings(); };
+  $('appReduceMotion').onchange = () => { void updateApplicationSettings(); };
   $('createReportDocument').onclick = () => { void createReportDocument(); };
   $('refreshReportDocuments').onclick = () => { void loadReportDocuments(); };
   $('approveReportDocument').onclick = () => { void approveReportDocument(); };
@@ -1448,6 +1508,27 @@
         deviceProfileId: 'pixel-9',
         mode: 'lightweight_web',
       },
+    });
+    const settingsDefaultResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-settings-default',
+      correlationId: 'desktop-smoke-settings',
+      method: 'settings.get',
+      payload: {},
+    });
+    const settingsUpdateResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-settings-update',
+      correlationId: 'desktop-smoke-settings',
+      method: 'settings.update',
+      payload: { locale: 'en', theme: 'light', fontScale: 1.25, density: 'compact', reduceMotion: true },
+    });
+    const settingsMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-settings-invalid',
+      correlationId: 'desktop-smoke-settings',
+      method: 'settings.update',
+      payload: { locale: 'ar', unknown: true },
     });
     const projectTreeResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -1832,6 +1913,8 @@
     console.log(rootPickerPassed ? 'DESKTOP_ROOT_PICKER_SMOKE=PASS' : 'DESKTOP_ROOT_PICKER_SMOKE=FAIL');
     const streamReady = typeof window.osamah.subscribe === 'function';
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
+    const settingsPassed = settingsDefaultResponse.ok && settingsDefaultResponse.result.locale === 'ar' && settingsDefaultResponse.result.direction === 'rtl' && settingsDefaultResponse.result.theme === 'dark' && settingsUpdateResponse.ok && settingsUpdateResponse.result.locale === 'en' && settingsUpdateResponse.result.direction === 'ltr' && settingsUpdateResponse.result.theme === 'light' && settingsUpdateResponse.result.fontScale === 1.25 && settingsUpdateResponse.result.density === 'compact' && settingsMalformedResponse.ok === false;
+    const settingsNoMutationPassed = settingsPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const agentCatalogPassed = agentCatalogResponse.ok && agentCatalogResponse.result.length === 46 && agentCatalogResponse.result.find((definition) => definition.agentId === 'api-architect')?.executionStatus === 'bounded_capability' && agentDefinitionResponse.ok && agentDefinitionResponse.result?.agentId === 'security' && agentDefinitionResponse.result?.memoryRequirements.providerAccess === 'never';
     const agentCatalogNoMutationPassed = agentCatalogPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
@@ -1861,7 +1944,7 @@
     const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && settingsPassed && settingsNoMutationPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -1869,6 +1952,7 @@
   subscribeToApprovalEvents();
   void loadPendingApprovals();
   void loadAgentCatalog();
+  void loadApplicationSettings();
   void loadReportDocuments();
   void loadProviders();
   void loadSources();

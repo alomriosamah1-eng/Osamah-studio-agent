@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Arabic-first Application Settings وControl Center
+
+### Added
+
+- `ApplicationSettings` و`ApplicationSettingsPort` و`InMemoryApplicationSettings` مع defaults صريحة: `locale=ar` و`direction=rtl` و`theme=dark` و`fontScale=1` و`density=comfortable`.
+- `settings.get` و`settings.update` عبر typed IPC exact-key validation، مع دعم English/LTR وlight/dark وfont scale من 90% إلى 125% وcompact/comfortable وreduce motion.
+- Workspace Control Center مقسم إلى العامة والحسابات الخارجية والتخزين والتطوير الذاتي، مع عرض metadata والسياسة فقط للإدارات غير المنفذة بعد.
+- تطبيق direction وtheme وdensity وfont scale محليًا عبر CSS variables وlogical layout دون كشف Node أو filesystem أو provider.
+- وثيقتا التصميم `docs/82-application-settings-control-center.md` و`docs/83-control-center-external-storage-self-development.md`.
+
+### Verified
+
+- `pnpm check`: `181/181` اختبارًا ناجحًا؛ syntax وbuild وdesktop smoke وperformance smoke وSQLite/JSON/diff/secret gates: PASS.
+- Electron settings smoke تحقق من Arabic-first defaults، English/LTR update، light theme، 125% font scale، compact density، ورفض extra keys دون approval ticket أو network call.
+- feature commit وdocs-close سيُثبتان بعد الدفع والتحقق المنفصل.
+
+### Boundaries
+
+- الحسابات الخارجية لا تتصل تلقائيًا ولا تخزن token في renderer؛ OAuth/MCP/GitHub/Google وPort Forwarding تحتاج consent وscopes وHuman Gate مستقلة.
+- إدارة التخزين والتطوير الذاتي موثقتان وممثلان في اللوحة كحالة وسياسة فقط؛ لا persistence جديدة أو backup/restore أو skill activation أو تعديل تلقائي للقواعد.
+
 ## [Unreleased] — ReportDocument وBounded Traceable Reporting
 
 ### Added

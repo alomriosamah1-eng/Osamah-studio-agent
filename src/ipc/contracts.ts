@@ -20,6 +20,7 @@ import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyR
 import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention, MemoryReviewDecision, MemoryReviewPort } from "../application/memory-capture.js";
 import type { AgentDefinition } from "../application/agent-catalog.js";
 import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
+import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -90,6 +91,8 @@ export interface IpcMethodMap {
   "production.report.get": { payload: { reportId: string }; result: ReportDocument | undefined };
   "production.report.list": { payload: { limit?: number }; result: readonly ReportDocument[] };
   "production.report.review": { payload: ReportReviewDecision; result: ReportDocument };
+  "settings.get": { payload: Record<string, never>; result: ApplicationSettings };
+  "settings.update": { payload: UpdateApplicationSettingsRequest; result: ApplicationSettings };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -410,6 +413,16 @@ const isProviderConfigPayload = (value: unknown): value is LocalProviderConfig =
 const isProviderListPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
 const isProviderDoctorPayload = (value: unknown): boolean => isRecord(value) && (value.providerId === undefined || isLocalProviderIdPayload(value.providerId));
 
+const isSettingsGetPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
+const isSettingsUpdatePayload = (value: unknown): value is UpdateApplicationSettingsRequest => {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["locale", "theme", "fontScale", "density", "reduceMotion"])) return false;
+  if (value.locale !== undefined && value.locale !== "ar" && value.locale !== "en") return false;
+  if (value.theme !== undefined && value.theme !== "light" && value.theme !== "dark") return false;
+  if (value.fontScale !== undefined && (typeof value.fontScale !== "number" || !Number.isFinite(value.fontScale) || value.fontScale < 0.9 || value.fontScale > 1.25 || Math.abs(value.fontScale * 20 - Math.round(value.fontScale * 20)) >= 1e-9)) return false;
+  if (value.density !== undefined && value.density !== "comfortable" && value.density !== "compact") return false;
+  return value.reduceMotion === undefined || typeof value.reduceMotion === "boolean";
+};
+
 const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (!isRecord(payload)) return false;
   if (method === "context.index") return isString(payload.rootPath, 4096);
@@ -444,6 +457,8 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.report.get") return isReportGetPayload(payload);
   if (method === "production.report.list") return isReportListPayload(payload);
   if (method === "production.report.review") return isReportReviewPayload(payload);
+  if (method === "settings.get") return isSettingsGetPayload(payload);
+  if (method === "settings.update") return isSettingsUpdatePayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);
