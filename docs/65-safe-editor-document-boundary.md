@@ -99,7 +99,7 @@ export interface EditorDocumentPort {
 | Electron/Workspace | editor buffer وPropose diff وHuman Gate boundary وdesktop smoke: PASS |
 | Performance/security | low-memory profile، `PERF_SMOKE=PASS`، migration/JSON/diff/secret scans: PASS |
 
-لا تزال الشريحة bounded؛ لا تدعي توفير Monaco أو LSP أو terminal أو Git write أو test runner. commit التنفيذ والتوثيق يثبتان بعد إغلاق GitHub verification.
+لا تزال الشريحة bounded؛ لا تدعي توفير Monaco أو LSP أو terminal أو Git write أو test runner. التنفيذ مدفوع في `d989960112307b92185f18d1046506a620460887`، وتوثيق الإغلاق النهائي يأتي في commit مستقل مع تحقق SHA مطابق.
 
 ## الحدود المفتوحة
 
