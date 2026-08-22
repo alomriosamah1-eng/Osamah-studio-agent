@@ -28,6 +28,8 @@ export interface MemoryEntry {
   readonly provenance: readonly MemoryProvenanceRef[];
   readonly warnings: readonly string[];
   readonly createdAt: string;
+  readonly reviewedAt?: string;
+  readonly reviewReason?: string;
 }
 
 export interface CaptureMemoryRequest {
@@ -41,11 +43,22 @@ export interface CaptureMemoryRequest {
   readonly provenance?: readonly MemoryProvenanceRef[];
 }
 
+export interface MemoryReviewDecision {
+  readonly entryId: string;
+  readonly decision: "confirm" | "archive";
+  readonly reason: string;
+}
+
 export interface MemoryCapturePort {
   capture(request: CaptureMemoryRequest): MemoryEntry;
   get(entryId: string): MemoryEntry | undefined;
   list(limit?: number): readonly MemoryEntry[];
   searchLocal(query: string, limit?: number): readonly MemoryEntry[];
+}
+
+export interface MemoryReviewPort {
+  review(request: MemoryReviewDecision): MemoryEntry;
+  listForReview(limit?: number): readonly MemoryEntry[];
 }
 
 export interface MemoryCaptureOptions {
@@ -117,7 +130,7 @@ const cleanProvenance = (values: readonly MemoryProvenanceRef[] | undefined, sou
   });
 };
 
-export class InMemoryMemoryCapture implements MemoryCapturePort {
+export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPort {
   private readonly entries = new Map<string, MemoryEntry>();
   private readonly now: () => string;
   private readonly nextId: (prefix: string) => string;
@@ -172,6 +185,26 @@ export class InMemoryMemoryCapture implements MemoryCapturePort {
   public get(entryId: string): MemoryEntry | undefined {
     const entry = this.entries.get(cleanId(entryId, "entryId"));
     return entry === undefined ? undefined : this.clone(entry);
+  }
+
+  public review(request: MemoryReviewDecision): MemoryEntry {
+    const entryId = cleanId(request.entryId, "entryId");
+    const reason = cleanText(request.reason, "reviewReason", 512);
+    if (request.decision !== "confirm" && request.decision !== "archive") throw new MemoryCaptureError("review decision is invalid.");
+    const entry = this.entries.get(entryId);
+    if (!entry) throw new MemoryCaptureError("memory entry is unknown.");
+    if (entry.state === "archived") throw new MemoryCaptureError("archived entries cannot be reviewed.");
+    const warnings = new Set(entry.warnings);
+    if (request.decision === "confirm") warnings.add("user_confirmed_not_externally_verified");
+    if (request.decision === "archive") warnings.add("user_archived_entry");
+    const reviewed: MemoryEntry = { ...entry, state: request.decision === "confirm" ? "confirmed" : "archived", reviewedAt: this.now(), reviewReason: reason, warnings: [...warnings] };
+    this.entries.set(entryId, reviewed);
+    return this.clone(reviewed);
+  }
+
+  public listForReview(limit = 64): readonly MemoryEntry[] {
+    const safeLimit = this.limit(limit);
+    return [...this.entries.values()].filter((entry) => entry.state === "review_required").slice(-safeLimit).reverse().map((entry) => this.clone(entry));
   }
 
   public list(limit = 64): readonly MemoryEntry[] {

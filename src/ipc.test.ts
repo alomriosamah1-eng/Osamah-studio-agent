@@ -573,6 +573,34 @@ test("typed IPC captures and searches review-only memory without provider or app
   }
 });
 
+test("typed IPC reviews memory explicitly and keeps confirmed entries local-only", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const captured = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-capture", correlationId: "memory-review-ipc", method: "brain.memory.capture", payload: { kind: "note", title: "Reviewable note", content: "This needs explicit human confirmation.", providerAccess: "never", visibility: "private", retention: "session" } } as const) as IpcResponse<MemoryEntry>;
+    assert.equal(captured.ok, true);
+    if (!captured.ok) return;
+    const queue = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-queue", correlationId: "memory-review-ipc", method: "brain.memory.listForReview", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(queue.ok, true);
+    if (queue.ok) assert.equal(queue.result.some((entry) => entry.entryId === captured.result.entryId), true);
+    const confirmed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-confirm", correlationId: "memory-review-ipc", method: "brain.memory.review", payload: { entryId: captured.result.entryId, decision: "confirm", reason: "Confirmed locally by the user." } } as const) as IpcResponse<MemoryEntry>;
+    assert.equal(confirmed.ok, true);
+    if (confirmed.ok) {
+      assert.equal(confirmed.result.state, "confirmed");
+      assert.equal(confirmed.result.providerAccess, "never");
+      assert.ok(confirmed.result.warnings.includes("user_confirmed_not_externally_verified"));
+    }
+    const after = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-after", correlationId: "memory-review-ipc", method: "brain.memory.listForReview", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(after.ok, true);
+    if (after.ok) assert.equal(after.result.some((entry) => entry.entryId === captured.result.entryId), false);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-review-invalid", correlationId: "memory-review-ipc", method: "brain.memory.review", payload: { entryId: captured.result.entryId, decision: "confirm", reason: "valid", send: true } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
+  } finally {
+    app.close();
+  }
+});
+
 test("typed IPC exposes render policy preview without starting a renderer", async () => {
   const app = createEmbeddedApplication();
   try {

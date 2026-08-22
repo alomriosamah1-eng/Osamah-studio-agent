@@ -17,7 +17,7 @@ import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequ
 import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
 import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactDraftRequest } from "../application/artifact-assembly.js";
 import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyRequest } from "../application/render-policy.js";
-import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention } from "../application/memory-capture.js";
+import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention, MemoryReviewDecision, MemoryReviewPort } from "../application/memory-capture.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -80,6 +80,8 @@ export interface IpcMethodMap {
   "brain.memory.get": { payload: { entryId: string }; result: MemoryEntry | undefined };
   "brain.memory.list": { payload: { limit?: number }; result: readonly MemoryEntry[] };
   "brain.memory.searchLocal": { payload: { query: string; limit?: number }; result: readonly MemoryEntry[] };
+  "brain.memory.review": { payload: MemoryReviewDecision; result: MemoryEntry };
+  "brain.memory.listForReview": { payload: { limit?: number }; result: readonly MemoryEntry[] };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -154,6 +156,7 @@ export interface PreviewInspection {
 const isString = (value: unknown, max = 4096): value is string => typeof value === "string" && value.length > 0 && value.length <= max && !value.includes("\u0000");
 const isStringArray = (value: unknown, maxItems: number, maxItemLength = 512): value is readonly string[] => Array.isArray(value) && value.length <= maxItems && value.every((item) => isString(item, maxItemLength));
 const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+const hasOnlyKeys = (value: Record<string, unknown>, allowed: readonly string[]): boolean => Object.keys(value).every((key) => allowed.includes(key));
 
 const isApprovalTicketPayload = (value: unknown): value is ApprovalTicket => {
   if (!isRecord(value) || !isString(value.approvalId, 256) || !isString(value.correlationId, 256) || !isString(value.createdAt, 128)) return false;
@@ -341,6 +344,7 @@ const isMemoryProvenancePayload = (value: unknown): boolean => isRecord(value)
   && (value.relation === "derived_from" || value.relation === "supports" || value.relation === "related_to")
   && (value.label === undefined || isSingleLineString(value.label, 256));
 const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["kind", "title", "content", "visibility", "providerAccess", "retention", "tags", "provenance"])
   && isMemoryKindPayload(value.kind)
   && isSingleLineString(value.title, 512)
   && isString(value.content, 64 * 1024)
@@ -349,9 +353,11 @@ const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
   && (value.retention === undefined || isMemoryRetentionPayload(value.retention))
   && (value.tags === undefined || isUniqueBoundedStringList(value.tags, 128, 128))
   && (value.provenance === undefined || (Array.isArray(value.provenance) && value.provenance.length <= 16 && value.provenance.every(isMemoryProvenancePayload)));
-const isMemoryGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.entryId, 256);
-const isMemoryListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
-const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemoryGetPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["entryId"]) && isString(value.entryId, 256);
+const isMemoryListPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["limit"]) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["query", "limit"]) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemoryReviewPayload = (value: unknown): boolean => isRecord(value) && hasOnlyKeys(value, ["entryId", "decision", "reason"]) && isString(value.entryId, 256) && (value.decision === "confirm" || value.decision === "archive") && isSingleLineString(value.reason, 512);
+const isMemoryListForReviewPayload = (value: unknown): boolean => isMemoryListPayload(value);
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -398,6 +404,8 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "brain.memory.get") return isMemoryGetPayload(payload);
   if (method === "brain.memory.list") return isMemoryListPayload(payload);
   if (method === "brain.memory.searchLocal") return isMemorySearchPayload(payload);
+  if (method === "brain.memory.review") return isMemoryReviewPayload(payload);
+  if (method === "brain.memory.listForReview") return isMemoryListForReviewPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

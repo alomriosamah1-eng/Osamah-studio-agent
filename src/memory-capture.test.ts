@@ -50,3 +50,24 @@ test("memory capture preserves review-only state and enforces bounded limits", (
   assert.throws(() => memory.list(129), /limit/);
   assert.throws(() => new InMemoryMemoryCapture(sources, { maxContentLength: 65 * 1024 }), /maxContentLength/);
 });
+
+test("memory review explicitly confirms or archives entries without changing provider access", () => {
+  const sources = new InMemorySourceRegistry();
+  const memory = new InMemoryMemoryCapture(sources, { now: () => "2026-08-22T13:00:00.000Z", nextId: (prefix) => `${prefix}-review` });
+  const entry = memory.capture({ kind: "decision", title: "Reviewed decision", content: "Keep local-only memory.", providerAccess: "never", visibility: "private", retention: "project" });
+  const confirmed = memory.review({ entryId: entry.entryId, decision: "confirm", reason: "I reviewed this local decision." });
+  assert.equal(confirmed.state, "confirmed");
+  assert.equal(confirmed.providerAccess, "never");
+  assert.equal(confirmed.retention, "project");
+  assert.equal(confirmed.reviewReason, "I reviewed this local decision.");
+  assert.equal(confirmed.reviewedAt, "2026-08-22T13:00:00.000Z");
+  assert.ok(confirmed.warnings.includes("user_confirmed_not_externally_verified"));
+  assert.equal(memory.listForReview(8).length, 0);
+
+  const archivedEntry = memory.capture({ kind: "note", title: "Archive me", content: "Not needed now." });
+  const archived = memory.review({ entryId: archivedEntry.entryId, decision: "archive", reason: "No longer needed for active review." });
+  assert.equal(archived.state, "archived");
+  assert.equal(memory.listForReview(8).length, 0);
+  assert.throws(() => memory.review({ entryId: archived.entryId, decision: "confirm", reason: "Too late." }), /archived/);
+  assert.throws(() => memory.review({ entryId: entry.entryId, decision: "confirm", reason: "" }), /reviewReason/);
+});
