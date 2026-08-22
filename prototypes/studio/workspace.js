@@ -826,6 +826,86 @@
     }
   };
 
+  const renderMemoryEntries = (entries, status) => {
+    $('memoryStatus').textContent = status;
+    const list = $('memoryList');
+    list.replaceChildren();
+    if (!entries.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No local memory entries.';
+      list.append(empty);
+      return;
+    }
+    for (const entry of entries) {
+      const item = document.createElement('div');
+      item.className = `brain-item ${entry.state}`;
+      item.textContent = `${entry.title} · ${entry.kind} · ${entry.state}\n${entry.content}\nvisibility=${entry.visibility} · providerAccess=${entry.providerAccess} · retention=${entry.retention}\ntags=${entry.tags.join(', ') || 'none'}\nprovenance=${entry.provenance.map((ref) => `${ref.kind}:${ref.id}`).join(', ') || 'none'}\nwarnings=${entry.warnings.join(', ') || 'none'}`;
+      list.append(item);
+    }
+  };
+  const loadMemoryEntries = async (query) => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('memoryStatus').textContent = 'Desktop IPC unavailable; no memory request was sent.';
+      return;
+    }
+    const response = query === undefined
+      ? await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('brain-memory-list'), correlationId: nextRequest('brain-memory-list-correlation'), method: 'brain.memory.list', payload: { limit: 32 } })
+      : await window.osamah.dispatch({ protocolVersion: 1, requestId: nextRequest('brain-memory-search'), correlationId: nextRequest('brain-memory-search-correlation'), method: 'brain.memory.searchLocal', payload: { query, limit: 32 } });
+    if (!response.ok) {
+      $('memoryStatus').textContent = `Memory request rejected: ${response.error.message}`;
+      log(`brain.memory.rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderMemoryEntries(response.result, query === undefined ? `Loaded ${response.result.length} local review entries.` : `Found ${response.result.length} local entries for “${query}”.`);
+    log(query === undefined ? `brain.memory.list ${response.result.length}` : `brain.memory.searchLocal ${response.result.length}`, 'ok');
+  };
+  const captureMemoryEntry = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      $('memoryStatus').textContent = 'Desktop IPC unavailable; no memory entry was captured.';
+      return;
+    }
+    const button = $('captureMemoryEntry');
+    button.disabled = true;
+    $('memoryStatus').textContent = 'Capturing bounded review entry locally…';
+    try {
+      const tags = $('memoryTags').value.split(',').map((tag) => tag.trim()).filter(Boolean);
+      const response = await window.osamah.dispatch({
+        protocolVersion: 1,
+        requestId: nextRequest('brain-memory-capture'),
+        correlationId: nextRequest('brain-memory-capture-correlation'),
+        method: 'brain.memory.capture',
+        payload: { kind: $('memoryKind').value, title: $('memoryTitle').value.trim(), content: $('memoryContent').value, tags, providerAccess: 'never', visibility: 'private', retention: 'session' },
+      });
+      if (!response.ok) {
+        $('memoryStatus').textContent = `Memory capture rejected: ${response.error.message}`;
+        log(`brain.memory.capture_rejected ${response.error.message}`, 'warn');
+        return;
+      }
+      renderMemoryEntries([response.result], `Captured ${response.result.entryId} · review_required · providerAccess=never · session memory`);
+      $('rightStatus').textContent = 'Second Brain review entry captured';
+      log(`brain.memory.capture ${response.result.entryId} · no provider`, 'ok');
+    } catch (error) {
+      $('memoryStatus').textContent = `Memory capture failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('brain.memory.capture_failed', 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+  const searchMemoryEntries = async () => {
+    const query = $('memorySearch').value.trim();
+    if (!query) {
+      $('memoryStatus').textContent = 'Enter a local search query; no request was sent.';
+      return;
+    }
+    try {
+      await loadMemoryEntries(query);
+    } catch (error) {
+      $('memoryStatus').textContent = `Memory search failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+      log('brain.memory.search_failed', 'warn');
+    }
+  };
+
   let activeArtifact;
   const renderArtifact = (draft) => {
     activeArtifact = draft;
@@ -1127,6 +1207,8 @@
   $('createCreativeBrief').onclick = () => { void createCreativeBrief(); };
   $('createArtifactDraft').onclick = () => { void createArtifactDraft(); };
   $('previewRenderPolicy').onclick = () => { void previewRenderPolicy(); };
+  $('captureMemoryEntry').onclick = () => { void captureMemoryEntry(); };
+  $('searchMemoryEntries').onclick = () => { void searchMemoryEntries(); };
   $('createContentPlan').onclick = () => { void createContentPlanPreview(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
@@ -1334,6 +1416,34 @@
       method: 'production.render.policy.preview',
       payload: { artifactId: artifactDraftResponse.result.artifactId, format: 'pdf', relativeDestination: '/tmp/output.pdf' },
     }) : { ok: false };
+    const memoryCaptureResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-capture',
+      correlationId: 'desktop-smoke-memory',
+      method: 'brain.memory.capture',
+      payload: { kind: 'learning', title: 'Desktop smoke learning', content: 'Local review memory only', tags: ['local', 'review'], providerAccess: 'never', visibility: 'private', retention: 'session' },
+    });
+    const memorySearchResponse = memoryCaptureResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-search',
+      correlationId: 'desktop-smoke-memory',
+      method: 'brain.memory.searchLocal',
+      payload: { query: 'review memory', limit: 8 },
+    }) : { ok: false };
+    const memoryListResponse = memoryCaptureResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-list',
+      correlationId: 'desktop-smoke-memory',
+      method: 'brain.memory.list',
+      payload: { limit: 8 },
+    }) : { ok: false };
+    const memoryMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-memory-invalid',
+      correlationId: 'desktop-smoke-memory',
+      method: 'brain.memory.capture',
+      payload: { kind: 'note', title: 'Invalid', content: 'Invalid', providerAccess: 'send_now', embed: true },
+    });
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -1471,7 +1581,9 @@
     const artifactNoMutationPassed = artifactPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const renderPolicyPassed = renderPolicyResponse.ok && renderPolicyResponse.result.decision === 'blocked' && renderPolicyResponse.result.executionStarted === false && renderPolicyResponse.result.adapter === 'none' && renderPolicyResponse.result.checks.includes('artifact_review_blocked');
     const renderPolicyNoMutationPassed = renderPolicyPassed && renderPolicyMalformedResponse.ok === false && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false;
+    const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

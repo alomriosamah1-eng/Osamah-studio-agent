@@ -14,6 +14,7 @@ import type { ContentPlanPort } from "../application/content-plan.js";
 import type { AssetCatalogPort, CreativeBriefPort } from "../application/asset-catalog.js";
 import type { ArtifactAssemblyPort } from "../application/artifact-assembly.js";
 import type { RenderPolicyPort } from "../application/render-policy.js";
+import type { MemoryCapturePort } from "../application/memory-capture.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -26,6 +27,7 @@ export interface AgentIpcDependencies {
   readonly creativeBrief: Pick<CreativeBriefPort, "createBrief" | "getBrief" | "attachAsset">;
   readonly artifactAssembly: Pick<ArtifactAssemblyPort, "createDraft" | "getDraft">;
   readonly renderPolicy: Pick<RenderPolicyPort, "preview">;
+  readonly memoryCapture: Pick<MemoryCapturePort, "capture" | "get" | "list" | "searchLocal">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -104,6 +106,10 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("production.artifact.draft.create", async (request) => agentDependencies.artifactAssembly.createDraft(request.payload));
     transport.register("production.artifact.draft.get", async (request) => agentDependencies.artifactAssembly.getDraft(request.payload.artifactId));
     transport.register("production.render.policy.preview", async (request) => agentDependencies.renderPolicy.preview(request.payload));
+    transport.register("brain.memory.capture", async (request) => agentDependencies.memoryCapture.capture(request.payload));
+    transport.register("brain.memory.get", async (request) => agentDependencies.memoryCapture.get(request.payload.entryId));
+    transport.register("brain.memory.list", async (request) => agentDependencies.memoryCapture.list(request.payload.limit));
+    transport.register("brain.memory.searchLocal", async (request) => agentDependencies.memoryCapture.searchLocal(request.payload.query, request.payload.limit));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

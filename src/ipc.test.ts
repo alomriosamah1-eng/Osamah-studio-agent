@@ -23,6 +23,7 @@ import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js";
 import type { ArtifactDraft } from "./application/artifact-assembly.js";
 import type { RenderPolicyPreview } from "./application/render-policy.js";
+import type { MemoryEntry } from "./application/memory-capture.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -543,6 +544,30 @@ test("typed IPC rejects malformed task.preview paths before application access",
     } as const);
     assert.equal(malformed.ok, false);
     if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+  } finally {
+    app.close();
+  }
+});
+
+test("typed IPC captures and searches review-only memory without provider or approval", async () => {
+  const app = createEmbeddedApplication();
+  try {
+    const captured = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-capture-1", correlationId: "memory-ipc", method: "brain.memory.capture", payload: { kind: "learning", title: "Offline learning", content: "providerAccess=never and local search only", tags: ["offline", "review"], providerAccess: "never", visibility: "private", retention: "session" } } as const) as IpcResponse<MemoryEntry>;
+    assert.equal(captured.ok, true);
+    if (!captured.ok) return;
+    assert.equal(captured.result.state, "review_required");
+    assert.equal(captured.result.providerAccess, "never");
+    assert.match(captured.result.content, /providerAccess=never/);
+    const searched = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-search-1", correlationId: "memory-ipc", method: "brain.memory.searchLocal", payload: { query: "local search", limit: 8 } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(searched.ok, true);
+    if (searched.ok) assert.equal(searched.result[0]?.entryId, captured.result.entryId);
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-list-1", correlationId: "memory-ipc", method: "brain.memory.list", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(listed.ok, true);
+    if (listed.ok) assert.equal(listed.result.length, 1);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "memory-invalid-1", correlationId: "memory-ipc", method: "brain.memory.capture", payload: { kind: "note", title: "Bad", content: "bad", providerAccess: "send_now", embed: true } } as const);
+    assert.equal(malformed.ok, false);
+    if (!malformed.ok) assert.equal(malformed.error.code, "INVALID_REQUEST");
+    assert.equal(app.humanGate.listPending(8).length, 0);
   } finally {
     app.close();
   }

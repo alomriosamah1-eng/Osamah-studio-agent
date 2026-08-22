@@ -17,6 +17,7 @@ import type { AddClaimRequest, AddContentSectionRequest, AttachClaimCitationRequ
 import type { AssetKind, AssetLicense, AssetRecord, AssetCatalogPort, AttachAssetRequest, CreativeBrief, CreativeBriefPort, CreateCreativeBriefRequest, RegisterAssetRequest } from "../application/asset-catalog.js";
 import type { ArtifactAssemblyPort, ArtifactDraft, ArtifactKind, CreateArtifactDraftRequest } from "../application/artifact-assembly.js";
 import type { RenderFormat, RenderPolicyPort, RenderPolicyPreview, RenderPolicyRequest } from "../application/render-policy.js";
+import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryKind, MemoryProvenanceKind, MemoryVisibility, MemoryProviderAccess, MemoryRetention } from "../application/memory-capture.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -75,6 +76,10 @@ export interface IpcMethodMap {
   "production.artifact.draft.create": { payload: CreateArtifactDraftRequest; result: ArtifactDraft };
   "production.artifact.draft.get": { payload: { artifactId: string }; result: ArtifactDraft | undefined };
   "production.render.policy.preview": { payload: RenderPolicyRequest; result: RenderPolicyPreview };
+  "brain.memory.capture": { payload: CaptureMemoryRequest; result: MemoryEntry };
+  "brain.memory.get": { payload: { entryId: string }; result: MemoryEntry | undefined };
+  "brain.memory.list": { payload: { limit?: number }; result: readonly MemoryEntry[] };
+  "brain.memory.searchLocal": { payload: { query: string; limit?: number }; result: readonly MemoryEntry[] };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -326,6 +331,27 @@ const isRenderPolicyPreviewPayload = (value: unknown): boolean => isRecord(value
   && isRenderFormatPayload(value.format)
   && isSafeRelativeDestinationPayload(value.relativeDestination)
   && (value.budget === undefined || isRenderBudgetPayload(value.budget));
+const isMemoryKindPayload = (value: unknown): value is MemoryEntryKind => value === "note" || value === "decision" || value === "task" || value === "research" || value === "learning" || value === "idea" || value === "summary";
+const isMemoryVisibilityPayload = (value: unknown): value is MemoryVisibility => value === "private" || value === "workspace" || value === "project";
+const isMemoryProviderAccessPayload = (value: unknown): value is MemoryProviderAccess => value === "never" || value === "explicit_only";
+const isMemoryRetentionPayload = (value: unknown): value is MemoryRetention => value === "session" || value === "project" || value === "until_deleted";
+const isMemoryProvenancePayload = (value: unknown): boolean => isRecord(value)
+  && (value.kind === "source" || value.kind === "artifact" || value.kind === "task")
+  && isString(value.id, 256)
+  && (value.relation === "derived_from" || value.relation === "supports" || value.relation === "related_to")
+  && (value.label === undefined || isSingleLineString(value.label, 256));
+const isMemoryCapturePayload = (value: unknown): boolean => isRecord(value)
+  && isMemoryKindPayload(value.kind)
+  && isSingleLineString(value.title, 512)
+  && isString(value.content, 64 * 1024)
+  && (value.visibility === undefined || isMemoryVisibilityPayload(value.visibility))
+  && (value.providerAccess === undefined || isMemoryProviderAccessPayload(value.providerAccess))
+  && (value.retention === undefined || isMemoryRetentionPayload(value.retention))
+  && (value.tags === undefined || isUniqueBoundedStringList(value.tags, 128, 128))
+  && (value.provenance === undefined || (Array.isArray(value.provenance) && value.provenance.length <= 16 && value.provenance.every(isMemoryProvenancePayload)));
+const isMemoryGetPayload = (value: unknown): boolean => isRecord(value) && isString(value.entryId, 256);
+const isMemoryListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
+const isMemorySearchPayload = (value: unknown): boolean => isRecord(value) && isSingleLineString(value.query, 512) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 128));
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -368,6 +394,10 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.artifact.draft.create") return isArtifactDraftCreatePayload(payload);
   if (method === "production.artifact.draft.get") return isArtifactDraftGetPayload(payload);
   if (method === "production.render.policy.preview") return isRenderPolicyPreviewPayload(payload);
+  if (method === "brain.memory.capture") return isMemoryCapturePayload(payload);
+  if (method === "brain.memory.get") return isMemoryGetPayload(payload);
+  if (method === "brain.memory.list") return isMemoryListPayload(payload);
+  if (method === "brain.memory.searchLocal") return isMemorySearchPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);
