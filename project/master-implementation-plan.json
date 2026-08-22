@@ -36,10 +36,11 @@
       "memory-consolidation-bounded",
       "sqlite-memory-persistence-bounded",
       "second-brain-local-lexical-retrieval-bounded",
-      "second-brain-visibility-filtered-retrieval"
+      "second-brain-visibility-filtered-retrieval",
+      "second-brain-relational-memory-links-bounded"
     ],
-    "tests": "206/206",
-    "next_phase": "second-brain-relational-links-and-agent-scope-review",
+    "tests": "207/207",
+    "next_phase": "second-brain-agent-scope-permission-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [
@@ -158,7 +159,7 @@
       "name": "second-brain-capture-search-links",
       "depends_on": [2, 3, 4],
       "primary_owner": "knowledge",
-      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English bounded lexical retrieval", "visibility-filtered local retrieval", "scope and retention", "optional bounded SQLite memory persistence", "optional FTS adapter only when runtime support is verified"],
+      "deliverables": ["inbox", "notes", "tasks", "decisions", "relational links", "Arabic/English bounded lexical retrieval", "visibility-filtered local retrieval", "bounded relational memory links", "scope and retention", "optional bounded SQLite memory persistence", "optional FTS adapter only when runtime support is verified"],
       "exit_gate": "US-006 retrieves Arabic and English notes with correct project scope and no leakage"
     },
     {

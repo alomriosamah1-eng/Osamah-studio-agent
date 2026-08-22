@@ -63,6 +63,26 @@
 - visibility filter ليس authorization system كاملًا ولا agent scope evaluator؛ لا relational links جديدة ولا provider retrieval ولا embeddings/vector services ولا FTS5.
 - تبقى `providerAccess` و`visibility` و`retention` وprovenance immutable من منظور البحث، ولا تنشئ العملية approval ticket أو network call أو filesystem mutation.
 
+## [Unreleased] — Second Brain Relational Memory Links bounded
+
+### Added
+
+- `MemoryEntryLink` و`MemoryLinkRelation` لعلاقات directed bounded من نوع `related_to` و`supports` و`derived_from`، مع `CaptureMemoryRequest.links` اختياري.
+- migration `006_memory_entry_links.sql` التي تضيف `memory_entries.links_json` بقيمة افتراضية `[]` و`json_valid` دون تعديل migrations المنشورة أو إضافة فهرس native/FTS.
+- Application validation وSQLite hydration validation لـtarget existence وduplicate/self-link وvisibility compatibility، مع بقاء provider access وHuman Gate وsource state دون تغيير.
+- اختبار typed IPC يثبت إنشاء الرابط ثم استعادته بعد restart، واختبارات fail-closed لروابط JSON غير السليمة وunknown target وvisibility widening.
+- `docs/93-memory-relational-links-bounded.md` لتوثيق العقد والمعمارية والخصوصية وحدود الأداء.
+
+### Verified
+
+- `pnpm check`: `207/207` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS.
+- SQLite validator: `MIGRATION_COUNT=6` و`SCHEMA_VERSION=006` و`TABLE_COUNT=14` و`INDEX_COUNT=30`؛ JSON وNode syntax و`git diff --check` وhigh-confidence secret scan: PASS.
+- feature commit `b4658e22690cc1b69d43fc1d25c5cffa6f72844d` دُفع إلى `origin/main` وتحقق تطابق SHA المحلي والبعيد وGitHub API؛ docs-close مستقل لهذه التسليمة.
+
+### Boundaries
+
+- الروابط لا تنشئ graph traversal أو semantic relevance أو authorization system كاملًا، ولا تستدعي provider أو network أو vector service.
+- لا embeddings أو FTS5 أو provider sharing أو automatic consolidation؛ agent scope/permission filtering يبقى شريحة لاحقة مستقلة.
 
 ## [Unreleased] — Virtual Human Assistant / AI Avatar Research
 

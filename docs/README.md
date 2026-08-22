@@ -57,7 +57,8 @@
 | `89-self-development-candidate-review.md` | Candidate Review وRule Overlay bounded دون تنفيذ المحتوى أو رفع الصلاحيات |
 | `90-memory-consolidation-bounded.md` | Memory Candidate وConsolidation Review من مصادر مؤكدة دون embeddings أو provider sharing |
 | `91-memory-persistence-sqlite.md` | persistence اختيارية ومحدودة لـMemoryEntry وMemoryCandidate عبر SQLite profile وmigration 005، دون FTS أو embeddings أو provider sharing |
-| `92-memory-local-retrieval-bounded.md` | local lexical retrieval عربي/إنجليزي bounded، مع تأجيل FTS5 بعد فشل توفره في runtime الحالي |
+| `92-memory-local-retrieval-bounded.md` | local lexical retrieval عربي/إنجليزي bounded، مع visibility filter وتأجيل FTS5 بعد فشل توفره في runtime الحالي |
+| `93-memory-relational-links-bounded.md` | روابط MemoryEntry الموجهة وmigration 006 وحدود visibility وfail-closed hydration دون graph أو semantic service |
 
 ## ملفات الحالة خارج هذا المجلد
 

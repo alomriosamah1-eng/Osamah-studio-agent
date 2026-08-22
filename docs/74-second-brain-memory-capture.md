@@ -35,7 +35,8 @@ export interface MemoryEntry {
   readonly providerAccess: "never" | "explicit_only";
   readonly retention: "session" | "project" | "until_deleted";
   readonly tags: readonly string[];
-  readonly provenance: readonly ProvenanceRef[];
+  readonly provenance: readonly MemoryProvenanceRef[];
+  readonly links: readonly MemoryEntryLink[];
   readonly warnings: readonly string[];
   readonly createdAt: string;
 }
@@ -48,7 +49,7 @@ export interface MemoryCapturePort {
 }
 ```
 
-الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محلي bounded في الذاكرة؛ يطبع العربية والإنجليزية، يشترط تطابق جميع كلمات الاستعلام، ويرتب title/tag/content ترتيبًا deterministic، ويقبل مرشح `visibility` اختياريًا من `private` أو `workspace` أو `project`. لا يستدعي provider أو vector database، ولا تمثل هذه الإضافة FTS أو semantic retrieval. التفاصيل في `docs/92-memory-local-retrieval-bounded.md`.
+الـadapter الأول `InMemoryMemoryCapture` ما يزال deterministic وbounded، ويقبل `MemoryEntryPersistencePort` اختياريًا. عند اختيار SQLite profile فقط تُحفظ الإدخالات المنقحة في جدول `memory_entries` وتُعاد hydration عند restart؛ وعند عدم اختيار SQLite لا يوجد persistence. `searchLocal` بحث نصي محلي bounded في الذاكرة؛ يطبع العربية والإنجليزية، يشترط تطابق جميع كلمات الاستعلام، ويرتب title/tag/content ترتيبًا deterministic، ويقبل مرشح `visibility` اختياريًا من `private` أو `workspace` أو `project`. وتقبل عملية الالتقاط `links` موجهة إلى entries موجودة مسبقًا بعلاقات bounded؛ تفاصيلها في `docs/93-memory-relational-links-bounded.md`. لا يستدعي provider أو vector database، ولا تمثل هذه الإضافة FTS أو semantic retrieval. التفاصيل في `docs/92-memory-local-retrieval-bounded.md`.
 
 ## Provenance ودرجة اليقين
 
