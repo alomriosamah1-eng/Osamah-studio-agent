@@ -21,6 +21,7 @@ import type { CaptureMemoryRequest, MemoryCapturePort, MemoryEntry, MemoryEntryK
 import type { AgentDefinition } from "../application/agent-catalog.js";
 import type { CreateReportDocumentRequest, ReportDocument, ReportKind, ReportReviewDecision } from "../application/report-document.js";
 import type { ApplicationSettings, ApplicationSettingsPort, UpdateApplicationSettingsRequest } from "../application/application-settings.js";
+import type { ExternalAccountRecord, RegisterExternalAccountRequest } from "../application/external-account-registry.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -93,6 +94,8 @@ export interface IpcMethodMap {
   "production.report.review": { payload: ReportReviewDecision; result: ReportDocument };
   "settings.get": { payload: Record<string, never>; result: ApplicationSettings };
   "settings.update": { payload: UpdateApplicationSettingsRequest; result: ApplicationSettings };
+  "external.account.register": { payload: RegisterExternalAccountRequest; result: ExternalAccountRecord };
+  "external.account.list": { payload: { limit?: number }; result: readonly ExternalAccountRecord[] };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -414,6 +417,17 @@ const isProviderListPayload = (value: unknown): boolean => isRecord(value) && Ob
 const isProviderDoctorPayload = (value: unknown): boolean => isRecord(value) && (value.providerId === undefined || isLocalProviderIdPayload(value.providerId));
 
 const isSettingsGetPayload = (value: unknown): boolean => isRecord(value) && Object.keys(value).length === 0;
+const isExternalAccountRegisterPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["providerId", "label", "owner", "scopes", "resourceScope", "expiresAt"])
+  && isString(value.providerId, 128) && /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/iu.test(value.providerId)
+  && isSingleLineString(value.label, 256)
+  && isSingleLineString(value.owner, 256)
+  && (value.scopes === undefined || isUniqueBoundedStringList(value.scopes, 16, 256))
+  && (value.resourceScope === undefined || isSingleLineString(value.resourceScope, 512))
+  && (value.expiresAt === undefined || (isSingleLineString(value.expiresAt, 128) && Number.isFinite(Date.parse(value.expiresAt))));
+const isExternalAccountListPayload = (value: unknown): boolean => isRecord(value)
+  && hasOnlyKeys(value, ["limit"])
+  && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit >= 1 && value.limit <= 64));
 const isSettingsUpdatePayload = (value: unknown): value is UpdateApplicationSettingsRequest => {
   if (!isRecord(value) || !hasOnlyKeys(value, ["locale", "theme", "fontScale", "density", "reduceMotion"])) return false;
   if (value.locale !== undefined && value.locale !== "ar" && value.locale !== "en") return false;
@@ -459,6 +473,8 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (method === "production.report.review") return isReportReviewPayload(payload);
   if (method === "settings.get") return isSettingsGetPayload(payload);
   if (method === "settings.update") return isSettingsUpdatePayload(payload);
+  if (method === "external.account.register") return isExternalAccountRegisterPayload(payload);
+  if (method === "external.account.list") return isExternalAccountListPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

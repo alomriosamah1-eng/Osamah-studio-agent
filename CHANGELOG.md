@@ -13,12 +13,31 @@
 
 - جرد `package.json` و`src` وElectron/typed IPC/Agent Runtime/Second Brain يؤكد عدم وجود Avatar/Audio/TTS/STT/Wake Word/Overlay runtime قبل هذه الشريحة.
 - فُحصت مصادر GitHub والوثائق الرسمية والمعلومات الترخيصية حتى 2026-08-22، مع تصنيف `CONFIRMED` و`STRONG INFERENCE` و`UNKNOWN/NOT VERIFIED` وعدم تحويل model/voice license إلى افتراض تجاري.
-- commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` دُفع إلى `origin/main` وتحقق `local_sha == remote_sha`؛ docs-close مستقل ما زال مطلوبًا.
+- commit الدراسة `d47294ed613090bc913ee14d68669621febbccbb` وdocs-close `7ce4d830c4debdc9c65f7d5ad8729f62454dc99f` دُفعا إلى `origin/main` وتحقق `local_sha == remote_sha` لكل منهما.
 
 ### Boundaries
 
 - هذه الشريحة **RESEARCH + ANALYSIS + ARCHITECTURE + DOCUMENTATION ONLY**؛ لم تُضف حزمة أو model أو voice أو asset أو native toolchain، ولم يُعدّل runtime أو typed IPC أو Electron shell لأجل Avatar.
 - Avatar planned/deferred داخل Second Brain، والميكروفون وwake word والـoverlay معطلة افتراضيًا في التصميم؛ Human Gate وtext fallback وUbuntu 8GB degradation إلزامية لأي تنفيذ لاحق.
+
+## [Unreleased] — External Accounts Metadata-only
+
+### Added
+
+- `ExternalAccountRecord` و`RegisterExternalAccountRequest` و`ExternalAccountRegistryPort` و`InMemoryExternalAccountRegistry` لتسجيل بيانات الحسابات الخارجية في الذاكرة فقط.
+- `external.account.register` و`external.account.list` عبر typed IPC exact-key validation، مع deduplication وحدود scopes ورفض الحقول السرية الزائدة.
+- Control Center accounts panel يعرض provider/label/owner/scopes/resource scope والحالات `disconnected` و`required` و`unknown` دون OAuth أو network أو provider calls.
+- `docs/87-external-accounts-metadata-only.md` لتوثيق النطاق والعقود وحدود الأمان ومعايير القبول.
+
+### Verified
+
+- `pnpm check`: `185/185` اختبارًا ناجحًا؛ `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite/JSON/diff/secret gates: PASS.
+- desktop smoke تحقق من register/list ورفض محاولة token، مع عدم إجراء network call أو إنشاء approval ticket.
+
+### Boundaries
+
+- هذه الشريحة metadata-only؛ لا OAuth أو MCP أو GitHub/Google connection أو token/cookie storage أو persistence أو connect/disconnect/revoke.
+- secret boundary وconsent lifecycle وHuman Gate للأفعال الخارجية تبقى مراحل مستقلة لاحقة.
 
 ## [Unreleased] — Arabic-first Application Settings وControl Center
 

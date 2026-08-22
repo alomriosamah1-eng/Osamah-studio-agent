@@ -24,6 +24,7 @@ import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js
 import type { ArtifactDraft } from "./application/artifact-assembly.js";
 import type { RenderPolicyPreview } from "./application/render-policy.js";
 import type { MemoryEntry } from "./application/memory-capture.js";
+import type { ExternalAccountRecord } from "./application/external-account-registry.js";
 import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
@@ -127,6 +128,35 @@ test("typed IPC registers and lists production sources without network or filesy
     globalThis.fetch = originalFetch;
     app.close();
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("typed IPC registers external account metadata without network, secrets, or provider calls", async () => {
+  const app = createEmbeddedApplication();
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = (async () => { fetchCalls += 1; throw new Error("fetch must not be called"); }) as typeof fetch;
+  try {
+    const registered = await app.ipc.dispatch({ protocolVersion: 1, requestId: "account-register-1", correlationId: "account-1", method: "external.account.register", payload: { providerId: "GitHub", label: "Work", owner: "Osamah", scopes: ["repo:read"], resourceScope: "workspace:demo" } } as const) as IpcResponse<ExternalAccountRecord>;
+    assert.equal(registered.ok, true);
+    if (!registered.ok) return;
+    assert.equal(registered.result.providerId, "github");
+    assert.equal(registered.result.status, "disconnected");
+    assert.equal(registered.result.consentState, "required");
+    assert.equal(registered.result.verificationState, "unknown");
+    assert.equal("token" in registered.result, false);
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "account-list-1", correlationId: "account-1", method: "external.account.list", payload: { limit: 8 } } as const) as IpcResponse<readonly ExternalAccountRecord[]>;
+    assert.equal(listed.ok, true);
+    if (!listed.ok) return;
+    assert.equal(listed.result.length, 1);
+    assert.equal(fetchCalls, 0);
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "account-malformed-1", correlationId: "account-1", method: "external.account.register", payload: { providerId: "github", label: "Bad", owner: "Osamah", token: "secret-shaped" } } as const);
+    assert.equal(malformed.ok, false);
+    const invalidExpiry = await app.ipc.dispatch({ protocolVersion: 1, requestId: "account-expiry-1", correlationId: "account-1", method: "external.account.register", payload: { providerId: "github", label: "Bad expiry", owner: "Osamah", expiresAt: "not-a-date" } } as const);
+    assert.equal(invalidExpiry.ok, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    app.close();
   }
 });
 

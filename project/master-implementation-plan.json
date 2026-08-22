@@ -29,10 +29,11 @@
       "comprehensive-audit-documentation",
       "agent-definition-contract-and-catalog",
       "report-document-bounded-reporting",
-      "arabic-first-application-settings-control-center"
+      "arabic-first-application-settings-control-center",
+      "external-accounts-metadata-only"
     ],
-    "tests": "181/181",
-    "next_phase": "localization-resources-or-external-accounts-storage-self-development",
+    "tests": "185/185",
+    "next_phase": "storage-settings-or-self-development-candidate-review",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

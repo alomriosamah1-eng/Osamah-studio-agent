@@ -18,6 +18,7 @@ import type { MemoryCapturePort, MemoryReviewPort } from "../application/memory-
 import type { AgentCatalogPort } from "../application/agent-catalog.js";
 import type { ReportDocumentPort } from "../application/report-document.js";
 import type { ApplicationSettingsPort } from "../application/application-settings.js";
+import type { ExternalAccountRegistryPort } from "../application/external-account-registry.js";
 import type { InMemoryEmbeddedSimulatorController } from "../mobile/embedded-controller.js";
 import type { InMemoryIpcTransport } from "./in-memory-transport.js";
 
@@ -34,6 +35,7 @@ export interface AgentIpcDependencies {
   readonly agentCatalog: Pick<AgentCatalogPort, "list" | "get">;
   readonly reportDocument: Pick<ReportDocumentPort, "create" | "get" | "list" | "review">;
   readonly settings: Pick<ApplicationSettingsPort, "get" | "update">;
+  readonly externalAccounts: Pick<ExternalAccountRegistryPort, "register" | "get" | "list">;
   readonly explorer: Pick<ProjectExplorerPort, "list">;
   readonly fileReader: Pick<WorkspaceFileReaderPort, "readText">;
   readonly editorDocuments: Pick<EditorDocumentPort, "open" | "propose">;
@@ -126,6 +128,8 @@ export const registerEmbeddedSimulatorHandlers = (
     transport.register("production.report.review", async (request) => agentDependencies.reportDocument.review(request.payload));
     transport.register("settings.get", async () => agentDependencies.settings.get());
     transport.register("settings.update", async (request) => agentDependencies.settings.update(request.payload));
+    transport.register("external.account.register", async (request) => agentDependencies.externalAccounts.register(request.payload));
+    transport.register("external.account.list", async (request) => agentDependencies.externalAccounts.list(request.payload.limit));
     transport.register("project.tree", (request) => agentDependencies.explorer.list(request.payload.rootPath));
     transport.register("file.openText", (request) => agentDependencies.fileReader.readText(request.payload.rootPath, request.payload.relativePath));
     transport.register("editor.open", (request) => agentDependencies.editorDocuments.open(request.payload.rootPath, request.payload.relativePath));

@@ -388,6 +388,91 @@
     renderApplicationSettings(response.result);
     log(`settings.updated locale=${response.result.locale} theme=${response.result.theme} fontScale=${response.result.fontScale}`, 'ok');
   };
+  const renderExternalAccounts = (accounts) => {
+    const list = $('externalAccountList');
+    const status = $('externalAccountStatus');
+    if (!list || !status) return;
+    list.replaceChildren();
+    status.textContent = accounts.length ? `تم تحميل ${accounts.length} حساب/حسابات metadata فقط · لا اتصال` : 'لم تُسجل حسابات خارجية في هذه الجلسة.';
+    if (!accounts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'approval-empty';
+      empty.textContent = 'لا توجد بيانات حسابات.';
+      list.append(empty);
+      return;
+    }
+    accounts.forEach((account) => {
+      const card = document.createElement('div');
+      card.className = 'approval-card account-card';
+      const title = document.createElement('strong');
+      title.textContent = `${account.label} · ${account.providerId}`;
+      const meta = document.createElement('div');
+      meta.className = 'approval-meta';
+      meta.textContent = `المالك: ${account.owner} · الحالة: ${account.status} · الموافقة: ${account.consentState}`;
+      const scope = document.createElement('div');
+      scope.className = 'approval-scope';
+      scope.textContent = `النطاق: ${account.resourceScope} · Scopes: ${account.scopes.length ? account.scopes.join(', ') : 'لا توجد'}`;
+      const verify = document.createElement('div');
+      verify.className = 'approval-meta';
+      verify.textContent = `التحقق: ${account.verificationState} · الاتصال: غير مفعّل`;
+      card.append(title, meta, scope, verify);
+      list.append(card);
+    });
+  };
+  const loadExternalAccounts = async () => {
+    if (!window.osamah?.dispatch) {
+      renderExternalAccounts([]);
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('external-account-list'),
+      correlationId: nextRequest('external-account-list-correlation'),
+      method: 'external.account.list',
+      payload: { limit: 64 },
+    });
+    if (!response.ok) {
+      $('externalAccountStatus').textContent = `فشل تحميل الحسابات: ${response.error.message}`;
+      log(`external.account.list_failed ${response.error.message}`, 'warn');
+      return;
+    }
+    renderExternalAccounts(response.result);
+    log(`external.accounts.loaded ${response.result.length} metadata record(s) · no network`, 'ok');
+  };
+  const registerExternalAccount = async () => {
+    const button = $('registerExternalAccount');
+    if (button) button.disabled = true;
+    try {
+      const scopes = $('accountScopes').value.split(',').map((scope) => scope.trim()).filter(Boolean);
+      const response = await window.osamah?.dispatch?.({
+        protocolVersion: 1,
+        requestId: nextRequest('external-account-register'),
+        correlationId: nextRequest('external-account-register-correlation'),
+        method: 'external.account.register',
+        payload: {
+          providerId: $('accountProvider').value,
+          label: $('accountLabel').value.trim(),
+          owner: $('accountOwner').value.trim(),
+          scopes,
+          resourceScope: $('accountResourceScope').value.trim(),
+        },
+      });
+      if (!response) {
+        $('externalAccountStatus').textContent = 'تسجيل الحساب غير متاح في هذا المضيف.';
+        return;
+      }
+      if (!response.ok) {
+        $('externalAccountStatus').textContent = `رُفضت بيانات الحساب: ${response.error.message}`;
+        log(`external.account.register_failed ${response.error.message}`, 'warn');
+        return;
+      }
+      $('externalAccountStatus').textContent = `تم تسجيل ${response.result.providerId} كبيانات منفصلة؛ الحالة disconnected ولا يوجد اتصال.`;
+      log(`external.account.registered ${response.result.accountId} · no network`, 'ok');
+      await loadExternalAccounts();
+    } finally {
+      if (button) button.disabled = false;
+    }
+  };
   const selectControlSection = (section) => {
     document.querySelectorAll('[data-control-section]').forEach((button) => button.classList.toggle('active', button.dataset.controlSection === section));
     document.querySelectorAll('[data-control-panel]').forEach((panel) => { panel.hidden = panel.dataset.controlPanel !== section; });
@@ -1491,6 +1576,7 @@
   $('appFontScale').onchange = () => { void updateApplicationSettings(); };
   $('appDensity').onchange = () => { void updateApplicationSettings(); };
   $('appReduceMotion').onchange = () => { void updateApplicationSettings(); };
+  $('registerExternalAccount').onclick = () => { void registerExternalAccount(); };
   $('createReportDocument').onclick = () => { void createReportDocument(); };
   $('refreshReportDocuments').onclick = () => { void loadReportDocuments(); };
   $('approveReportDocument').onclick = () => { void approveReportDocument(); };
@@ -1529,6 +1615,27 @@
       correlationId: 'desktop-smoke-settings',
       method: 'settings.update',
       payload: { locale: 'ar', unknown: true },
+    });
+    const accountRegisterResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-account-register',
+      correlationId: 'desktop-smoke-account',
+      method: 'external.account.register',
+      payload: { providerId: 'github', label: 'Desktop smoke metadata', owner: 'local-owner', scopes: ['metadata:read'], resourceScope: 'workspace:metadata' },
+    });
+    const accountListResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-account-list',
+      correlationId: 'desktop-smoke-account',
+      method: 'external.account.list',
+      payload: { limit: 8 },
+    });
+    const accountMalformedResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-account-malformed',
+      correlationId: 'desktop-smoke-account',
+      method: 'external.account.register',
+      payload: { providerId: 'github', label: 'invalid token attempt', owner: 'local-owner', token: 'must-be-rejected' },
     });
     const projectTreeResponse = await window.osamah.dispatch({
       protocolVersion: 1,
@@ -1915,6 +2022,7 @@
     const approvalFlowPassed = cycleResponse.ok && cycleResponse.result.cycle.stage === 'waiting_approval' && approvalResponse.ok && Boolean(approvalId) && Boolean(decisionResponse?.ok) && approvalEventReceived;
     const settingsPassed = settingsDefaultResponse.ok && settingsDefaultResponse.result.locale === 'ar' && settingsDefaultResponse.result.direction === 'rtl' && settingsDefaultResponse.result.theme === 'dark' && settingsUpdateResponse.ok && settingsUpdateResponse.result.locale === 'en' && settingsUpdateResponse.result.direction === 'ltr' && settingsUpdateResponse.result.theme === 'light' && settingsUpdateResponse.result.fontScale === 1.25 && settingsUpdateResponse.result.density === 'compact' && settingsMalformedResponse.ok === false;
     const settingsNoMutationPassed = settingsPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    const accountPassed = accountRegisterResponse.ok && accountRegisterResponse.result.status === 'disconnected' && accountRegisterResponse.result.consentState === 'required' && accountRegisterResponse.result.verificationState === 'unknown' && accountListResponse.ok && accountListResponse.result.length === 1 && accountMalformedResponse.ok === false;
     const agentCatalogPassed = agentCatalogResponse.ok && agentCatalogResponse.result.length === 46 && agentCatalogResponse.result.find((definition) => definition.agentId === 'api-architect')?.executionStatus === 'bounded_capability' && agentDefinitionResponse.ok && agentDefinitionResponse.result?.agentId === 'security' && agentDefinitionResponse.result?.memoryRequirements.providerAccess === 'never';
     const agentCatalogNoMutationPassed = agentCatalogPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const providerFlowPassed = providerListResponse.ok && providerConfigResponse.ok && providerDoctorResponse.ok && providerDoctorResponse.result[0]?.status === 'disabled';
@@ -1944,7 +2052,7 @@
     const reportNoMutationPassed = reportPassed && approvalResponse.ok && approvalResponse.result.length === 1;
     const memoryPassed = memoryCaptureResponse.ok && memoryCaptureResponse.result.state === 'review_required' && memoryCaptureResponse.result.providerAccess === 'never' && memorySearchResponse.ok && memorySearchResponse.result[0]?.entryId === memoryCaptureResponse.result.entryId && memoryListResponse.ok && memoryListResponse.result.length === 1 && memoryMalformedResponse.ok === false && memoryReviewQueueBeforeResponse.ok && memoryReviewQueueBeforeResponse.result.length === 1 && memoryReviewResponse.ok && memoryReviewResponse.result.state === 'confirmed' && memoryReviewResponse.result.providerAccess === 'never' && memoryReviewResponse.result.warnings.includes('user_confirmed_not_externally_verified') && memoryReviewQueueAfterResponse.ok && memoryReviewQueueAfterResponse.result.length === 0;
     const memoryNoMutationPassed = memoryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && settingsPassed && settingsNoMutationPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    console.log(response.ok && settingsPassed && settingsNoMutationPassed && accountPassed && approvalFlowPassed && agentCatalogPassed && agentCatalogNoMutationPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && contentPlanPassed && contentPlanNoMutationPassed && assetBriefPassed && assetBriefNoMutationPassed && artifactPassed && artifactNoMutationPassed && renderPolicyPassed && renderPolicyNoMutationPassed && reportPassed && reportNoMutationPassed && memoryPassed && memoryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -1953,6 +2061,7 @@
   void loadPendingApprovals();
   void loadAgentCatalog();
   void loadApplicationSettings();
+  void loadExternalAccounts();
   void loadReportDocuments();
   void loadProviders();
   void loadSources();

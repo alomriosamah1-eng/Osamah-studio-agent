@@ -69,4 +69,4 @@ Preview impact + conflict check + rollback
 
 ## حدود التنفيذ المرحلي
 
-تبدأ الشريحة الحالية بتنفيذ **إعدادات العرض العامة** فقط: locale/theme/fontScale/density/reduceMotion. تليها شريحة metadata-only لحسابات خارجية، ثم Storage Settings، ثم Self-development Candidate Review وRule Overlay. لا تُفعل OAuth أو MCP أو persistence أو skill execution تلقائيًا، ولا تُضاف قاعدة معرفية دائمة قبل تصميم migration والخصوصية والـrollback.
+أُغلقت شريحة **إعدادات العرض العامة**: locale/theme/fontScale/density/reduceMotion. تلتها شريحة `External Accounts — Metadata-only` الموثقة في `docs/87-external-accounts-metadata-only.md`؛ تسجل provider/label/owner/scopes وresourceScope في الذاكرة فقط، وتبدأ `disconnected` مع `consent_required` و`unknown` verification، دون OAuth أو MCP أو persistence أو secrets أو network. تبقى الشريحة التالية Storage Settings، ثم Self-development Candidate Review وRule Overlay. لا تُفعل OAuth أو MCP أو skill execution تلقائيًا، ولا تُضاف قاعدة معرفية دائمة قبل تصميم migration والخصوصية والـrollback.

@@ -52,6 +52,7 @@
 | `84-virtual-human-research-and-comparison.md` | البحث الحديث والمقارنة وTop-5 scoring لنظام Virtual Human / AI Avatar |
 | `85-virtual-human-architecture-and-contracts.md` | المعمارية المقترحة، state machine، العقود، الخصوصية، الأداء، والـOverlay |
 | `86-virtual-human-licensing-roadmap-and-decisions.md` | License Matrix وDecision Log وخارطة Avatar المستقبلية 0–11 |
+| `87-external-accounts-metadata-only.md` | تنفيذ metadata-only للحسابات الخارجية دون OAuth أو network أو secrets |
 
 ## ملفات الحالة خارج هذا المجلد
 
