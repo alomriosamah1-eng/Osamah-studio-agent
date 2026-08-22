@@ -9,7 +9,7 @@
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
 | أحدث baseline مدفوع قبل الشريحة | `f388e8957e602b96c97968feed2c3f8ebf08df23` |
 | commit الشريحة المحلي | `cc4a35d3f621e5ab6f79e386cc9a1760e970f063` |
-| حالة الشجرة | feature delivery pushed؛ docs state finalization محلية ثم push أخير متبقٍ |
+| حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد delivery والوثائق |
 | الإصدار المحلي | `0.3.0-project-preview-runtime` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `17/17` اختبارًا ناجحًا |
@@ -49,6 +49,6 @@
 
 ## الإجراء التالي
 
-بعد إغلاق docs state النهائي والتحقق من تطابق `git rev-parse HEAD` مع GitHub، يبدأ commit مستقل لبناء Presentation renderer يستهلك `PreviewRenderNode` داخل لوحة المحاكي. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
+بعد هذه الشريحة يبدأ commit مستقل لبناء Presentation renderer يستهلك `PreviewRenderNode` داخل لوحة المحاكي. لا يبدأ Android/iOS native قبل اكتمال embedded renderer وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. إعداد: Manus AI.

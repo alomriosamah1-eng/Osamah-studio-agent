@@ -60,9 +60,9 @@
 | مراجعة القرارات والاعتماديات | `d9e6e0c06cab9aee63e337d85db8469b9cc35a41` |
 | تحديث الحالة والـ handoff النهائي | `2fd2c219072d8d186460a5c02b7c70545b447cb8` |
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
-| Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery push verified at `0e9e772cee32bddba1c8590e59bf05fe798f9d7d` |
+| Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
 
-تم التحقق من SQLite migration و`git diff --check` وsecret scan. دُفعت الشريحة إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `0e9e772cee32bddba1c8590e59bf05fe798f9d7d`. ستُحدّث ملفات الحالة النهائية في commit docs صغير لاحق.
+تم التحقق من SQLite migration و`git diff --check` وsecret scan. دُفعت الشريحة ووثائقها إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `5431527feab7b45d41ff9c96802f0aebfbe25849`، والشجرة نظيفة.
 
 ## الحدود الحالية
 
