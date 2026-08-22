@@ -1,0 +1,117 @@
+import { app, BrowserWindow, ipcMain, session } from "electron";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { createEmbeddedApplication } from "../composition.js";
+import { invalidRequest, isIpcRequest } from "../ipc/contracts.js";
+import { DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender } from "./security.js";
+
+const currentDirectory = dirname(fileURLToPath(import.meta.url));
+const workspacePath = join(currentDirectory, "../../prototypes/studio/index.html");
+const workspaceUrl = pathToFileURL(workspacePath).toString();
+const embeddedApplication = createEmbeddedApplication();
+if (process.env.OSAMAH_DISABLE_GPU === "1") app.disableHardwareAcceleration();
+let mainWindow: BrowserWindow | undefined;
+
+const requestIdOf = (value: unknown): string => {
+  if (!value || typeof value !== "object") return "unknown";
+  const requestId = (value as Record<string, unknown>).requestId;
+  return typeof requestId === "string" ? requestId : "unknown";
+};
+
+const installContentSecurityPolicy = (): void => {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [DESKTOP_CONTENT_SECURITY_POLICY],
+      },
+    });
+  });
+};
+
+const registerIpcBridge = (): void => {
+  ipcMain.handle(DESKTOP_IPC_CHANNEL, async (event, request: unknown) => {
+    const requestId = requestIdOf(request);
+    if (!isTrustedIpcSender({
+      senderId: event.sender.id,
+      expectedSenderId: mainWindow?.webContents.id ?? -1,
+      frameUrl: event.senderFrame?.url ?? "",
+      expectedFrameUrl: workspaceUrl,
+    })) {
+      return invalidRequest(requestId, "The IPC sender is not trusted.");
+    }
+    if (!isIpcRequest(request)) return invalidRequest(requestId, "The IPC request does not match protocol v1.");
+    return embeddedApplication.ipc.dispatch(request);
+  });
+};
+
+const createWindow = (): BrowserWindow => {
+  const window = new BrowserWindow({
+    width: 1440,
+    height: 960,
+    minWidth: 960,
+    minHeight: 680,
+    show: false,
+    backgroundColor: "#090d16",
+    webPreferences: {
+      preload: join(currentDirectory, "preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true,
+      spellcheck: false,
+    },
+  });
+
+  window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  window.webContents.on("will-navigate", (event, url) => {
+    if (!isTrustedIpcSender({ senderId: window.webContents.id, expectedSenderId: window.webContents.id, frameUrl: url, expectedFrameUrl: workspaceUrl })) {
+      event.preventDefault();
+    }
+  });
+  window.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+  window.once("ready-to-show", () => {
+    window.show();
+    console.log("Osamah Studio Agent desktop shell ready.");
+  });
+  window.webContents.on("console-message", (messageDetails) => {
+    if (process.env.OSAMAH_SMOKE !== "1") return;
+    const message = messageDetails.message;
+    console.log(`DESKTOP_RENDERER_CONSOLE=${message}`);
+    if (message === "DESKTOP_IPC_SMOKE=PASS") {
+      console.log("Osamah Studio Agent preload and IPC bridge ready.");
+      console.log(message);
+      setTimeout(() => app.quit(), 250);
+    } else if (message === "DESKTOP_IPC_SMOKE=FAIL") {
+      console.error("Desktop IPC smoke returned an unsuccessful response.");
+      app.exit(1);
+    }
+  });
+  window.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    if (process.env.OSAMAH_SMOKE === "1") console.error(`DESKTOP_LOAD_FAILED=${errorCode}:${errorDescription}:${validatedURL}`);
+  });
+  window.webContents.on("render-process-gone", (_event, details) => {
+    if (process.env.OSAMAH_SMOKE === "1") console.error(`DESKTOP_RENDERER_GONE=${details.reason}`);
+  });
+  window.on("closed", () => {
+    if (process.env.OSAMAH_SMOKE === "1") console.log("DESKTOP_WINDOW_CLOSED");
+  });
+  void window.loadFile(workspacePath, process.env.OSAMAH_SMOKE === "1" ? { hash: "osamah-smoke" } : undefined);
+  return window;
+};
+
+void app.whenReady().then(() => {
+  installContentSecurityPolicy();
+  registerIpcBridge();
+  mainWindow = createWindow();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
+  });
+}).catch((error: unknown) => {
+  console.error("Osamah Studio Agent failed to start.", error);
+  app.quit();
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});

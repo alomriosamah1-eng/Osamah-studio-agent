@@ -4,19 +4,19 @@
 
 | الحقل | القيمة |
 |---|---|
-| الإصدار | `0.5.0-ipc-project-open` |
-| المرحلة | IPC Project Open + Presentation Renderer + Project Preview Runtime |
-| الحالة | الخطة الرئيسية مدفوعة ومتحقق منها؛ الشجرة نظيفة |
+| الإصدار | `0.6.0-desktop-shell` |
+| المرحلة | Electron Shell + Typed Preload + IPC Project Open + Presentation Renderer |
+| الحالة | Electron shell وtyped preload منفذان محليًا؛ الفحوص النهائية والـ commit/push متبقية |
 | آخر commit مدفوع | `0f1010462c6297e274c66b9c99ed38404272df5d` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
-| آخر اختبار ناجح | `21/21` اختبار Node/tsx ناجح في 2026-08-22 |
-| آخر push مؤكد | `origin/main` عند `0f1010462c6297e274c66b9c99ed38404272df5d`؛ local وGitHub متطابقان |
+| آخر اختبار ناجح | `23/23` اختبار Node/tsx ناجح في 2026-08-22؛ desktop smoke ناجح |
+| آخر push مؤكد | `origin/main` عند `0f1010462c6297e274c66b9c99ed38404272df5d`؛ التغييرات الحالية لم تُدفع بعد |
 
 ## المكتمل
 
 تمت مراجعة المستودع والوثائق السابقة، وإنشاء `docs/31-gap-analysis.md`، وإجراء بحث موثق عن React Native/Expo/Metro/Fast Refresh/React Native Web/Expo Snack/Android Emulator/iOS Simulator/Hermes/Debugging. أضيفت `docs/33` إلى `docs/44` و16 reference maps تحت `docs/reference/`. أضيف Foundation code مستقل عن UI: domain primitives/errors/entities/events، application ports/use cases، in-memory adapters، MobileProjectDetector، PlatformCapabilityService، LightweightPreviewAdapter، EmbeddedSimulatorController، typed IPC transport/handlers، SQLite migration contract، `ProjectPreviewBundle`، و`FixturePreviewRuntime`.
 
-اكتملت شريحة Project Preview Runtime بإضافة `FilesystemProjectScanner` و`FilesystemProjectPreviewService` لقراءة مشروع من root مقيد واختيار manifest/entry وبناء bundle فعلي دون تشغيل scripts أو postinstall. اكتملت شريحة Presentation Renderer بتحويل `PreviewRenderNode` إلى HTML دلالي محدود، مع browser adapter ودمجه داخل Workspace. أضيفت الخطة التنفيذية الرئيسية في `docs/45-master-implementation-plan.md` ونسختها القابلة للآلة في `project/master-implementation-plan.json`، ودُفعت إلى GitHub كمرجع التنفيذ المعتمد.
+اكتملت شريحة Project Preview Runtime بإضافة `FilesystemProjectScanner` و`FilesystemProjectPreviewService` لقراءة مشروع من root مقيد واختيار manifest/entry وبناء bundle فعلي دون تشغيل scripts أو postinstall. اكتملت شريحة Presentation Renderer بتحويل `PreviewRenderNode` إلى HTML دلالي محدود، مع browser adapter ودمجه داخل Workspace. أضيفت الخطة التنفيذية الرئيسية في `docs/45-master-implementation-plan.md` ونسختها القابلة للآلة في `project/master-implementation-plan.json`، ودُفعت إلى GitHub كمرجع التنفيذ المعتمد. أضيف الآن Electron shell وtyped preload وCSP وsender validation وdesktop smoke في `src/desktop/` و`scripts/desktop-smoke.mjs`.
 
 أضيف `preview.openProject` إلى typed IPC. يبني handler bundle من filesystem عبر Application service ثم يمرره إلى `EmbeddedSimulatorController.start`، ويعيد summary محدودًا للحزمة مع session metadata. أضيف wiring فعلي في `createEmbeddedApplication` واختبارات فتح fixture ورفض path traversal.
 
@@ -44,6 +44,6 @@
 
 ## الخطوة التالية الدقيقة
 
-الخطة التنفيذية المعتمدة هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. بعد هذه الشريحة يبدأ commit مستقل واحد فقط لبناء typed Electron preload boundary أو adapter واجهة Workspace لـ `preview.openProject`. يجب أن يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts.
+الخطة التنفيذية المعتمدة هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. بعد هذه الشريحة يبدأ commit مستقل واحد فقط لإكمال production root picker وSQLite adapter/observability خلف typed Electron boundary. يجب أن يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. إعداد: Manus AI.

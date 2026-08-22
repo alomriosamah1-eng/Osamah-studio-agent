@@ -28,6 +28,12 @@ export const createEmbeddedApplication = () => {
   const controller = new InMemoryEmbeddedSimulatorController(foundation.useCases, new InMemoryLightweightPreviewAdapter());
   const ipc = new InMemoryIpcTransport();
   const projectPreviewService = new FilesystemProjectPreviewService(new FilesystemProjectScanner());
+  const defaultProfiles = [
+    foundation.useCases.registerDeviceProfile({ id: "pixel-9", name: "Pixel 9", platform: "android", osVersion: "15", width: 1080, height: 2424, dpi: 420 }),
+    foundation.useCases.registerDeviceProfile({ id: "iphone-16", name: "iPhone 16", platform: "ios", osVersion: "18", width: 393, height: 852, dpi: 3 }),
+    foundation.useCases.registerDeviceProfile({ id: "android-tablet", name: "Android Tablet", platform: "android", osVersion: "15", width: 1600, height: 2560, dpi: 320 }),
+  ];
+  defaultProfiles.forEach((profile) => controller.registerProfile(profile));
   registerEmbeddedSimulatorHandlers(ipc, controller, projectPreviewService);
-  return { ...foundation, controller, ipc, projectPreviewService };
+  return { ...foundation, controller, ipc, projectPreviewService, defaultProfiles };
 };

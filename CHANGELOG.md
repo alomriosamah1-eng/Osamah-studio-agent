@@ -1,5 +1,21 @@
 # سجل التغييرات
 
+## [Unreleased] — Electron Shell and Typed Preload
+
+### Added
+
+- Electron main process وBrowserWindow مع `contextIsolation` و`sandbox` و`nodeIntegration=false` و`webSecurity=true`.
+- typed preload API بواجهة `osamah.dispatch` وقناة IPC allowlisted دون كشف `ipcRenderer` إلى renderer.
+- CSP وsender/frame URL validation وnavigation/window/permission policies.
+- `pnpm build` و`pnpm desktop:smoke` للتحقق من startup وpreload و`preview.openProject` عبر fixture فعلي.
+- نقل Workspace runtime من inline script إلى `prototypes/studio/workspace.js` لدعم `script-src 'self'`.
+- وثيقة `docs/46-electron-shell-and-preload-implementation.md`.
+
+### Verified
+
+- `pnpm check` ناجح؛ اختبارات security الجديدة ناجحة.
+- `pnpm desktop:smoke`: `DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS`.
+
 ## [Unreleased] — Master Implementation Plan
 
 ### Added

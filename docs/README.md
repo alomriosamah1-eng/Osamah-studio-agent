@@ -40,6 +40,7 @@
 | `32-traceability-matrix.md` | ربط المتطلبات بالميزات والمعمارية والتقنية والاختبارات |
 | `33`–`44` | معمارية وتنفيذ Mobile Preview وEmbedded Simulator وRenderer وIPC Project Open |
 | `45-master-implementation-plan.md` | الخطة التنفيذية الشاملة للأقسام الثلاثة والمراحل والتكاملات وإعادة استخدام المصادر المفتوحة |
+| `46-electron-shell-and-preload-implementation.md` | تنفيذ Electron shell وtyped preload وCSP وdesktop smoke |
 
 ## ملفات الحالة خارج هذا المجلد
 

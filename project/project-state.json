@@ -1,38 +1,54 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "project": "Osamah Studio Agent",
   "repository": "https://github.com/alomriosamah1-eng/Osamah-studio-agent",
-  "as_of": "2026-08-21",
-  "phase": "discovery",
-  "status": "discovery-documentation-complete-implementation-not-started",
+  "as_of": "2026-08-22",
+  "phase": "desktop-shell-and-typed-preload",
+  "status": "electron-shell-preload-smoke-verified-pending-delivery",
   "repository_baseline": {
     "is_empty_at_start": true,
     "initial_commit": "0f57e1280cd0e29b160a5fb4bb671bca6d9d830d",
-    "documentation_commit": "95e7060cf96051269329e97d811efd0fbd9e501d",
-    "final_report_commit": "59c05d02f45adc606467ddaa0d33bf21060c768e",
-    "latest_verified_remote_main": "59c05d02f45adc606467ddaa0d33bf21060c768e",
+    "latest_verified_remote_main": "4fba7d418fe3ccedcaf91258f4fffd5ab70d8627",
     "remote_main_verified": true
   },
-  "evidence": {
-    "verified": [
-      "target repository was empty before work",
-      "OpenCode, Hermes Agent, OmniRoute, and DeepSeek Harness official repositories identified",
-      "44 ecosystem candidates collected from GitHub API",
-      "first baseline commit pushed to origin/main"
-    ],
-    "unknown": [
-      "OpenTo Desktop official identity and integration contract",
-      "production Arabic/Yemeni speech quality and model rights",
-      "commercial distribution policy and target hardware baseline"
-    ]
+  "current_evidence": {
+    "pnpm_check": "pass",
+    "desktop_build": "pass",
+    "desktop_smoke": "pass",
+    "desktop_ipc_smoke": "pass",
+    "tests": "23/23",
+    "master_plan_json": "valid",
+    "native_fidelity": "not_claimed"
   },
+  "completed": [
+    "discovery-and-architecture-documentation",
+    "foundation-typescript-slice",
+    "embedded-simulator-controller-and-typed-ipc",
+    "sqlite-migration-contract",
+    "project-preview-runtime-and-filesystem-scanner",
+    "presentation-renderer",
+    "ipc-preview-open-project",
+    "master-implementation-plan",
+    "electron-main-browser-window",
+    "typed-preload-bridge",
+    "desktop-csp-and-sender-validation",
+    "desktop-startup-and-ipc-smoke"
+  ],
+  "unknown": [
+    "OpenTo Desktop official identity and integration contract",
+    "production Arabic/Yemeni speech quality and model rights",
+    "commercial distribution policy and target hardware baseline",
+    "final React Native Web/Metro runtime choice"
+  ],
   "decisions": {
     "desktop_architecture": "modular-monolith-with-process-isolation",
-    "mvp_shell": "electron-temporary-decision",
+    "mvp_shell": "electron",
+    "desktop_security_baseline": "context-isolation-sandbox-node-integration-disabled-csp-sender-validation",
     "local_data": "sqlite-fts5-filesystem-object-store",
     "provider_policy": "local-first-free-first-capability-aware",
     "opento": "adapter-contract-only-until-verified",
-    "agents": "up-to-70-definitions-with-concurrency-cap"
+    "agents": "up-to-70-definitions-with-concurrency-cap",
+    "preview_fidelity": "compatibility-fixture-mode-until-runtime-parity"
   },
   "mvp_scope": [
     "workspace and project context",
@@ -43,7 +59,8 @@
     "SQLite sessions and FTS5 search",
     "Git status/diff/local commit approval",
     "Markdown/PDF production path",
-    "basic skill registry"
+    "basic skill registry",
+    "Electron shell with typed preload and embedded preview"
   ],
   "deferred": [
     "full OpenTo integration",
@@ -51,13 +68,15 @@
     "voice and Arabic dialect guarantee",
     "video generation",
     "70 concurrent agents",
-    "multi-user cloud control plane"
+    "multi-user cloud control plane",
+    "signed production packaging",
+    "React Native Web/Metro parity and native mobile transports"
   ],
   "next_actions": [
-    "finish documentation audit",
-    "add requirements traceability matrix",
-    "add CI skeleton only after documented architecture",
-    "obtain OpenTo official specification",
-    "prototype workspace/session/read-only agent slice"
+    "persist foundation state in SQLite adapter",
+    "add production Workspace root picker through typed preload",
+    "add full Electron packaging and CSP hardening",
+    "build bounded agent runtime",
+    "keep Android/iOS native transports behind doctor/resource contracts"
   ]
 }

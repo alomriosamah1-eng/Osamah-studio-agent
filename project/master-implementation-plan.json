@@ -5,7 +5,7 @@
   "product": "Osamah Studio Agent",
   "architecture": "modular-desktop-monolith-with-process-isolation",
   "current_state": {
-    "version": "0.5.0-ipc-project-open",
+    "version": "0.6.0-desktop-shell",
     "completed": [
       "foundation-typescript-slice",
       "embedded-simulator-controller",
@@ -14,10 +14,13 @@
       "project-preview-runtime",
       "filesystem-project-scanner",
       "presentation-renderer",
-      "ipc-preview-open-project"
+      "ipc-preview-open-project",
+      "electron-main-browser-window",
+      "typed-preload-bridge",
+      "desktop-csp-sender-validation-and-smoke"
     ],
-    "tests": "21/21",
-    "next_phase": "typed-electron-preload-boundary",
+    "tests": "23/23",
+    "next_phase": "sqlite-data-and-observability",
     "native_fidelity": "not_claimed"
   },
   "product_sections": [

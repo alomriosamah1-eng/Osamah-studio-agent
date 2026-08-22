@@ -4,8 +4,8 @@
 |---|---|---|
 | Domain unit | entities/value objects/errors/state transitions | منفذ: `src/foundation.test.ts` و`src/embedded-controller.test.ts` |
 | Application integration | use cases + in-memory repos/events | منفذ جزئي |
-| Contract | ports/IPC/providers/Metro/ADB/Xcode | مخطط |
-| End-to-end | Desktop workspace/approval/Git | مفقود |
+| Contract | ports/IPC/providers/Metro/ADB/Xcode | IPC وsecurity boundaries منفذة جزئيًا؛ providers/Metro/ADB/Xcode لاحقًا |
+| End-to-end | Desktop workspace/approval/Git | Electron startup + preload/IPC smoke منفذ جزئيًا؛ approval/Git لاحقًا |
 | UI/accessibility | RTL/LTR/keyboard/screen reader | مفقود |
 | Mobile preview | device geometry/interactions/HMR | controller/input/refresh/capture وbundle/runtime contract منفذة؛ Metro HMR الحقيقي لاحقًا |
 | Native mobile | Android/iOS build/run/log/screenshot | مفقود |
@@ -13,11 +13,12 @@
 | AI | tool calling/fallback/memory/visual loop | مفقود |
 | Performance | startup/RSS/CPU/GPU/queue | مفقود |
 | IPC contract | protocol validation/unknown/duplicate/error mapping وbundle start/refresh/inspect/openProject | منفذ: `src/ipc.test.ts` |
+| Desktop security | CSP، context isolation، sender URL/id، preload bridge | منفذ: `src/desktop/security.test.ts` و`pnpm desktop:smoke` |
 | Preview runtime security | blocked imports/path traversal/source hash/diagnostics | منفذ: `src/preview-runtime.test.ts` و`src/ipc.test.ts` |
 | Project open integration | filesystem root → bundle → embedded session → inspect | منفذ: `src/ipc.test.ts` |
 | Presentation renderer | semantic mapping/escaping/deterministic props/depth guard | منفذ: `src/preview-renderer.test.ts` |
 | Visual prototype | embedded tree/file switch/orientation/Fast Refresh | منفذ bounded: `research/presentation-renderer-visual-check.txt` |
 | Migration contract | SQLite tables/indexes/schema version | منفذ: `scripts/validate_sqlite_migration.py` |
-| Security | injection/sandbox/secrets/plugins | مفقود |
+| Security | injection/sandbox/secrets/plugins | Electron baseline منفذ جزئيًا؛ threat suite الكامل لاحقًا |
 
 قاعدة القبول: لا تدخل feature release دون test entry وevidence artifact.

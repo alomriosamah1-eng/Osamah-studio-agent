@@ -10,7 +10,7 @@ AIProvider، ModelProvider، VoiceProvider، StorageProvider، GitProvider، Git
 
 ## IPC المخطط
 
-الرسائل يجب أن تكون `{protocolVersion, requestId, correlationId, method, payload}` مع schema validation. الأحداث `progress`, `approval_required`, `preview_event`, `log`, `error`, `result`. لا تُكشف Node APIs مباشرة إلى renderer. `preview.openProject` يجب أن يمر لاحقًا عبر typed Electron preload مع root selection صريح وCSP/sandbox policy.
+الرسائل هي `{protocolVersion, requestId, correlationId, method, payload}` مع schema validation. الأحداث `progress`, `approval_required`, `preview_event`, `log`, `error`, `result`. لا تُكشف Node APIs مباشرة إلى renderer. أصبح `preview.openProject` يمر عبر typed Electron preload تجريبي بواجهة `osamah.dispatch` وقناة allowlisted، مع root selection في مسار التطبيق وCSP/sandbox policy؛ production root picker وواجهة preload النهائية ما زالا لاحقين.
 
 ## Presentation API
 
@@ -18,4 +18,4 @@ AIProvider، ModelProvider، VoiceProvider، StorageProvider، GitProvider، Git
 
 ## API status
 
-يوجد الآن typed IPC in-memory transport فعلي في `src/ipc/` مع protocol v1 وhandlers للمحاكي: `health.get`, `device.get`, `preview.start`, `preview.openProject`, `preview.input`, `preview.refresh`, `preview.capture`, `preview.inspect`, و`preview.stop`. يبني `preview.openProject` bundle من filesystem عبر `ProjectPreviewService` ثم يبدأ session ويعيد summary محدودًا. يقبل `preview.start/refresh` ProjectPreviewBundle، ويعيد `preview.inspect` source hash وmodule count وrender tree وevents/diagnostics. يركب browser adapter في `prototypes/studio/preview-renderer.js` نفس الشجرة داخل `#previewTree`. لا توجد واجهة HTTP أو Electron preload بعد، ولا يزال transport production boundary مخططًا. `createEmbeddedApplication` هو composition root الحالي.
+يوجد الآن typed IPC in-memory transport فعلي في `src/ipc/` مع protocol v1 وhandlers للمحاكي: `health.get`, `device.get`, `preview.start`, `preview.openProject`, `preview.input`, `preview.refresh`, `preview.capture`, `preview.inspect`, و`preview.stop`. يبني `preview.openProject` bundle من filesystem عبر `ProjectPreviewService` ثم يبدأ session ويعيد summary محدودًا. يقبل `preview.start/refresh` ProjectPreviewBundle، ويعيد `preview.inspect` source hash وmodule count وrender tree وevents/diagnostics. يوجد Electron main/preload تجريبي في `src/desktop/` يمرر الطلبات إلى نفس transport عبر `contextBridge` دون كشف `ipcRenderer`. يركب browser adapter في `prototypes/studio/preview-renderer.js` نفس الشجرة داخل `#previewTree`. لا توجد واجهة HTTP، ولا يزال root picker وpackaging production boundary مخططين. `createEmbeddedApplication` هو composition root الحالي.

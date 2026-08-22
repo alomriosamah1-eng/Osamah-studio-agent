@@ -1,16 +1,21 @@
 {
   "name": "osamah-studio-agent",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
-  "description": "Local-first foundation with embedded preview and project-open IPC for Osamah Studio Agent",
+  "main": "dist/desktop/main.js",
+  "description": "Local-first Electron desktop foundation with embedded preview and typed IPC for Osamah Studio Agent",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test src/**/*.test.ts",
-    "check": "pnpm typecheck && pnpm test"
+    "test": "tsx --test src/*.test.ts src/**/*.test.ts",
+    "check": "pnpm typecheck && pnpm test",
+    "build": "tsc -p tsconfig.json && cp src/desktop/preload.cjs dist/desktop/preload.cjs",
+    "desktop:start": "pnpm build && electron dist/desktop/main.js",
+    "desktop:smoke": "pnpm build && node scripts/desktop-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "electron": "43.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

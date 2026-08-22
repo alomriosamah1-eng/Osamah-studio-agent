@@ -2,17 +2,18 @@
 
 ## ملخص الحالة
 
-المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. أضيفت الآن الخطة الرئيسية الشاملة للأقسام الثلاثة كمصدر التنفيذ القادم.
+المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. أضيف الآن Electron shell وtyped preload وCSP وdesktop smoke فوق النواة.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `0f1010462c6297e274c66b9c99ed38404272df5d` |
-| حالة الشجرة | الخطة الرئيسية مدفوعة ومتحقق منها؛ الشجرة نظيفة ومتزامنة مع GitHub |
-| الإصدار المحلي | `0.5.0` |
+| آخر commit مدفوع | `0f1010462c6297e274c66b9c99ed38404272df5d`؛ شريحة Electron الحالية محلية |
+| حالة الشجرة | تغييرات Electron shell/preload محلية، جاهزة للفحوص النهائية والـ commit |
+| الإصدار المحلي | `0.6.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
-| آخر اختبار ناجح | `21/21` اختبارًا ناجحًا |
+| آخر اختبار ناجح | `23/23` اختبارًا ناجحًا؛ desktop smoke وIPC smoke ناجحان |
 | الخطة الشاملة | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
+| Desktop Shell | Electron main + typed preload + CSP + sender validation؛ smoke منفذ محليًا |
 | Project Preview | bundle builder + fixture runtime + controller + typed IPC + filesystem scanner/service |
 | Presentation Renderer | renderer نقي + browser adapter + دمج داخل `prototypes/studio/index.html` |
 | IPC Project Open | `preview.openProject` يبني bundle ويبدأ embedded session ويعيد summary محدودًا |
@@ -49,6 +50,6 @@
 
 ## الإجراء التالي
 
-الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`، وقد دُفعت إلى GitHub. أول مرحلة تنفيذية تالية فيها هي typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. اكتمل prototype أولي لـ typed Electron preload؛ الخطوة التالية بعد إغلاق هذه الشريحة هي SQLite adapter/observability، ثم root picker production. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
 آخر تحديث: 2026-08-22. آخر push مؤكد: `0f1010462c6297e274c66b9c99ed38404272df5d`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
