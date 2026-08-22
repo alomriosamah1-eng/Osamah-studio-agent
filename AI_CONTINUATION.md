@@ -44,6 +44,6 @@ OpenTo Desktop ما زال بلا source رسمي. يلزم تحديد React ren
 
 ## آخر مهمة دقيقة
 
-تم تنفيذ `preview.openProject` عبر typed in-memory IPC: بناء bundle من `fixtures/mobile-expo`، بدء embedded session، inspect للـ summary، ورفض entry الذي يتجاوز root. نجحت `pnpm check` بـ21/21، ونجحت SQLite/diff/secret audits، وآخر delivery state `c1b1613a92515b5daa186137ad48f37844834878` مدفوع ومتحقق. أضيفت الخطة الرئيسية الشاملة في `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json` وتغطي المراحل 0–17 للأقسام الثلاثة والتكاملات والمخاطر. الخطوة التنفيذية الأولى حسب الخطة typed preload وCSP/sandbox، وليس Android/iOS native قبل اكتمال doctor/resource contracts.
+تم تنفيذ `preview.openProject` عبر typed in-memory IPC: بناء bundle من `fixtures/mobile-expo`، بدء embedded session، inspect للـ summary، ورفض entry الذي يتجاوز root. نجحت `pnpm check` بـ21/21، ونجحت SQLite/diff/secret audits. أضيفت الخطة الرئيسية الشاملة في `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json` وتغطي المراحل 0–17 للأقسام الثلاثة والتكاملات والمخاطر، وآخر delivery state لها هو `0f1010462c6297e274c66b9c99ed38404272df5d` ومدفوع ومتحقق. الخطوة التنفيذية الأولى حسب الخطة typed preload وCSP/sandbox، وليس Android/iOS native قبل اكتمال doctor/resource contracts.
 
 إعداد: Manus AI. آخر تحديث: 2026-08-22.

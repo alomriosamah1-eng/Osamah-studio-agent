@@ -2,13 +2,13 @@
 
 ## ملخص الحالة
 
-المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer، وأضيف الآن مسار typed IPC يفتح مشروعًا فعليًا من filesystem ويبني bundle ثم يبدأ جلسة المعاينة نفسها.
+المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. أضيفت الآن الخطة الرئيسية الشاملة للأقسام الثلاثة كمصدر التنفيذ القادم.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `c1b1613a92515b5daa186137ad48f37844834878` |
-| حالة الشجرة | تغييرات توثيق الخطة الرئيسية محلية، جاهزة للمراجعة والدفع |
+| آخر commit مدفوع | `0f1010462c6297e274c66b9c99ed38404272df5d` |
+| حالة الشجرة | الخطة الرئيسية مدفوعة ومتحقق منها؛ الشجرة نظيفة ومتزامنة مع GitHub |
 | الإصدار المحلي | `0.5.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
 | آخر اختبار ناجح | `21/21` اختبارًا ناجحًا |
@@ -49,6 +49,6 @@
 
 ## الإجراء التالي
 
-الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. أول مرحلة تنفيذية تالية فيها هي typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`، وقد دُفعت إلى GitHub. أول مرحلة تنفيذية تالية فيها هي typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `c1b1613a92515b5daa186137ad48f37844834878`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. آخر push مؤكد: `0f1010462c6297e274c66b9c99ed38404272df5d`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
