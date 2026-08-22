@@ -6,6 +6,8 @@ import type {
   Clock,
   DeviceProfileRepository,
   IdGenerator,
+  ObservabilityRecord,
+  ObservabilitySink,
   PreviewRepository,
   SessionRepository,
   WorkspaceRepository,
@@ -44,6 +46,19 @@ export class InMemoryRepositories {
   public readonly approvals: ApprovalRepository = this.approvalStore;
   public readonly devices: DeviceProfileRepository = this.deviceStore;
   public readonly previews: PreviewRepository = this.previewStore;
+}
+
+export class InMemoryObservabilitySink implements ObservabilitySink {
+  public readonly records: ObservabilityRecord[] = [];
+
+  public record(record: ObservabilityRecord): void {
+    this.records.push(record);
+  }
+
+  public list(limit = 100): readonly ObservabilityRecord[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 500));
+    return this.records.slice(-boundedLimit).reverse();
+  }
 }
 
 export class FixedClock implements Clock {

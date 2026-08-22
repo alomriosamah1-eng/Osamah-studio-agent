@@ -47,6 +47,55 @@ export interface IdGenerator {
   next(prefix: string): string;
 }
 
+export type SqlValue = string | number | null | Uint8Array;
+
+export interface SqlExecutor {
+  exec(sql: string): void;
+  run(sql: string, parameters?: readonly SqlValue[]): void;
+  get<T extends Record<string, unknown>>(sql: string, parameters?: readonly SqlValue[]): T | undefined;
+  all<T extends Record<string, unknown>>(sql: string, parameters?: readonly SqlValue[]): readonly T[];
+  transaction<T>(work: () => T): T;
+  close(): void;
+}
+
+export type ObservabilityLevel = "debug" | "info" | "warn" | "error";
+
+export interface ObservabilityRecord {
+  readonly id: string;
+  readonly occurredAt: string;
+  readonly level: ObservabilityLevel;
+  readonly eventType: string;
+  readonly correlationId?: string;
+  readonly durationMs?: number;
+  readonly resultCode?: string;
+  readonly payload: Readonly<Record<string, unknown>>;
+}
+
+export interface ObservabilitySink {
+  record(record: ObservabilityRecord): void;
+  list(limit?: number): readonly ObservabilityRecord[];
+}
+
+export interface BackupFileEntry {
+  readonly relativePath: string;
+  readonly sha256: string;
+  readonly bytes: number;
+}
+
+export interface BackupManifest {
+  readonly formatVersion: 1;
+  readonly createdAt: string;
+  readonly schemaVersion: string;
+  readonly databaseSha256: string;
+  readonly files: readonly BackupFileEntry[];
+}
+
+export interface BackupProvider {
+  create(destinationRoot: string): Promise<BackupManifest>;
+  verify(backupRoot: string): Promise<BackupManifest>;
+  restore(backupRoot: string, destinationRoot: string): Promise<BackupManifest>;
+}
+
 export interface ApplicationDependencies {
   readonly workspaces: WorkspaceRepository;
   readonly sessions: SessionRepository;

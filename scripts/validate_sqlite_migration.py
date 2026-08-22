@@ -1,10 +1,16 @@
 from pathlib import Path
 import sqlite3
 
-migration = Path(__file__).parents[1] / "db" / "migrations" / "001_initial.sql"
+migrations_dir = Path(__file__).parents[1] / "db" / "migrations"
+migrations = sorted(migrations_dir.glob("[0-9][0-9][0-9]_*.sql"))
+expected_migrations = ["001_initial.sql", "002_observability.sql"]
+if [migration.name for migration in migrations] != expected_migrations:
+    raise SystemExit(f"Unexpected migrations: {[migration.name for migration in migrations]!r}")
+
 conn = sqlite3.connect(":memory:")
 conn.execute("PRAGMA foreign_keys = ON")
-conn.executescript(migration.read_text(encoding="utf-8"))
+for migration in migrations:
+    conn.executescript(migration.read_text(encoding="utf-8"))
 
 required_tables = {
     "schema_meta",
@@ -14,6 +20,9 @@ required_tables = {
     "jobs",
     "artifacts",
     "domain_events",
+    "device_profiles",
+    "preview_sessions",
+    "observability_logs",
 }
 actual_tables = {
     row[0]
@@ -26,17 +35,31 @@ if missing:
 schema_version = conn.execute(
     "SELECT value FROM schema_meta WHERE key='schema_version'"
 ).fetchone()
-if schema_version != ("001",):
+if schema_version != ("002",):
     raise SystemExit(f"Unexpected schema version: {schema_version!r}")
 
 indexes = {
     row[0]
     for row in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")
 }
-required_indexes = {"idx_sessions_workspace", "idx_approvals_session", "idx_events_aggregate"}
-if required_indexes - indexes:
-    raise SystemExit(f"Missing indexes: {sorted(required_indexes - indexes)}")
+required_indexes = {
+    "idx_sessions_workspace",
+    "idx_approvals_session",
+    "idx_events_aggregate",
+    "idx_preview_device",
+    "idx_observability_time",
+    "idx_observability_correlation",
+}
+missing_indexes = required_indexes - indexes
+if missing_indexes:
+    raise SystemExit(f"Missing indexes: {sorted(missing_indexes)}")
+
+foreign_keys = conn.execute("PRAGMA foreign_key_check").fetchall()
+if foreign_keys:
+    raise SystemExit(f"Foreign key violations: {foreign_keys!r}")
 
 print("SQLITE_MIGRATION_VALID=true")
+print(f"MIGRATION_COUNT={len(migrations)}")
+print(f"SCHEMA_VERSION={schema_version[0]}")
 print(f"TABLE_COUNT={len(actual_tables)}")
 print(f"INDEX_COUNT={len(indexes)}")

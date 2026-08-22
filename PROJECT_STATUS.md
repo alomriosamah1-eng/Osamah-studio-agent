@@ -2,54 +2,66 @@
 
 ## ملخص الحالة
 
-المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer ومسار typed IPC لفتح مشروع فعلي من filesystem. اكتمل الآن Electron shell وtyped preload وCSP وdesktop smoke فوق النواة.
+بدأ المستودع كحزمة وثائقية، ثم أصبح Foundation قابلًا للاختبار مع **محاكي هاتف مدمج داخل Workspace**، وtyped IPC، وProject Preview Runtime، وPresentation Renderer، وElectron shell معزولة. اكتملت الآن شريحة SQLite adapter وobservability وbackup/restore bounded خلف Clean Architecture ports، مع إبقاء composition runtime الحالي على in-memory adapters إلى أن تُنفذ wiring اختيارية ومراجعة.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `2a0e891b544324ff06f18ad461282527af987a13` |
-| حالة الشجرة | Electron shell/preload ووثائق الشريحة مدفوعة ومتحققة؛ الشجرة نظيفة |
-| الإصدار المحلي | `0.6.0` |
-| آخر build ناجح | `pnpm check` في 2026-08-22 |
-| آخر اختبار ناجح | `23/23` اختبارًا ناجحًا؛ desktop smoke وIPC smoke ناجحان |
-| الخطة الشاملة | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
-| Desktop Shell | Electron main + typed preload + CSP + sender validation؛ smoke منفذ محليًا |
-| Project Preview | bundle builder + fixture runtime + controller + typed IPC + filesystem scanner/service |
-| Presentation Renderer | renderer نقي + browser adapter + دمج داخل `prototypes/studio/index.html` |
-| IPC Project Open | `preview.openProject` يبني bundle ويبدأ embedded session ويعيد summary محدودًا |
-| Embedded Simulator | جزء من Workspace إلى جانب file tree/editor/Inspector/Console على مستوى العقود والprototype |
-| Android native | adapter مخطط، يحتاج SDK/JDK/AVD/acceleration |
-| iOS native | adapter مخطط، macOS/Xcode فقط؛ غير متاح أصليًا على Windows/Linux |
-| OpenTo | UNKNOWN / REQUIRES VALIDATION |
+| آخر commit مدفوع | سيُحدّث بعد الدفع والتحقق من `origin/main` |
+| حالة الشجرة | تغييرات شريحة SQLite محلية قيد الفحوص والتوثيق قبل commit |
+| الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
+| آخر فحص مكتمل | `pnpm check` ناجح، `31/31` اختبارًا في 2026-08-22 |
+| schema الحالي | migration `001` ثم `002`، schema version `002` |
+| SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
+| خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
+| المحاكي المدمج | جزء من Workspace إلى جانب file tree/editor/Inspector/Console؛ compatibility/fixture mode فقط |
+| Android native | transport مستقبلي اختياري؛ يحتاج SDK/JDK/AVD/acceleration وdoctor contract |
+| iOS native | transport مستقبلي اختياري؛ macOS/Xcode فقط، ولا يظهر متاحًا أصليًا على Windows/Linux |
+| OpenTo | `UNKNOWN / REQUIRES VALIDATION` |
 
-## المكتمل في هذه المرحلة
+## ما اكتمل
 
-أضيف `preview.openProject` إلى `IpcMethodMap` و`registerEmbeddedSimulatorHandlers`. يقرأ المسار `FilesystemProjectPreviewService`، ويُمرّر `ProjectPreviewBundle` إلى `EmbeddedSimulatorController.start`، ثم يعيد session metadata وproject summary يتضمن entry وsourceHash وعدد modules والتحذيرات.
+تمت مراجعة المستودع والوثائق السابقة وإنشاء خرائط المراجع وتحليل الفجوات وخطة التنفيذ الشاملة. أضيفت طبقات Domain وApplication وInfrastructure وPresentation، مع entities وstate transitions وdomain events وuse cases وin-memory adapters واختبارات deterministic.
 
-تم ربط `FilesystemProjectScanner` و`FilesystemProjectPreviewService` في `createEmbeddedApplication`. لا يتعامل controller مع filesystem مباشرة، ولا يشغّل المسار scripts أو postinstall أو native toolchains. أضيف اختبار يفتح `fixtures/mobile-expo` عبر IPC، واختبار يثبت رفض `../package.json` قبل بدء جلسة جديدة.
+اكتملت شرائح Mobile Preview وEmbedded Simulator وProject Preview Runtime وPresentation Renderer وIPC Project Open. يقرأ scanner المشروع من root مقيد، ويبني bundle، ويفتح embedded session، ويرفض path traversal، ولا يشغل scripts أو `postinstall` أو native toolchains من مشاريع الهاتف.
+
+اكتملت شريحة Electron Shell وTyped Preload مع `contextIsolation` و`sandbox` وCSP وsender validation وdesktop smoke. يمر `preview.openProject` عبر boundary typed، لكن production root picker وwiring النهائية للتخزين ما زالا ضمن الخطوات التالية.
+
+أضيف SQLite adapter كامل في `src/infrastructure/sqlite.ts`، وmigration `002_observability.sql`، وعقود `SqlExecutor` و`ObservabilitySink` و`BackupProvider`. تحفظ repositories الحالية entities في SQLite، ويكتب event bus الأحداث إلى `domain_events`، ويسجل observability payloads بعد redaction recursive.
+
+أضيف `LocalSqliteBackupProvider` الذي ينشئ snapshot atomic عبر `VACUUM INTO`، ويكتب manifest مع SHA-256، ويتحقق من schema وforeign keys وmigration dry-run على نسخة مؤقتة، ويستعيد إلى profile منفصل دون overwrite للقاعدة الحية.
 
 ## المعمارية الحالية
 
-الطبقات هي Domain → Application → Interface Adapters → Infrastructure → Presentation. Domain لا يعتمد على Electron أو React أو databases أو providers أو OS APIs. Mobile subsystem يستخدم LightweightPreview وFixturePreview في compatibility mode، ثم adapters مستقلة لـ React Native Web/Metro وAndroid وiOS وphysical devices وEAS. لا يساوي preview الحالي native fidelity.
+الطبقات هي **Domain → Application → Interface Adapters → Infrastructure → Presentation**. يعرف Domain وApplication ports وعقودًا مجردة فقط؛ أما `node:sqlite` ومسارات الملفات وWAL و`VACUUM INTO` فمحصورة في Infrastructure. يوجد `InMemoryObservabilitySink` للحفاظ على سرعة اختبارات Application.
+
+المحاكي المدمج الحالي compatibility/fixture mode، ولا يساوي React Native native runtime أو Metro HMR أو native module fidelity. Android Emulator وiOS Simulator transports اختيارية مستقبلية تغذي نفس اللوحة المدمجة، ولا يبدأ تنفيذها قبل استقرار doctor/resource contracts.
 
 ## الفحوص الحالية
 
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `21/21` ناجحة |
+| `pnpm test` | `31/31` ناجحة |
 | `pnpm check` | ناجح |
-| IPC project open integration | ناجح؛ fixture → bundle → session → inspect |
-| IPC path traversal guard | ناجح؛ entry خارج root مرفوض |
-| SQLite migration | يجب تشغيله ضمن الفحص النهائي قبل commit |
-| secret scan وdiff check | يجب تشغيلهما ضمن الفحص النهائي قبل commit |
+| `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
+| SQLite repositories | round-trip وrestart persistence ناجحان |
+| event bus وobservability | persistence وredaction وbounded listing ناجحة |
+| backup/restore | manifest وSHA-256 وforeign-key validation وmigration dry-run وtampering tests ناجحة |
+| `git diff --check` | سيُعاد تشغيله قبل commit |
+| secret scan | سيُعاد تشغيله قبل commit |
+| desktop smoke | سيُعاد تشغيله بعد تحديث الشريحة وقبل الإعلان عن الدفع |
 
-## المخاطر والقرارات المفتوحة
+## العمل المتبقي
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ولا يوجد بعد production packaging الموقّع أو SQLite native driver أو agent runtime أو provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. Android يعتمد على toolchain وتسريع الأجهزة، وiOS Simulator يحتاج macOS/Xcode. browser/fixture preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا.
+ما زال FTS5 وobject store وcontent hashing وAgent Runtime وProvider Gateway وterminal sandbox وresource manager وproduction packaging الموقّع غير منفذة. كذلك لم يُربط SQLite بعد بـ`createEmbeddedApplication`؛ سيتم ذلك بعد تثبيت boundary الخاصة بالـ lifecycle والـ profile path وfallback policy.
 
-## الإجراء التالي
+لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
-الخطة الرئيسية هي `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`. اكتمل prototype أولي لـ Electron shell وtyped preload، واجتاز startup/preload/IPC smoke؛ الخطوة التالية بعد إغلاق هذه الشريحة هي SQLite adapter/observability، ثم root picker production. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
+## القرار والخطوة التالية
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `2a0e891b544324ff06f18ad461282527af987a13`؛ local وGitHub متطابقان والشجرة نظيفة.�د: Manus AI.
+بعد دفع هذه الشريحة، يبدأ **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition root. بعد ذلك يأتي bounded Agent Runtime، ثم Provider Gateway، ثم React Native Web/Metro الفعلي، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
+
+للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
+
+آخر تحديث: 2026-08-22. إعداد: Manus AI.

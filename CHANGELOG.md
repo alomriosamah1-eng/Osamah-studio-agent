@@ -1,5 +1,28 @@
 # سجل التغييرات
 
+## [Unreleased] — SQLite Adapter وObservability وBackup/Restore
+
+### Added
+
+- `node:sqlite` / `DatabaseSync` adapter خلف `SqlExecutor`، مع migrations مرتبة وchecksum fail-closed وtransactions وWAL وforeign-key enforcement.
+- migration `002_observability.sql` لجداول `device_profiles` و`preview_sessions` و`observability_logs` والفهارس الخاصة بها، مع schema version `002`.
+- `SqliteRepositories` لـ Workspace وSession وApproval وDeviceProfile وPreviewSession، و`SqliteEventBus` persistent إلى `domain_events`.
+- `SqliteObservabilitySink` و`InMemoryObservabilitySink` مع bounded listing وrecursive redaction لمفاتيح الأسرار.
+- `LocalSqliteBackupProvider` لإنشاء snapshot atomic عبر `VACUUM INTO`، وmanifest مع SHA-256، وverify، وmigration dry-run، وrestore إلى profile منفصل.
+- `src/sqlite.test.ts` يغطي migration order وchecksum mismatch وrestart persistence وrepositories وevents وredaction وtransactions وbackup/restore والتلاعب بالـ checksum.
+- `docs/47-sqlite-adapter-implementation.md` وvalidator محدّث في `scripts/validate_sqlite_migration.py`.
+
+### Verified
+
+- `pnpm check`: `31/31` اختبارًا ناجحًا.
+- `python3 scripts/validate_sqlite_migration.py`: `SQLITE_MIGRATION_VALID=true`، migration count `2`، schema `002`.
+- backup/restore وforeign-key validation وmigration dry-run وsecret redaction اختُبرت محليًا.
+
+### Boundaries
+
+- لا تزال wiring النهائية لـSQLite داخل `createEmbeddedApplication` وproduction root picker ضمن الشريحة التالية.
+- لا يدعي الـ embedded simulator native fidelity؛ ما زال compatibility/fixture mode، ولا تُشغّل مشاريع الهاتف أو scripts أو native toolchains تلقائيًا.
+
 ## [Unreleased] — Electron Shell and Typed Preload
 
 ### Added

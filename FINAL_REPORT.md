@@ -2,7 +2,9 @@
 
 ## الخلاصة
 
-تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite schema contract**. المحاكي المدمج أصبح جزءًا من بيئة التطوير نفسها إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console. لم يُدّعَ اكتمال Desktop MVP أو Android Emulator أو iOS Simulator؛ هذه المسارات ما تزال adapters وخططًا لاحقة بحدود واضحة.
+تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite adapter وobservability وbackup/restore bounded**. المحاكي المدمج أصبح جزءًا من بيئة التطوير نفسها إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console. لم يُدّعَ اكتمال Desktop MVP أو Android Emulator أو iOS Simulator؛ هذه المسارات ما تزال adapters وخططًا لاحقة بحدود واضحة.
+
+أُغلقت شريحة SQLite محليًا خلف ports مستقلة: `node:sqlite` / `DatabaseSync`، migration runner بــchecksums، repositories وpersistent event bus، structured observability مع redaction، وbackup/restore بــmanifest وSHA-256 وmigration dry-run على profile منفصل. الدفع النهائي لهذه الشريحة يظل مشروطًا بالفحوص الأخيرة وتطابق local وremote SHA.
 
 المستودع: [alomriosamah1-eng/Osamah-studio-agent](https://github.com/alomriosamah1-eng/Osamah-studio-agent).
 
@@ -24,7 +26,9 @@
 | Filesystem integration | `FilesystemProjectScanner` و`FilesystemProjectPreviewService` يقرآن root/manifest/entry بحدود آمنة دون تشغيل scripts |
 | Presentation renderer | `src/presentation/preview-renderer.ts` يحول `PreviewRenderNode` إلى HTML دلالي محدود مع escaping وdepth guard، وbrowser adapter مدمج داخل Workspace |
 | Typed IPC | protocol v1 وin-memory transport وhandlers مع duplicate/unknown/malformed guards |
-| SQLite migration | `db/migrations/001_initial.sql` وvalidator للجداول والفهارس والإصدار |
+| SQLite adapter وmigration | `node:sqlite` / `DatabaseSync`، migrations 001/002، repositories، event bus، checksums، transactions، validator |
+| Observability | `SqliteObservabilitySink` و`InMemoryObservabilitySink` مع structured logs وrecursive redaction وbounded listing |
+| Backup وRestore | `LocalSqliteBackupProvider` مع atomic `VACUUM INTO` snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore profile |
 | CI | GitHub Actions لتثبيت lockfile وتشغيل typecheck/test وJSON validation وdiff hygiene |
 | Knowledge system | 16 reference maps، `PROJECT_STATE.md`، `PROJECT_STATUS.md`، `AI_CONTINUATION.md`، و`docs/WORK_LOG.md` |
 | Review | مراجعات مستقلة للمعمارية والأمن والأداء والتراخيص وUX والموبايل والـ AI والوثائق وGitHub |
@@ -43,9 +47,10 @@
 |---|---|
 | `pnpm install --frozen-lockfile` | ناجح |
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | 21/21 ناجحة |
+| `pnpm test` | `31/31` ناجحة |
 | `pnpm check` | ناجح |
-| SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، 7 tables، 10 indexes |
+| SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، migration count `2`، schema `002`، 10 tables، 16 index entries |
+| SQLite restart/backup contracts | repositories وevent bus وobservability وtransactions وchecksum mismatch وbackup/restore وtampering ناجحة |
 | `git diff --check` | ناجح |
 | JSON validation | ناجح لكل `project/*.json` |
 | secret scan | PASS |
@@ -68,7 +73,7 @@
 | Electron Shell + Typed Preload | `src/desktop/` و`desktop:smoke`؛ 23/23 tests؛ startup/preload/IPC smoke ناجح؛ delivery state `2a0e891b544324ff06f18ad461282527af987a13` |
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
 
-تم التحقق من `pnpm check` و`pnpm build` و`pnpm desktop:smoke` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها، ثم IPC Project Open ووثيقتها، ثم الخطة الرئيسية ونسختها JSON، ثم Electron shell ووثائقها. آخر delivery state المؤكد هو `2a0e891b544324ff06f18ad461282527af987a13`، والشجرة نظيفة.
+تم التحقق محليًا من `pnpm check` وSQLite migration وbackup/restore وredaction. تبقى `pnpm build` و`pnpm desktop:smoke` و`git diff --check` وsecret scan ضمن بوابة الإغلاق قبل commit هذه الشريحة. دُفعت سابقًا شرائح Presentation renderer وIPC Project Open والخطة الرئيسية وElectron shell ووثائقها؛ آخر delivery state قبل SQLite هو `ddeb5edc939c107f808339c480cf7535f1150595`.
 
 ## الخطة التنفيذية المعتمدة
 
@@ -76,11 +81,11 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ولا يوجد بعد SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ويوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. لا يوجد بعد Agent Runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **SQLite adapter وobservability**، بالتوازي مع production root picker عبر typed preload، ثم agent runtime. كانت هذه الشريحة هي typed Electron preload boundary الأولى، وقد اجتازت contract tests وCSP/sandbox/resource smoke. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition مع profile lifecycle وfallback policy، ثم bounded Agent Runtime. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
 
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
