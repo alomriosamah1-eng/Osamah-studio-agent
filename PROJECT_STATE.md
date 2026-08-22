@@ -6,7 +6,7 @@
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
 | المرحلة | Comprehensive Project Audit وArchitecture Gaps |
-| الحالة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. أُنجز التدقيق الشامل والتوثيق المعماري في docs/76–79، وaudit docs commit مستقل قيد الفحص والدفع |
+| الحالة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f`. Audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
@@ -122,4 +122,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit docs commit قيد الفحص والدفع.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

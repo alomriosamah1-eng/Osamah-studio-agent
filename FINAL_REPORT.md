@@ -72,7 +72,7 @@
 | direct dependency license review | TypeScript Apache-2.0، tsx MIT، @types/node MIT |
 | `node --check prototypes/studio/preview-renderer.js` | ناجح |
 | browser prototype | تم التحقق من render tree وفتح settings وrotate وFast Refresh داخل embedded panel |
-| GitHub push verification | Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان local==remote؛ audit docs commit قيد الفحص والدفع |
+| GitHub push verification | Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان local==remote؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد |
 
 ## GitHub والتسليم
 
@@ -137,4 +137,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التحديث: 2026-08-22. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit docs commit قيد الفحص والدفع.
+إعداد: Manus AI. تاريخ التحديث: 2026-08-22. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

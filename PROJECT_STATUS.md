@@ -11,7 +11,7 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close مستقل متحقق. أُنجز التدقيق الشامل والتوثيق المعماري في docs/76–79، وaudit docs commit مستقل قيد الفحص والدفع |
+| حالة الشجرة | Memory Review مغلقة عند feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close مستقل متحقق. Audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
 | آخر فحص مكتمل | `pnpm test` ناجح، `167/167` اختبارًا؛ `pnpm typecheck` و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` ناجحة، وfull gate ناجح في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
@@ -120,4 +120,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit docs commit قيد الفحص والدفع.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. Memory Review feature `4f1709cd927b77627c4532ec396f572f3bbedb2c` وdocs-close `04e49b1590fe7df529636e8c721f5b57b86d439f` متحققان؛ audit documentation feature `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

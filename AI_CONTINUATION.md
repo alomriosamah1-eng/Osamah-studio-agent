@@ -54,7 +54,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو Memory Review عند `4f1709cd927b77627c4532ec396f572f3bbedb2c` وآخر docs-close هو `04e49b1590fe7df529636e8c721f5b57b86d439f`، وكلاهما متحقق local == remote. audit documentation الحالية غير مدفوعة بعد.
+بعد أي تعديل تالٍ نفّذ secret scan عالي الثقة، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`gh api repos/alomriosamah1-eng/Osamah-studio-agent/commits/main --jq .sha` وتحقق من تطابق القيمتين. آخر feature delivery هو Memory Review عند `4f1709cd927b77627c4532ec396f572f3bbedb2c` وآخر docs-close هو `04e49b1590fe7df529636e8c721f5b57b86d439f`، وكلاهما متحقق local == remote. audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد.
 
 ## ما يزال مؤجلًا
 
@@ -71,4 +71,4 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. Memory Review feature: `4f1709cd927b77627c4532ec396f572f3bbedb2c`; docs-close: `04e49b1590fe7df529636e8c721f5b57b86d439f`; audit docs commit قيد الفحص والـpush والتحقق.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. Memory Review feature: `4f1709cd927b77627c4532ec396f572f3bbedb2c`; docs-close: `04e49b1590fe7df529636e8c721f5b57b86d439f`; audit documentation feature commit `7ede715dfbd8f9e4d030848573b11e94790ba580` متحقق local==remote؛ docs-close مستقل قيد الإعداد.

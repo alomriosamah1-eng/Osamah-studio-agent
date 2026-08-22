@@ -17,6 +17,7 @@
 - `pnpm check`: `167/167` اختبارًا ناجحًا؛ لا تغييرات كودية في audit batch.
 - final gate: build وdesktop/performance smoke وSQLite/JSON/Node syntax و`git diff --check` و`SECRET_SCAN=PASS` و`AUDIT_GATE=PASS`؛ performance smoke PASS تحت V8 heap 768MB؛ أرقام الزمن والذاكرة متغيرة بين التشغيلات، وسجل الدليل الكامل في `research/audit-gate-output-2026-08-22.txt`.
 - سجل البوابة محفوظ في `research/audit-gate-output-2026-08-22.txt` وrunner في `research/run-audit-gate.sh`.
+- feature documentation commit `7ede715dfbd8f9e4d030848573b11e94790ba580` دُفع وتحقق local==remote؛ docs-close مستقل قيد الإعداد.
 - مصادر رسمية راجعت Port Forwarding وPlaywright Trace/Options وRFC 8252 وGoogle OAuth/Scopes وMCP Specification/Security/Tools.
 
 ### Boundaries
