@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming منفذة محليًا وقيد commit/push.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming أُغلقت عند `0b5acbf136d168fb43312379f44846c1075c802f` مع تطابق local وremote SHA.
 
 نتيجة الاختبار الحالية: `pnpm check` يمر بـ`79/79` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart، ثم `IpcEvent` وpreload subscribe وWorkspace Human Gate panel؛ schema 004 وredaction/restart وpending/decide وapproval.changed contracts ناجحة، وdesktop smoke يثبت وصول event callback فعليًا.
 
@@ -53,11 +53,11 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `fd248891cc5cd68818cc5fa13319bc2a133a2565`؛ `GITHUB_PUSH_VERIFIED=true` مثبت.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `0b5acbf136d168fb43312379f44846c1075c802f`؛ `GITHUB_PUSH_VERIFIED=true` مثبت.
 
 ## ما يزال مؤجلًا
 
-لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate وApproval hydration الحالية contract/fixture bounded؛ لا يوجد planner/critic أو LLM inference تلقائي أو persistent project index أو checkpoint restore أو Human Gate UI أو event streaming.
+لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming الحالية contract/fixture bounded؛ لا يوجد planner/critic أو LLM inference تلقائي أو persistent project index أو checkpoint restore أو audit export/retention policy.
 
 Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
 
