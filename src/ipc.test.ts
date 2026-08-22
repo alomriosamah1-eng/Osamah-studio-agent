@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createFoundation } from "./composition.js";
+import { FilesystemProjectPreviewService } from "./application/project-preview-service.js";
+import { FilesystemProjectScanner } from "./infrastructure/filesystem-project-scanner.js";
+import { resolve } from "node:path";
 import { InMemoryLightweightPreviewAdapter } from "./mobile/preview.js";
 import { InMemoryEmbeddedSimulatorController } from "./mobile/embedded-controller.js";
 import { InMemoryIpcTransport } from "./ipc/in-memory-transport.js";
 import { registerEmbeddedSimulatorHandlers } from "./ipc/embedded-handlers.js";
 import { buildProjectPreviewBundle } from "./mobile/preview-runtime.js";
 import type { PreviewSession } from "./domain/entities.js";
-import type { PreviewInspection, IpcResponse } from "./ipc/contracts.js";
+import type { PreviewInspection, IpcResponse, PreviewProjectOpenResult } from "./ipc/contracts.js";
 
 const setup = () => {
   const { useCases } = createFoundation();
@@ -15,7 +18,8 @@ const setup = () => {
   const controller = new InMemoryEmbeddedSimulatorController(useCases, new InMemoryLightweightPreviewAdapter());
   controller.registerProfile(profile);
   const transport = new InMemoryIpcTransport();
-  registerEmbeddedSimulatorHandlers(transport, controller);
+  const projectPreviewService = new FilesystemProjectPreviewService(new FilesystemProjectScanner());
+  registerEmbeddedSimulatorHandlers(transport, controller, projectPreviewService);
   return { profile, transport };
 };
 
@@ -38,6 +42,56 @@ test("typed IPC starts and inspects embedded preview", async () => {
   }
   const refreshed = await transport.dispatch({ protocolVersion: 1, requestId: "refresh-1", correlationId: "c-1", method: "preview.refresh", payload: { sessionId, kind: "fast", bundle } } as const);
   assert.equal(refreshed.ok, true);
+});
+
+test("typed IPC opens a filesystem project and starts the embedded preview", async () => {
+  const { profile, transport } = setup();
+  const opened = await transport.dispatch({
+    protocolVersion: 1,
+    requestId: "open-project-1",
+    correlationId: "c-project-1",
+    method: "preview.openProject",
+    payload: {
+      projectId: "filesystem-ipc-fixture",
+      rootPath: resolve("fixtures/mobile-expo"),
+      deviceProfileId: profile.id,
+      mode: "lightweight_web",
+    },
+  } as const) as IpcResponse<PreviewProjectOpenResult>;
+  assert.equal(opened.ok, true);
+  if (!opened.ok) return;
+  assert.equal(opened.result.session.status, "ready");
+  assert.equal(opened.result.bundle.projectId, "filesystem-ipc-fixture");
+  assert.equal(opened.result.bundle.entry, "app/index.tsx");
+  assert.equal(opened.result.bundle.moduleCount, 2);
+
+  const inspected = await transport.dispatch({
+    protocolVersion: 1,
+    requestId: "inspect-project-1",
+    correlationId: "c-project-1",
+    method: "preview.inspect",
+    payload: { sessionId: opened.result.session.id },
+  } as const) as IpcResponse<PreviewInspection>;
+  assert.equal(inspected.ok, true);
+  if (inspected.ok) assert.equal(inspected.result.bundle?.projectId, "filesystem-ipc-fixture");
+});
+
+test("typed IPC rejects project entries that escape the selected root", async () => {
+  const { profile, transport } = setup();
+  const blocked = await transport.dispatch({
+    protocolVersion: 1,
+    requestId: "open-project-unsafe-1",
+    correlationId: "c-project-unsafe-1",
+    method: "preview.openProject",
+    payload: {
+      projectId: "unsafe-fixture",
+      rootPath: resolve("fixtures/mobile-expo"),
+      entry: "../package.json",
+      deviceProfileId: profile.id,
+    },
+  } as const) as IpcResponse<PreviewProjectOpenResult>;
+  assert.equal(blocked.ok, false);
+  if (!blocked.ok) assert.match(blocked.error.message, /Unsafe preview path/);
 });
 
 test("typed IPC rejects malformed, unknown, and duplicate requests", async () => {

@@ -1,5 +1,20 @@
 # سجل التغييرات
 
+## [Unreleased] — IPC Project Open
+
+### Added
+
+- method typed IPC باسم `preview.openProject` يستقبل projectId/rootPath/deviceProfileId ويدعم entry/mode اختياريًا.
+- حقن `FilesystemProjectPreviewService` في composition root لبناء bundle قبل تشغيل `EmbeddedSimulatorController`.
+- response summary محدود يتضمن session وprojectId وentry وsourceHash وmoduleCount وwarningCount.
+- اختبارات تكامل تفتح fixture فعليًا عبر IPC، وتفحص bundle/inspect، وترفض entry الذي يتجاوز root.
+- وثيقة `docs/44-ipc-project-open-implementation.md`.
+
+### Verified
+
+- `pnpm check`: نجاح typecheck و`21/21` اختبارًا.
+- لا يتم تشغيل project scripts أو native toolchains، وentry traversal مرفوض قبل بدء الجلسة.
+
 ## [Unreleased] — Presentation Renderer
 
 ### Added

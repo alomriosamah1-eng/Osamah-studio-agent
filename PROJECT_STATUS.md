@@ -2,18 +2,19 @@
 
 ## ملخص الحالة
 
-المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت الآن شريحة Presentation Renderer التي تستهلك `PreviewRenderNode` وتعرضه داخل شاشة الهاتف في Workspace، مع بقاء المشروع في compatibility mode وعدم ادعاء React Native native fidelity.
+المستودع بدأ فارغًا بلا تطبيق، ثم أصبح حزمة Discovery/Architecture/Foundation قابلة للاختبار مع **محاكي هاتف مدمج داخل Workspace**. اكتملت شريحة Presentation Renderer، وأضيف الآن مسار typed IPC يفتح مشروعًا فعليًا من filesystem ويبني bundle ثم يبدأ جلسة المعاينة نفسها.
 
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit مدفوع | `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
-| حالة الشجرة | نظيفة ومتزامنة مع GitHub بعد دفع Presentation renderer |
-| الإصدار المحلي | `0.4.0` |
+| آخر commit مدفوع | `f1f67f0f54748c2f326f4750c6c0c87345ce6c5c` |
+| حالة الشجرة | تغييرات IPC project open محلية، جاهزة للفحوص النهائية والـ commit |
+| الإصدار المحلي | `0.5.0` |
 | آخر build ناجح | `pnpm check` في 2026-08-22 |
-| آخر اختبار ناجح | `19/19` اختبارًا ناجحًا |
+| آخر اختبار ناجح | `21/21` اختبارًا ناجحًا |
 | Project Preview | bundle builder + fixture runtime + controller + typed IPC + filesystem scanner/service |
 | Presentation Renderer | renderer نقي + browser adapter + دمج داخل `prototypes/studio/index.html` |
+| IPC Project Open | `preview.openProject` يبني bundle ويبدأ embedded session ويعيد summary محدودًا |
 | Embedded Simulator | جزء من Workspace إلى جانب file tree/editor/Inspector/Console على مستوى العقود والprototype |
 | Android native | adapter مخطط، يحتاج SDK/JDK/AVD/acceleration |
 | iOS native | adapter مخطط، macOS/Xcode فقط؛ غير متاح أصليًا على Windows/Linux |
@@ -21,9 +22,9 @@
 
 ## المكتمل في هذه المرحلة
 
-أضيف `src/presentation/preview-renderer.ts` لتحويل `PreviewRenderNode` إلى عناصر HTML دلالية محدودة: `view` إلى `section`، و`text` إلى `span`، و`card` إلى `article`، و`status` إلى `output`. يطبق renderer escaping للنصوص والخصائص، ترتيبًا deterministic للخصائص، وتحكمًا في عمق الشجرة.
+أضيف `preview.openProject` إلى `IpcMethodMap` و`registerEmbeddedSimulatorHandlers`. يقرأ المسار `FilesystemProjectPreviewService`، ويُمرّر `ProjectPreviewBundle` إلى `EmbeddedSimulatorController.start`، ثم يعيد session metadata وproject summary يتضمن entry وsourceHash وعدد modules والتحذيرات.
 
-أضيف `prototypes/studio/preview-renderer.js` وجرى دمجه في Workspace prototype. عند فتح ملف أو تنفيذ Run أو Fast Refresh، يعاد تركيب render tree داخل `#previewTree` مع بقاء إطار الجهاز والـ Inspector والـ Console داخل المحاكي المدمج. لا يقرأ renderer ملفات المشروع ولا يشغّل JavaScript أو scripts قادمة من المشروع.
+تم ربط `FilesystemProjectScanner` و`FilesystemProjectPreviewService` في `createEmbeddedApplication`. لا يتعامل controller مع filesystem مباشرة، ولا يشغّل المسار scripts أو postinstall أو native toolchains. أضيف اختبار يفتح `fixtures/mobile-expo` عبر IPC، واختبار يثبت رفض `../package.json` قبل بدء جلسة جديدة.
 
 ## المعمارية الحالية
 
@@ -34,20 +35,19 @@
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `19/19` ناجحة |
+| `pnpm test` | `21/21` ناجحة |
 | `pnpm check` | ناجح |
-| `node --check prototypes/studio/preview-renderer.js` | ناجح |
-| renderer contract tests | ناجحة؛ mapping وescaping وdepth guard |
-| visual prototype check | ناجح؛ render tree وsettings وrotate وFast Refresh |
-| secret scan | `PASS` |
-| `git diff --check` | ناجح |
+| IPC project open integration | ناجح؛ fixture → bundle → session → inspect |
+| IPC path traversal guard | ناجح؛ entry خارج root مرفوض |
+| SQLite migration | يجب تشغيله ضمن الفحص النهائي قبل commit |
+| secret scan وdiff check | يجب تشغيلهما ضمن الفحص النهائي قبل commit |
 
 ## المخاطر والقرارات المفتوحة
 
-لا يوجد بعد Electron shell أو SQLite native driver أو agent runtime أو provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. Android يعتمد على toolchain وتسريع الأجهزة، وiOS Simulator يحتاج macOS/Xcode. browser/fixture preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا. renderer الحالي bounded ولا يغني عن CSP وsandbox حقيقيين في Electron production shell.
+لا يوجد بعد Electron shell أو typed Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. Android يعتمد على toolchain وتسريع الأجهزة، وiOS Simulator يحتاج macOS/Xcode. browser/fixture preview لا يساوي native fidelity. OpenTo غير موثق. يجب مراجعة licenses وSBOM بعد تثبيت dependencies، وعدم تشغيل scripts من مشاريع الهاتف تلقائيًا.
 
 ## الإجراء التالي
 
-بعد هذه الشريحة يبدأ commit مستقل لإضافة IPC لفتح مشروع filesystem من واجهة Workspace وإرسال bundle إلى controller. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts.
+بعد دفع هذه الشريحة والتحقق من تطابق `git rev-parse HEAD` مع GitHub، يبدأ typed Electron preload boundary أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject`. لا تبدأ Android/iOS native قبل استقرار preload وCSP/sandbox وdoctor/resource contracts.
 
-آخر تحديث: 2026-08-22. آخر push مؤكد: `bce549bb675ee6d0f2c83f950a5c9aae987c61d7`؛ local وGitHub متطابقان والشجرة نظيفة. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. إعداد: Manus AI.

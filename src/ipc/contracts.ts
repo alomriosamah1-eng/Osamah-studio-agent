@@ -6,9 +6,24 @@ import type { ProjectPreviewBundle, PreviewRenderNode } from "../mobile/preview-
 
 export type IpcMethod = keyof IpcMethodMap;
 
+export interface PreviewProjectOpenResult {
+  readonly session: PreviewSession;
+  readonly bundle: {
+    readonly projectId: string;
+    readonly entry: string;
+    readonly sourceHash: string;
+    readonly moduleCount: number;
+    readonly warningCount: number;
+  };
+}
+
 export interface IpcMethodMap {
   "health.get": { payload: Record<string, never>; result: { status: "ok" | "degraded"; version: string } };
   "preview.start": { payload: { deviceProfileId: DeviceProfileId; mode?: PreviewSession["mode"] }; result: PreviewSession };
+  "preview.openProject": {
+    payload: { projectId: string; rootPath: string; entry?: string; deviceProfileId: DeviceProfileId; mode?: PreviewSession["mode"] };
+    result: PreviewProjectOpenResult;
+  };
   "preview.input": { payload: { sessionId: PreviewSessionId; input: PreviewInput }; result: PreviewFrame };
   "preview.refresh": { payload: { sessionId: PreviewSessionId; kind?: "fast" | "reload"; bundle?: ProjectPreviewBundle }; result: PreviewFrame };
   "preview.capture": { payload: { sessionId: PreviewSessionId }; result: PreviewScreenshot };

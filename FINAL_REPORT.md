@@ -37,13 +37,13 @@
 
 ## الاختبارات والفحوص
 
-نجحت جميع الاختبارات الحالية. يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، preview orientation/screenshot contract، bundle/runtime، blocked imports، filesystem scanner، ProjectPreviewService، وPresentation renderer semantic mapping/escaping/depth guard.
+نجحت جميع الاختبارات الحالية. يغطي الاختبار فتح workspace وإنشاء session والأحداث، approval lifecycle، رفض الانتقالات غير القانونية، DeviceProfile، preview lifecycle، اكتشاف Expo وReact Native، platform capability matrix، preview orientation/screenshot contract، bundle/runtime، blocked imports، filesystem scanner، ProjectPreviewService، Presentation renderer semantic mapping/escaping/depth guard، وIPC project open وpath traversal guard.
 
 | الفحص | النتيجة |
 |---|---|
 | `pnpm install --frozen-lockfile` | ناجح |
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | 19/19 ناجحة |
+| `pnpm test` | 21/21 ناجحة |
 | `pnpm check` | ناجح |
 | SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، 7 tables، 10 indexes |
 | `git diff --check` | ناجح |
@@ -64,16 +64,17 @@
 | Embedded Simulator + typed IPC + migration | `c2d9797ea1745c9901f69b1cd0eee07e1d323bc8` |
 | Project Preview Runtime + filesystem scanner/service | feature commit `cc4a35d3f621e5ab6f79e386cc9a1760e970f063`; delivery/docs push verified at `5431527feab7b45d41ff9c96802f0aebfbe25849` |
 | Presentation renderer | `df53c8cd32b5e35c25488171bdca5241770146b3`؛ final delivery state at `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` |
+| IPC Project Open | `preview.openProject` يبني bundle من filesystem ويبدأ session؛ pending commit/push |
 
-تم التحقق من `pnpm check` و`node --check` وSQLite migration و`git diff --check` وsecret scan. تحقق بصريًا من renderer داخل Workspace. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `bce549bb675ee6d0f2c83f950a5c9aae987c61d7`، والشجرة نظيفة.
+تم التحقق من `pnpm check` وSQLite migration و`git diff --check` وsecret scan. دُفعت شريحة Presentation renderer ووثائقها إلى `origin/main`، وتطابق `git rev-parse HEAD` مع GitHub API عند `bce549bb675ee6d0f2c83f950a5c9aae987c61d7` قبل شريحة IPC الحالية. شريحة IPC Project Open محلية وتحتاج commit/push والتحقق.
 
 ## الحدود الحالية
 
-لا يوجد بعد Electron shell أو Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+لا يوجد بعد Electron shell أو Electron preload production boundary أو SQLite native driver أو agent runtime أو provider implementations أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي controller/preview contract وPresentation renderer وWorkspace prototype، مع FixturePreviewRuntime في compatibility mode، وليس React Native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC، وليس Electron preload production boundary بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **IPC لفتح مشروع filesystem** من واجهة Workspace وإرسال bundle إلى controller بدل تمريره يدويًا. يسبقه contract tests وin-memory adapter وresource/security boundary. لا يبدأ Android/iOS native قبل استقرار embedded renderer وdoctor/resource contracts وقياسات الموارد.
+بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي **typed Electron preload boundary** أو adapter واجهة Workspace لاختيار root path من المستخدم واستدعاء `preview.openProject` دون كشف Node APIs مباشرة إلى renderer. يسبقه contract tests وCSP/sandbox/resource boundary. لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 

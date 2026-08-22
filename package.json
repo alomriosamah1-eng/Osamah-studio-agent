@@ -1,9 +1,9 @@
 {
   "name": "osamah-studio-agent",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
-  "description": "Local-first foundation with embedded mobile preview renderer for Osamah Studio Agent",
+  "description": "Local-first foundation with embedded preview and project-open IPC for Osamah Studio Agent",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test src/**/*.test.ts",
