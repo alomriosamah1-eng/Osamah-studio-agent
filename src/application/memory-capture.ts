@@ -120,6 +120,15 @@ const cleanList = (values: readonly string[] | undefined): readonly string[] => 
   if (new Set(cleaned).size !== cleaned.length) throw new MemoryCaptureError("tags must be unique.");
   return cleaned;
 };
+const normalizeSearchText = (value: string): string => value.normalize("NFKC").toLocaleLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g, "").replace(/[إأآٱ]/g, "ا").replace(/ى/g, "ي").replace(/[\s\u200c]+/g, " ").trim();
+const searchScore = (entry: MemoryEntry, tokens: readonly string[]): number => {
+  const title = normalizeSearchText(entry.title);
+  const content = normalizeSearchText(entry.content);
+  const tags = normalizeSearchText(entry.tags.join(" "));
+  if (tokens.some((token) => !`${title}\n${content}\n${tags}`.includes(token))) return -1;
+  return tokens.reduce((score, token) => score + (title.includes(token) ? 4 : 0) + (tags.includes(token) ? 2 : 0) + (content.includes(token) ? 1 : 0), 0);
+};
+
 const cleanProvenance = (values: readonly MemoryProvenanceRef[] | undefined, sourceRegistry: Pick<SourceRegistryPort, "getSource">): readonly MemoryProvenanceRef[] => {
   if (values === undefined) return [];
   if (values.length > maxProvenance) throw new MemoryCaptureError("provenance exceeds bounded limits.");
@@ -226,9 +235,16 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
   }
 
   public searchLocal(query: string, limit = 32): readonly MemoryEntry[] {
-    const normalized = cleanText(query, "query", 512).toLocaleLowerCase();
+    const normalized = normalizeSearchText(cleanText(query, "query", 512));
+    const tokens = normalized.split(" ").filter(Boolean);
+    if (tokens.length === 0) throw new MemoryCaptureError("query is invalid.");
     const safeLimit = this.limit(limit);
-    return [...this.entries.values()].reverse().filter((entry) => `${entry.title}\n${entry.content}\n${entry.tags.join(" ")}`.toLocaleLowerCase().includes(normalized)).slice(0, safeLimit).map((entry) => this.clone(entry));
+    return [...this.entries.values()]
+      .map((entry) => ({ entry, score: searchScore(entry, tokens) }))
+      .filter((result) => result.score >= 0)
+      .sort((left, right) => right.score - left.score || right.entry.createdAt.localeCompare(left.entry.createdAt) || right.entry.entryId.localeCompare(left.entry.entryId))
+      .slice(0, safeLimit)
+      .map((result) => this.clone(result.entry));
   }
 
   private limit(value: number): number {

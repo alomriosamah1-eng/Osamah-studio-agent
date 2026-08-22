@@ -31,6 +31,15 @@ test("memory capture searches bounded local entries and deduplicates identical c
   assert.deepEqual(memory.searchLocal("missing", 8), []);
 });
 
+test("memory local retrieval normalizes Arabic text and ranks title/tag matches deterministically", () => {
+  const memory = new InMemoryMemoryCapture(new InMemorySourceRegistry(), { now: (() => { let index = 0; return () => `2026-08-22T12:0${index++}:00.000Z`; })(), nextId: (prefix) => `${prefix}-retrieval` });
+  const contentMatch = memory.capture({ kind: "note", title: "ملاحظة عامة", content: "هذه خطة العمل المحلية.", tags: ["offline"] });
+  const titleMatch = memory.capture({ kind: "decision", title: "خُطَّة العمل", content: "قرار محلي.", tags: ["local"] });
+  assert.equal(memory.searchLocal("خطة العمل", 8)[0]?.entryId, titleMatch.entryId);
+  assert.equal(memory.searchLocal("خطة العمل", 8).some((entry) => entry.entryId === contentMatch.entryId), true);
+  assert.deepEqual(memory.searchLocal("خطة غائبة", 8), []);
+});
+
 test("memory capture rejects unknown source provenance and unsafe or duplicate references", () => {
   const sources = new InMemorySourceRegistry();
   const memory = new InMemoryMemoryCapture(sources);

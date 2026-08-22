@@ -18,7 +18,7 @@ test("embedded sqlite application reloads memory entries and candidates across r
   let entryId = "";
   let candidateId = "";
   try {
-    const captured = await first.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-capture", correlationId: "persist-memory", method: "brain.memory.capture", payload: { kind: "learning", title: "Persistent learning", content: "A bounded local learning.", tags: ["restart"], providerAccess: "never", visibility: "private", retention: "until_deleted" } } as const) as IpcResponse<MemoryEntry>;
+    const captured = await first.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-capture", correlationId: "persist-memory", method: "brain.memory.capture", payload: { kind: "learning", title: "Persistent learning", content: "تعلم محلي bounded.", tags: ["restart"], providerAccess: "never", visibility: "private", retention: "until_deleted" } } as const) as IpcResponse<MemoryEntry>;
     assert.equal(captured.ok, true);
     if (!captured.ok) return;
     entryId = captured.result.entryId;
@@ -42,6 +42,10 @@ test("embedded sqlite application reloads memory entries and candidates across r
     assert.equal(entries.ok, true);
     if (!entries.ok) return;
     assert.equal(entries.result.some((entry) => entry.entryId === entryId && entry.state === "confirmed"), true);
+    const matches = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-memory-search", correlationId: "persist-memory-restart", method: "brain.memory.searchLocal", payload: { query: "تعلم محلي", limit: 8 } } as const) as IpcResponse<readonly MemoryEntry[]>;
+    assert.equal(matches.ok, true);
+    if (!matches.ok) return;
+    assert.equal(matches.result.some((entry) => entry.entryId === entryId), true);
     const candidates = await second.ipc.dispatch({ protocolVersion: 1, requestId: "persist-candidate-list", correlationId: "persist-memory-restart", method: "memory-candidate.list", payload: { limit: 8 } } as const) as IpcResponse<readonly MemoryCandidate[]>;
     assert.equal(candidates.ok, true);
     if (!candidates.ok) return;
