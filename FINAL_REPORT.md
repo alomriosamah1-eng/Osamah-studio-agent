@@ -73,9 +73,9 @@
 | Electron Shell + Typed Preload | `src/desktop/` و`desktop:smoke`؛ 23/23 tests؛ startup/preload/IPC smoke ناجح؛ delivery state `2a0e891b544324ff06f18ad461282527af987a13` |
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
 | SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
-| Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB |
+| Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
 
-تم التحقق من `pnpm check` بـ44/44، و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. أضيفت slice الأداء والـ Web preview محليًا تحت low-memory policy، وما تزال قيد الدفع في هذه المرحلة.
+تم التحقق من `pnpm check` بـ44/44، و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. دُفعت slice الأداء والـ Web preview وResource Governance عند `b9089efee33a174c3958a9295853623beae27503`، وتطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
 

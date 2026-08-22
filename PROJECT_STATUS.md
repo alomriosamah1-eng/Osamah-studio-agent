@@ -7,11 +7,12 @@
 | البند | الحالة |
 |---|---|
 | المستودع | `https://github.com/alomriosamah1-eng/Osamah-studio-agent` |
-| آخر commit تنفيذي مدفوع | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
-| حالة شريحة الأداء الحالية | Lightweight Web Preview وResource Governance منفذة واجتازت بوابة الإغلاق المحلية |
-| حالة الشجرة | تغييرات شريحة الأداء والتوثيق الحالية قيد الدفع بعد الفحوص |
+| آخر commit تنفيذي سابق | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| آخر commit تنفيذي حالي | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
+| حالة شريحة الأداء الحالية | Lightweight Web Preview وResource Governance منفذة ومدفوعة ومتحقق منها |
+| حالة الشجرة | نظيفة؛ local و`origin/main` متطابقان |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `44/44` اختبارًا، و`pnpm performance:smoke` ناجح في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `44/44` اختبارًا، و`pnpm performance:smoke` وfull performance gate ناجحان في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -64,7 +65,7 @@
 
 ## القرار والخطوة التالية
 
-بعد دفع هذه الشريحة، يبدأ **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition root. بعد ذلك يأتي bounded Agent Runtime، ثم Provider Gateway، ثم React Native Web/Metro الفعلي، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
+بعد دفع هذه الشريحة، يبدأ **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition root. بعد ذلك تُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports وفق availability وdoctor/resource evidence.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

@@ -45,7 +45,7 @@ python3 scripts/validate_sqlite_migration.py
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق سابق هو `GITHUB_FINAL_SHA_MATCH=true` عند `123c9359300b4b357043f19cd9e110a3a1961cf4`؛ slice الأداء اجتازت الفحوص المحلية وتنتظر final push.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق ناجح هو `GITHUB_PUSH_VERIFIED=true` عند `b9089efee33a174c3958a9295853623beae27503`؛ performance slice وWeb preview وresource governance مدفوعة ومتحقق منها.
 
 ## ما يزال مؤجلًا
 

@@ -6,13 +6,14 @@
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
 | المرحلة | Lightweight Web Preview + Resource Policy + General Project Detection |
-| الحالة | SQLite السابقة مدفوعة؛ slice الأداء والـ preview العام اجتازت بوابة الإغلاق المحلية وتنتظر الدفع |
-| آخر commit للشريحة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| الحالة | SQLite السابقة وslice الأداء والـ preview العام مدفوعة ومتحقق منها على `origin/main` |
+| آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
+| آخر commit للشريحة الحالية | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر فحص | `pnpm check` ناجح، `44/44` اختبارًا، و`pnpm performance:smoke` ناجح، في 2026-08-22 |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
-| حالة push للشريحة الحالية | pending push؛ جميع الفحوص المحلية مكتملة، ولا تُعلن مدفوعة قبل local SHA == `origin/main` |
+| حالة push للشريحة الحالية | `b9089efee33a174c3958a9295853623beae27503`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
 
 ## المكتمل
 
