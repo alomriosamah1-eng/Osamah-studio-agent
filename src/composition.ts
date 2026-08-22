@@ -195,14 +195,14 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const assetCatalog = new InMemoryAssetCatalog(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const artifactAssembly = new InMemoryArtifactAssembly(contentPlan, assetCatalog, assetCatalog, sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix) });
   const renderPolicy = new InMemoryRenderPolicy(artifactAssembly);
-  const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
+  const memoryCapture = new InMemoryMemoryCapture(sourceRegistry, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now(), persistence: persistence.sqlite?.memoryEntries });
   const agentCatalog = new InMemoryAgentCatalog();
   const reportDocument = new InMemoryReportDocumentService(sourceRegistry, contentPlan, artifactAssembly, { nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const applicationSettings = new InMemoryApplicationSettings();
   const externalAccounts = new InMemoryExternalAccountRegistry({ nextId: (prefix) => foundation.dependencies.ids.next(prefix), now: () => foundation.dependencies.clock.now() });
   const storageSettings = new StaticStorageSettings(createStorageSettingsSnapshot({ storageKind: persistence.storageKind, profileId: persistence.profilePaths?.profileId, hasProfileLock: persistence.profileLock !== undefined, fallbackReason: persistence.storageFallbackReason }));
   const selfDevelopment = new InMemorySelfDevelopmentCandidateService({ ids: { next: (prefix) => foundation.dependencies.ids.next(prefix) }, clock: { now: () => foundation.dependencies.clock.now() } });
-  const memoryConsolidation = new InMemoryMemoryConsolidationService({ memory: memoryCapture, ids: { next: (prefix) => foundation.dependencies.ids.next(prefix) }, clock: { now: () => foundation.dependencies.clock.now() } });
+  const memoryConsolidation = new InMemoryMemoryConsolidationService({ memory: memoryCapture, ids: { next: (prefix) => foundation.dependencies.ids.next(prefix) }, clock: { now: () => foundation.dependencies.clock.now() }, persistence: persistence.sqlite?.memoryCandidates });
   const agentWorkCycle = new AgentWorkCycleService({
     runtime: agentRuntime,
     plannerCritic,

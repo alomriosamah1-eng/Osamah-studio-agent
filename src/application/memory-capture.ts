@@ -61,11 +61,17 @@ export interface MemoryReviewPort {
   listForReview(limit?: number): readonly MemoryEntry[];
 }
 
+export interface MemoryEntryPersistencePort {
+  list(limit?: number): readonly MemoryEntry[];
+  save(entry: MemoryEntry): void;
+}
+
 export interface MemoryCaptureOptions {
   readonly now?: () => string;
   readonly nextId?: (prefix: string) => string;
   readonly maxEntries?: number;
   readonly maxContentLength?: number;
+  readonly persistence?: MemoryEntryPersistencePort;
 }
 
 export class MemoryCaptureError extends Error {
@@ -137,6 +143,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
   private readonly sourceRegistry: Pick<SourceRegistryPort, "getSource">;
   private readonly maxEntries: number;
   private readonly maxContentLength: number;
+  private readonly persistence?: MemoryEntryPersistencePort;
 
   public constructor(sourceRegistry: Pick<SourceRegistryPort, "getSource">, options: MemoryCaptureOptions = {}) {
     this.sourceRegistry = sourceRegistry;
@@ -144,8 +151,12 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
     this.nextId = options.nextId ?? ((prefix) => `${prefix}-${this.entries.size + 1}`);
     this.maxEntries = options.maxEntries ?? maxEntriesDefault;
     this.maxContentLength = options.maxContentLength ?? maxContentDefault;
+    this.persistence = options.persistence;
     if (!Number.isSafeInteger(this.maxEntries) || this.maxEntries < 1 || this.maxEntries > maxEntriesDefault) throw new MemoryCaptureError("maxEntries is invalid.");
     if (!Number.isSafeInteger(this.maxContentLength) || this.maxContentLength < 1 || this.maxContentLength > maxContentDefault) throw new MemoryCaptureError("maxContentLength is invalid.");
+    const persistedEntries = this.persistence?.list(this.maxEntries) ?? [];
+    if (persistedEntries.length > this.maxEntries) throw new MemoryCaptureError("persisted memory exceeds bounded capacity.");
+    for (const entry of persistedEntries) this.entries.set(entry.entryId, this.clone(entry));
   }
 
   public capture(request: CaptureMemoryRequest): MemoryEntry {
@@ -178,6 +189,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
       warnings: [...warnings],
       createdAt: this.now(),
     };
+    this.persistence?.save(entry);
     this.entries.set(entry.entryId, entry);
     return this.clone(entry);
   }
@@ -198,6 +210,7 @@ export class InMemoryMemoryCapture implements MemoryCapturePort, MemoryReviewPor
     if (request.decision === "confirm") warnings.add("user_confirmed_not_externally_verified");
     if (request.decision === "archive") warnings.add("user_archived_entry");
     const reviewed: MemoryEntry = { ...entry, state: request.decision === "confirm" ? "confirmed" : "archived", reviewedAt: this.now(), reviewReason: reason, warnings: [...warnings] };
+    this.persistence?.save(reviewed);
     this.entries.set(entryId, reviewed);
     return this.clone(reviewed);
   }

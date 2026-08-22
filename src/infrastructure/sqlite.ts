@@ -6,6 +6,7 @@ import type { DomainEvent, EventBus } from "../domain/events.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
 import { sanitizeAuditText, type ApprovalStore, type ApprovalTicket, type AuditRecord, type AuditRetentionStore, type AuditTrail } from "../application/agent-contracts.js";
 import type { ApprovalId, DeviceProfileId, PreviewSessionId, SessionId, WorkspaceId } from "../domain/primitives.js";
+import { createSqliteMemoryPersistence, type SqliteMemoryPersistence } from "./sqlite-memory.js";
 import type {
   ApprovalRepository,
   Clock,
@@ -410,6 +411,8 @@ export interface SqliteApplicationStorage {
   readonly observability: SqliteObservabilitySink;
   readonly audit: SqliteAuditTrail;
   readonly approvalStore: SqliteApprovalStore;
+  readonly memoryEntries: SqliteMemoryPersistence["memoryEntries"];
+  readonly memoryCandidates: SqliteMemoryPersistence["memoryCandidates"];
 }
 
 export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, ids: IdGenerator): SqliteApplicationStorage => {
@@ -419,5 +422,6 @@ export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, i
   const observability = new SqliteObservabilitySink(database);
   const audit = new SqliteAuditTrail(database);
   const approvalStore = new SqliteApprovalStore(database);
-  return { database, repositories, events, observability, audit, approvalStore };
+  const memoryPersistence = createSqliteMemoryPersistence(database);
+  return { database, repositories, events, observability, audit, approvalStore, ...memoryPersistence };
 };

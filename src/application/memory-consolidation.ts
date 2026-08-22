@@ -59,6 +59,11 @@ export interface MemoryConsolidationPreview {
   readonly embeddingIndex: "not_configured";
 }
 
+export interface MemoryCandidatePersistencePort {
+  list(limit?: number): readonly MemoryCandidate[];
+  save(candidate: MemoryCandidate): void;
+}
+
 export interface MemoryConsolidationPort {
   create(request: CreateMemoryCandidateRequest): MemoryCandidate;
   get(candidateId: string): MemoryCandidate | undefined;
@@ -128,7 +133,10 @@ const cloneCandidate = (candidate: MemoryCandidate): MemoryCandidate => Object.f
 export class InMemoryMemoryConsolidationService implements MemoryConsolidationPort {
   private readonly candidates = new Map<string, MemoryCandidate>();
 
-  public constructor(private readonly dependencies: { readonly memory: Pick<MemoryCapturePort, "get">; readonly ids: MemoryConsolidationIdFactory; readonly clock: MemoryConsolidationClock }) {}
+  public constructor(private readonly dependencies: { readonly memory: Pick<MemoryCapturePort, "get">; readonly ids: MemoryConsolidationIdFactory; readonly clock: MemoryConsolidationClock; readonly persistence?: MemoryCandidatePersistencePort }) {
+    const persistedCandidates = this.dependencies.persistence?.list(128) ?? [];
+    for (const candidate of persistedCandidates) this.candidates.set(candidate.candidateId, cloneCandidate(candidate));
+  }
 
   public create(request: CreateMemoryCandidateRequest): MemoryCandidate {
     if (!candidateKinds.includes(request.kind)) throw new MemoryConsolidationError("Memory candidate kind is invalid.");
@@ -164,6 +172,7 @@ export class InMemoryMemoryConsolidationService implements MemoryConsolidationPo
       createdAt: this.dependencies.clock.now(),
       blockedReasons,
     });
+    this.dependencies.persistence?.save(candidate);
     this.candidates.set(candidate.candidateId, candidate);
     return cloneCandidate(candidate);
   }
@@ -207,6 +216,7 @@ export class InMemoryMemoryConsolidationService implements MemoryConsolidationPo
       if (current.blockedReasons.length > 0) throw new MemoryConsolidationError("Memory candidate has blocked reasons.");
     }
     const updated: MemoryCandidate = Object.freeze({ ...current, state: request.decision === "consolidate" ? "consolidated" : "archived", reviewedAt: this.dependencies.clock.now(), reviewReason: reason });
+    this.dependencies.persistence?.save(updated);
     this.candidates.set(updated.candidateId, updated);
     return cloneCandidate(updated);
   }
