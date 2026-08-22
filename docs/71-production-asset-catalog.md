@@ -1,6 +1,6 @@
 # Production Studio: Asset Catalog وCreative Brief
 
-**الحالة:** Architecture decision معتمد للتنفيذ التالي؛ لا توجد في هذه الشريحة عملية media generation أو import أو converter execution.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند feature `552854705ea4b3371ec7fe1c8afbe8d8a9901158`؛ docs-close مستقل ويحدّث summaries فقط. لا توجد في هذه الشريحة عملية media generation أو import أو converter execution.
 
 ## الغرض
 
