@@ -56,12 +56,47 @@
 
   const log = (message, kind = '') => {
     const line = document.createElement('div');
-    line.innerHTML = `<span class="${kind}">[event]</span> ${message}`;
+    line.textContent = `[event] ${message}`;
+    line.className = kind;
     $('log').appendChild(line);
     $('log').scrollTop = $('log').scrollHeight;
     $('footerText').textContent = message;
   };
 
+  const chooseProjectRoot = async () => {
+    const button = $('openProject');
+    if (!window.osamah?.chooseProjectRoot) {
+      log('Root picker is unavailable in this host.', 'warn');
+      return;
+    }
+    button.disabled = true;
+    $('rightStatus').textContent = 'Choosing project root…';
+    $('projectState').textContent = 'waiting for folder selection';
+    try {
+      const result = await window.osamah.chooseProjectRoot();
+      if (result.canceled) {
+        $('projectState').textContent = 'selection canceled';
+        log('project.root_selection_canceled', 'warn');
+      } else if ('rootPath' in result) {
+        const rootName = result.rootPath.split(/[\\/]/).filter(Boolean).at(-1) || result.rootPath;
+        $('projectState').textContent = `root selected: ${rootName}`;
+        $('rightStatus').textContent = 'Project root selected';
+        log(`project.root_selected ${rootName}`, 'ok');
+      } else {
+        $('projectState').textContent = 'root selection failed';
+        $('rightStatus').textContent = 'Root picker error';
+        log(`project.root_selection_failed ${result.message}`, 'warn');
+      }
+    } catch (error) {
+      $('projectState').textContent = 'root selection failed';
+      $('rightStatus').textContent = 'Root picker error';
+      log(`project.root_selection_failed ${error instanceof Error ? error.message : 'unknown error'}`, 'warn');
+    } finally {
+      button.disabled = false;
+    }
+  };
+
+  $('openProject').onclick = () => { void chooseProjectRoot(); };
   document.querySelectorAll('.file').forEach((button) => {
     button.onclick = () => {
       document.querySelectorAll('.file').forEach((fileButton) => fileButton.classList.remove('active'));
@@ -95,7 +130,12 @@
         mode: 'lightweight_web',
       },
     });
-    console.log(response.ok ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const rootResult = await window.osamah.chooseProjectRoot();
+    const rootPickerPassed = !rootResult.canceled
+      && 'rootPath' in rootResult
+      && rootResult.rootPath.replaceAll('\\\\', '/').endsWith('/fixtures/mobile-expo');
+    console.log(rootPickerPassed ? 'DESKTOP_ROOT_PICKER_SMOKE=PASS' : 'DESKTOP_ROOT_PICKER_SMOKE=FAIL');
+    console.log(response.ok && rootPickerPassed ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();

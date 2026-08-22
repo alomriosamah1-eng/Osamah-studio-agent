@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain, session } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createEmbeddedApplication } from "../composition.js";
 import { invalidRequest, isIpcRequest } from "../ipc/contracts.js";
-import { DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender } from "./security.js";
+import { chooseProjectRoot } from "./root-picker.js";
+import { DESKTOP_CONTENT_SECURITY_POLICY, DESKTOP_IPC_CHANNEL, isTrustedIpcSender, PROJECT_ROOT_PICKER_CHANNEL } from "./security.js";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const workspacePath = join(currentDirectory, "../../prototypes/studio/index.html");
@@ -30,18 +31,30 @@ const installContentSecurityPolicy = (): void => {
 };
 
 const registerIpcBridge = (): void => {
+  const isTrustedEvent = (event: { readonly sender: { readonly id: number }; readonly senderFrame?: { readonly url: string } | null }): boolean => isTrustedIpcSender({
+    senderId: event.sender.id,
+    expectedSenderId: mainWindow?.webContents.id ?? -1,
+    frameUrl: event.senderFrame?.url ?? "",
+    expectedFrameUrl: workspaceUrl,
+  });
   ipcMain.handle(DESKTOP_IPC_CHANNEL, async (event, request: unknown) => {
     const requestId = requestIdOf(request);
-    if (!isTrustedIpcSender({
-      senderId: event.sender.id,
-      expectedSenderId: mainWindow?.webContents.id ?? -1,
-      frameUrl: event.senderFrame?.url ?? "",
-      expectedFrameUrl: workspaceUrl,
-    })) {
-      return invalidRequest(requestId, "The IPC sender is not trusted.");
-    }
+    if (!isTrustedEvent(event)) return invalidRequest(requestId, "The IPC sender is not trusted.");
     if (!isIpcRequest(request)) return invalidRequest(requestId, "The IPC request does not match protocol v1.");
     return embeddedApplication.ipc.dispatch(request);
+  });
+  ipcMain.handle(PROJECT_ROOT_PICKER_CHANNEL, async (event) => {
+    if (!isTrustedEvent(event)) return { canceled: false as const, error: "INVALID_ROOT" as const, message: "The root picker sender is not trusted." };
+    const ownerWindow = mainWindow;
+    if (!ownerWindow) return { canceled: false as const, error: "INVALID_ROOT" as const, message: "The desktop window is not ready." };
+    if (process.env.OSAMAH_ROOT_PICKER_SMOKE === "1") {
+      return chooseProjectRoot({
+        showOpenDialog: async () => ({ canceled: false, filePaths: [join(currentDirectory, "../../fixtures/mobile-expo")] }),
+      });
+    }
+    return chooseProjectRoot({
+      showOpenDialog: (_options) => dialog.showOpenDialog(ownerWindow, { properties: ["openDirectory"] }),
+    });
   });
 };
 

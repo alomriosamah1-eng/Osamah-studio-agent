@@ -74,8 +74,9 @@
 | Master Implementation Plan | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ phases 0–17 للأقسام الثلاثة؛ delivery state `0f1010462c6297e274c66b9c99ed38404272df5d` |
 | SQLite Adapter + Observability + Backup/Restore | `node:sqlite` adapter، migration 002، repositories، event bus، observability redaction، atomic backup/restore؛ delivery state `0c51c1e00726afa798182ade0e6dc16ab627eba7`، local وremote متطابقان |
 | Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
+| Production Root Picker | main-process `dialog.showOpenDialog` بخاصية `openDirectory`، typed preload، trusted sender، canonical path validation، وroot-picker desktop smoke؛ delivery pending final push |
 
-تم التحقق من `pnpm check` بـ44/44، و`pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. دُفعت slice الأداء والـ Web preview وResource Governance عند `b9089efee33a174c3958a9295853623beae27503`، وتطابق local و`origin/main`.
+تم التحقق من `pnpm check` بـ47/47، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction و`git diff --check` وJSON validation وsecret scan. شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، بينما root picker الحالية تحت بوابة الدفع النهائية.
 
 ## الخطة التنفيذية المعتمدة
 
@@ -83,7 +84,7 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، ويوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation لكنه ما زال يحتاج دفع الشريحة الحالية. يوجد SQLite adapter منفذ في Infrastructure لكنه غير مربوط بعد بـ`createEmbeddedApplication`. أضيف BoundedAgentRuntime كـapplication slice؛ لا يوجد بعد provider implementation أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter. المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 

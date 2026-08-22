@@ -5,15 +5,17 @@
 | الحقل | القيمة |
 |---|---|
 | الإصدار | `0.6.0`؛ Lightweight Web Preview وResource Policy وbounded Agent Runtime منفذة دون bump release |
-| المرحلة | Lightweight Web Preview + Resource Policy + General Project Detection |
-| الحالة | SQLite السابقة وslice الأداء والـ preview العام مدفوعة ومتحقق منها على `origin/main` |
+| المرحلة | Production Root Picker + Lightweight Web Preview + Resource Governance |
+| الحالة | SQLite وslice الأداء السابقة مدفوعة؛ production root picker منفذ محليًا وتحت بوابة الدفع |
 | آخر commit SQLite للشريحة السابقة | `0c51c1e00726afa798182ade0e6dc16ab627eba7` (`feat: add sqlite adapter and observability`) |
-| آخر commit للشريحة الحالية | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
-| آخر فحص | `pnpm check` ناجح، `44/44` اختبارًا، و`pnpm performance:smoke` ناجح، في 2026-08-22 |
+| آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
+| آخر commit root picker | pending final commit/push |
+| آخر فحص | `pnpm check` ناجح، `47/47` اختبارًا، و`pnpm desktop:smoke` مع root-picker smoke ناجح، في 2026-08-22 |
 | schema | migration `001` ثم `002`، schema version `002` |
 | driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا native npm dependency إضافية |
 | حالة push للشريحة السابقة | SQLite code عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`؛ documentation عند `be7d29359a0e95e1d1e83f1e65c0e8e7fe725c83` و`76b47cb24953c4dafd2bd750deefdf03f8be8362`؛ verified |
-| حالة push للشريحة الحالية | `b9089efee33a174c3958a9295853623beae27503`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
+| حالة push لشريحة الأداء السابقة | `b9089efee33a174c3958a9295853623beae27503`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main` |
+| حالة push لشريحة root picker | pending final commit/push؛ لا تُعلن مدفوعة قبل local SHA == `origin/main` |
 
 ## المكتمل
 
@@ -29,14 +31,17 @@
 
 أضيفت slice الأداء الخفيف: `ProjectKind` و`PreviewCapability` و`GeneralProjectDetector`، حدود source/module/asset/warning، low-memory `ResourcePolicy`، latest-only refresh queue، و`BoundedAgentRuntime` بعمل وكيل واحد متزامن وqueue/history محدودين. الـ embedded controller يرفض native modes غير المدعومة بدل إعلان native fidelity زائفة.
 
+أضيف production root picker: `chooseProjectRoot` عبر main-process dialog وtyped preload وcanonical path validation وtrusted sender، مع زر Workspace واختبار desktop smoke deterministic. الإلغاء والخطأ typed، ورسائل filesystem الخام لا تصل إلى renderer.
+
 ## التحقق الحالي
 
 | الفحص | النتيجة |
 |---|---|
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `44/44` ناجحة |
+| `pnpm test` | `47/47` ناجحة |
 | `pnpm check` | ناجح |
 | `pnpm performance:smoke` | ناجح؛ low_memory، React Native → lightweight_web، preview حوالي 10ms، heap delta حوالي 0.3MB، RSS delta حوالي 3.4MB، تحت V8 heap 768MB |
+| `pnpm desktop:smoke` | ناجح؛ `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 | `python3 scripts/validate_sqlite_migration.py` | ناجح؛ migration count `2`، schema `002`، 10 جداول، 16 index entries |
 | repository round-trip/restart | ناجح لجميع entities الحالية |
 | event bus وobservability | persistence وrecursive redaction وbounded listing ناجحة |
@@ -53,7 +58,7 @@
 
 ## الخطوة التالية الدقيقة
 
-بعد دفع slice الأداء والـ preview، تبدأ **production root picker عبر typed preload وmain-process dialog**، ثم wiring اختيارية لـSQLite داخل composition root. بعد ذلك يُوسّع bounded Agent Runtime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports اختياريًا وفق availability وdoctor/resource evidence.
+بعد دفع root picker، تبدأ wiring اختيارية لـSQLite داخل composition root مع profile lifecycle وfallback policy. بعد ذلك يُوسّع BoundedAgentRuntime بعقود provider/approval، ثم Provider Gateway، ثم React Native Web/Metro parity عند الحاجة، ثم Android وiOS transports اختياريًا وفق availability وdoctor/resource evidence.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 

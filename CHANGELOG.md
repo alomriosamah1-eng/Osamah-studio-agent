@@ -1,5 +1,26 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Root Picker
+
+### Added
+
+- typed `window.osamah.chooseProjectRoot()` خلف `contextBridge` مع قناة allowlisted منفصلة `osamah:choose-project-root`.
+- main-process `dialog.showOpenDialog` بخاصية `openDirectory` فقط، مع trusted sender وworkspace URL validation.
+- canonical root validation عبر `realpath` و`stat` وdirectory check، مع نتائج typed للإلغاء والاختيار والخطأ دون تسريب filesystem messages إلى renderer.
+- زر `Open Project` داخل Workspace لا يشغّل project scripts أو Metro/Expo أو native toolchains تلقائيًا، وdeterministic root-picker desktop smoke.
+- `docs/49-production-root-picker.md` و`src/root-picker.test.ts` لتوثيق العقد واختبارات cancel/invalid/non-directory.
+
+### Verified
+
+- `pnpm check`: `47/47` اختبارًا ناجحًا.
+- `pnpm desktop:smoke`: `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` و`DESKTOP_SMOKE=PASS`.
+- `node --check` للـ Workspace/preload و`git diff --check` اجتازا بعد إغلاق الشريحة.
+
+### Boundaries
+
+- root picker يختار مجلدًا فقط ولا يفتح المشروع أو يشغّل أي script تلقائيًا؛ فتح/preview المشروع يبقى contract منفصلًا ومقيّدًا بالـ budgets.
+- لا يكشف preload `ipcRenderer` أو Node APIs إلى renderer، ولا يعلن root picker native simulator fidelity.
+
 ## [Unreleased] — Lightweight Web Preview وResource Governance
 
 ### Added

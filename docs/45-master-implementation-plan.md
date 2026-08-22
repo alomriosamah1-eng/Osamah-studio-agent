@@ -10,7 +10,7 @@
 
 ## 2. الوضع الحالي ونقطة الانطلاق
 
-حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite migration contract، Embedded Simulator Controller، typed in-memory IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، ومسار `preview.openProject`. آخر حالة موثقة هي الإصدار `0.5.0-ipc-project-open` مع **21/21 اختبارًا ناجحًا**، وشجرة عمل نظيفة، وآخر delivery موثق في GitHub.
+حتى آخر تحديث، اكتمل الأساس التالي في المستودع: Clean Architecture أولية، Domain primitives/entities/events، Application use cases وports، in-memory adapters، SQLite adapter وobservability وbackup/restore، Embedded Simulator Controller، typed IPC، Project Preview Bundle، Filesystem Scanner، Project Preview Service، Presentation Renderer، Electron shell، Lightweight Web Preview، Resource Policy، وBoundedAgentRuntime slice. آخر حالة موثقة هي الإصدار `0.6.0` مع **47/47 اختبارًا ناجحًا** وproduction root picker منفذ محليًا وقابلًا للتحقق عبر desktop smoke.
 
 لذلك لا تعيد الخطة بناء الأساس من الصفر. تبدأ الخطوة التنفيذية التالية من **typed Electron preload boundary** ثم تنتقل تدريجيًا إلى طبقة البيانات الفعلية وAgent Runtime وبقية البيئات. تبقى البنية الحالية في `src/` مرجعًا حيًا، ولا يُنفذ نقل كبير إلى monorepo أو microservices إلا بعد إثبات حاجة تشغيلية.
 
@@ -102,8 +102,9 @@ src/
 2. تجميد القصص الحرجة US-001 إلى US-008 ومعايير قبولها.
 3. تثبيت Electron كـ MVP desktop shell، وتأجيل Tauri إلى benchmark لاحق بدل خلط shellين.
 4. إبقاء OpenTo في حالة `UNKNOWN / REQUIRES VALIDATION` حتى يظهر مصدر رسمي قابل للتحقق.
-5. اعتماد compatibility preview الحالية بوصفها bounded renderer، لا native fidelity.
-6. إنشاء decision log لأي اختيار يخص React renderer أو SQLite driver أو provider أو license.
+5. اعتماد Lightweight Web Preview الحالية بوصفها bounded renderer، لا native fidelity.
+6. اعتماد low-memory profile لأجهزة Ubuntu ذات RAM 8GB: preview وagent concurrency محدودان، والعمليات الثقيلة اختيارية ولا تعمل عند الإقلاع.
+7. إنشاء decision log لأي اختيار يخص React renderer أو SQLite driver أو provider أو license.
 
 **بوابة الخروج:** لا يوجد feature بلا owner وscope وacceptance criteria وبيانات وصلاحية ومخرج تراجع. أي وظيفة لا تدخل MVP تسجل في backlog لا في core.
 
@@ -200,10 +201,11 @@ src/
 4. إكمال دورة: request → constraints → plan → targeted read → patch → approval → checkpoint → apply → typecheck/test → diff → optional commit.
 5. إضافة Git adapter وGitHub CLI adapter لعرض branch/status/diff وطلبات commit/push التي تحتاج approval [9].
 6. جعل `preview.openProject` و`preview.refresh` واجهة فعلية للمعاينة المدمجة.
-7. إبقاء `Lightweight Web Preview` هو adapter الأساسي لمشاريع React وReact Native، مع `ProjectKind` وcapability warnings وبدون تشغيل project scripts.
-8. دراسة React Native Web/Metro adapter خلف `PreviewRuntime` فقط بعد benchmark وcontract parity؛ لا يستبدل lightweight fixture renderer تلقائيًا.
-9. إبقاء Android Emulator وiOS Simulator transports اختيارية تغذي نفس Embedded Simulator Panel؛ native adapters لا تدخل قبل doctor/resource contracts ولا تكون dependency للإقلاع.
-10. إضافة rollback إلى checkpoint، وtest command discovery دون تشغيل hooks أو postinstall تلقائيًا.
+7. تنفيذ production root picker عبر typed preload وmain-process dialog مع canonical path validation ورفض المسار غير الصالح.
+8. إبقاء `Lightweight Web Preview` هو adapter الأساسي لمشاريع React وReact Native، مع `ProjectKind` وcapability warnings وبدون تشغيل project scripts.
+9. دراسة React Native Web/Metro adapter خلف `PreviewRuntime` فقط بعد benchmark وcontract parity؛ لا يستبدل lightweight fixture renderer تلقائيًا.
+10. إبقاء Android Emulator وiOS Simulator transports اختيارية تغذي نفس Embedded Simulator Panel؛ native adapters لا تدخل قبل doctor/resource contracts ولا تكون dependency للإقلاع.
+11. إضافة rollback إلى checkpoint، وtest command discovery دون تشغيل hooks أو postinstall تلقائيًا.
 
 **معيار القبول:** US-001 وUS-002 وUS-003 تتحقق: فتح مشروع وحالته خلال الهدف المحدد، خطة قبل الكتابة، approval للأمر الحساس، diff واختبار وتراجع مرئي.
 
