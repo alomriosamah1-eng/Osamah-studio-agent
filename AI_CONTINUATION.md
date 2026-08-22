@@ -6,7 +6,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming أُغلقت عند `0b5acbf136d168fb43312379f44846c1075c802f` مع تطابق local وremote SHA. شريحة Audit Export وRetention Policy منفذة ومدفوعة ومتحقق منها عند `5cf3d03605215ee2160473afee4c77585f0e9f61`. شريحة Planner/Critic منفذة ومربوطة بـWorkCycle ومدفوعة ومتحقق منها عند `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`. شريحة Local Provider Adapters منفذة ومربوطة اختياريًا بالـGateway وقيد commit/push.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration أُغلقت عند `fd248891cc5cd68818cc5fa13319bc2a133a2565` مع تطابق local وremote SHA. شريحة Human Gate UI وapproval event streaming أُغلقت عند `0b5acbf136d168fb43312379f44846c1075c802f` مع تطابق local وremote SHA. شريحة Audit Export وRetention Policy منفذة ومدفوعة ومتحقق منها عند `5cf3d03605215ee2160473afee4c77585f0e9f61`. شريحة Planner/Critic منفذة ومربوطة بـWorkCycle ومدفوعة ومتحقق منها عند `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`. شريحة Local Provider Adapters منفذة ومربوطة اختياريًا بالـGateway ومدفوعة ومتحقق منها عند `c18b6befcaf82acc4679f9ed72899659d00d6a11`.
 
 نتيجة الاختبار الحالية: `pnpm check` يمر بـ`92/92` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart، ثم `IpcEvent` وpreload subscribe وWorkspace Human Gate panel، ثم `AuditExportProvider` و`BoundedAuditRetentionPolicy`، ثم `PlannerPort` و`CriticPort` وربطهما بـWorkCycle، ثم `LocalHttpProviderAdapter` وOllama وllama.cpp adapters مع optional composition registration؛ schema 004 وredaction/restart وpending/decide وapproval.changed وNDJSON/manifest/retention وplanner/critic وprovider adapter contracts ناجحة.
 
@@ -53,7 +53,7 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Local Provider Adapters قيد commit/push.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `c18b6befcaf82acc4679f9ed72899659d00d6a11`؛ `GITHUB_PUSH_VERIFIED=true` مثبت.
 
 ## ما يزال مؤجلًا
 
@@ -70,4 +70,4 @@ Web Preview الحالي lightweight compatibility mapping وليس React Native
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Local Provider Adapters قيد commit/push.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `c18b6befcaf82acc4679f9ed72899659d00d6a11`؛ `GITHUB_PUSH_VERIFIED=true`.

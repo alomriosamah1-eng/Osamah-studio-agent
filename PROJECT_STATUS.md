@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Planner/Critic وschema 004 منفذة ومدفوعة ومتحقق منها على `origin/main`؛ الخطوة التالية provider adapters الفعلية |
+| حالة الشجرة | Local Provider Adapters وschema 004 منفذة ومدفوعة ومتحقق منها على `origin/main`؛ الخطوة التالية provider configuration وdoctor/resource/quota contracts |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `86/86` اختبارًا؛ full gate وGitHub verification ناجحتان في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `92/92` اختبارًا؛ full gate وGitHub verification ناجحتان في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -73,18 +73,19 @@
 | Human Gate UI/event stream | `approval.changed` contract وpreload filter/unsubscribe وWorkspace panel وdesktop smoke callback PASS؛ delivery `0b5acbf136d168fb43312379f44846c1075c802f`، local == `origin/main` |
 | Audit Export/Retention | NDJSON/manifest/SHA/redaction/destination safety وage/count bounded purge PASS؛ delivery `5cf3d03605215ee2160473afee4c77585f0e9f61`، local == `origin/main` |
 | Planner/Critic | bounded plan generation وwarnings وunsafe target/byte mismatch/duplicate step rejection وWorkCycle no-mutation guard PASS؛ delivery `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`، local == `origin/main` |
+| Local Provider Adapters | Ollama/llama.cpp mapping وhealth وloopback security وHTTP errors وtimeout/cancellation وoptional composition registration PASS؛ delivery `c18b6befcaf82acc4679f9ed72899659d00d6a11`، local == `origin/main` |
 
 ## العمل المتبقي
 
-ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow وAgentWorkCycle وContextIndex وtyped WorkCycle IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic موجودة كـapplication/desktop slices bounded، لكن LLM inference وprovider adapters الفعلية وquota/circuit breaker الكامل وsigned/tamper-evident export ما زالت لاحقة.
+ما زال FTS5 وobject store وcontent hashing وterminal sandbox وproduction packaging الموقّع غير منفذة. BoundedAgentRuntime وResourcePolicy وProviderGateway وApprovalWorkflow وAgentWorkCycle وContextIndex وtyped WorkCycle IPC وPersistent Audit وHuman Gate وApproval hydration وHuman Gate UI/event streaming وAudit Export/Retention وPlanner/Critic وOllama/llama.cpp adapters موجودة كـapplication/desktop slices bounded، لكن model discovery وstreaming وtool execution وLLM inference التلقائي وquota/circuit breaker الكامل وsigned/tamper-evident export ما زالت لاحقة.
  SQLite مربوط اختياريًا داخل `createEmbeddedApplication`، ومسار `sqlite-profile` يفرض profile path policy وexclusive locking؛ backup UX والتشفير ما زالا لاحقين.
 
 لا توجد بعد React Native Web/Metro runtime فعلية، ولا Android doctor/ADB adapter، ولا iOS Xcode adapter، ولا تكاملات remote/EAS. لا ينبغي تشغيل native toolchains أو scripts من مشاريع الهاتف تلقائيًا.
 
 ## القرار والخطوة التالية
 
-بعد إغلاق Planner/Critic Contracts، تُنفذ provider adapters الفعلية، ثم Development Environment العامة وProduction Studio وSecond Brain وفق الخطة؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
+بعد إغلاق Local Provider Adapters، تُثبت provider configuration وdoctor/resource/quota contracts ثم تُربط adapters بمسار planner/critic، وبعدها Development Environment العامة وProduction Studio وSecond Brain وفق الخطة؛ يبقى Lightweight Web Preview في آخر مراحل تصميم البيئة.
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Planner/Critic مدفوع ومتحقق منه.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `c18b6befcaf82acc4679f9ed72899659d00d6a11`؛ Local Provider Adapters مدفوعة ومتحقق منها.
