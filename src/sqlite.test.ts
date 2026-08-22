@@ -20,11 +20,11 @@ test("SQLite applies migrations in order and persists the latest schema version"
   const databasePath = join(root, "studio.sqlite");
   const database = new SqliteDatabase({ databasePath, migrationsPath });
   try {
-    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "003" });
+    assert.deepEqual(database.get("SELECT value FROM schema_meta WHERE key = ?", ["schema_version"]), { value: "004" });
     const tables = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((row) => row.name);
-    assert.deepEqual(tables, ["agent_audit_records", "approvals", "artifacts", "device_profiles", "domain_events", "jobs", "observability_logs", "preview_sessions", "schema_meta", "sessions", "workspaces"]);
+    assert.deepEqual(tables, ["agent_audit_records", "approval_tickets", "approvals", "artifacts", "device_profiles", "domain_events", "jobs", "observability_logs", "preview_sessions", "schema_meta", "sessions", "workspaces"]);
     const indexes = database.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_autoindex_%' ORDER BY name").map((row) => row.name);
-    assert.deepEqual(indexes, ["idx_agent_audit_approval", "idx_agent_audit_correlation", "idx_agent_audit_session", "idx_agent_audit_time", "idx_approvals_session", "idx_events_aggregate", "idx_observability_correlation", "idx_observability_time", "idx_preview_device", "idx_sessions_workspace"]);
+    assert.deepEqual(indexes, ["idx_agent_audit_approval", "idx_agent_audit_correlation", "idx_agent_audit_session", "idx_agent_audit_time", "idx_approval_tickets_pending", "idx_approval_tickets_session", "idx_approvals_session", "idx_events_aggregate", "idx_observability_correlation", "idx_observability_time", "idx_preview_device", "idx_sessions_workspace"]);
   } finally {
     database.close();
     rmSync(root, { recursive: true, force: true });
@@ -125,6 +125,34 @@ test("SQLite observability sink stores redacted payloads and returns bounded new
   }
 });
 
+test("SQLite approval store persists full tickets across restart", () => {
+  const root = makeTempRoot();
+  const databasePath = join(root, "studio.sqlite");
+  const storage = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
+  const workspace = createWorkspace({ id: "workspace-ticket", name: "Ticket workspace", rootPath: "/tmp/ticket", now: "2026-08-22T10:04:00.000Z" });
+  const session = createSession({ id: "session-ticket", workspaceId: workspace.id, now: "2026-08-22T10:04:01.000Z" });
+  const requested = { approvalId: "approval-ticket", correlationId: "corr-ticket", action: { actionId: "action-ticket", sessionId: session.id, kind: "filesystem.write" as const, risk: "high" as const, scope: "src/file.ts", idempotencyKey: "idem-ticket" }, status: "requested" as const, createdAt: "2026-08-22T10:04:02.000Z" };
+  const resolved = { ...requested, status: "approved" as const, resolvedAt: "2026-08-22T10:04:03.000Z" };
+  try {
+    storage.repositories.workspaces.save(workspace);
+    storage.repositories.sessions.save(session);
+    storage.approvalStore.save(requested);
+    storage.approvalStore.save(resolved);
+    assert.deepEqual(storage.approvalStore.list(1), [resolved]);
+  } finally {
+    storage.database.close();
+  }
+
+  const reopened = createSqliteApplicationStorage({ databasePath, migrationsPath }, makeIds());
+  try {
+    assert.deepEqual(reopened.approvalStore.list(1), [resolved]);
+    assert.equal(reopened.approvalStore.list(0).length, 1);
+  } finally {
+    reopened.database.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("SQLite audit trail persists redacted decision fields across restart", () => {
   const root = makeTempRoot();
   const databasePath = join(root, "studio.sqlite");
@@ -180,7 +208,7 @@ test("SQLite backup creates a verifiable snapshot and restores into a separate p
     storage.observability.record({ id: "backup-log", occurredAt: "2026-08-22T10:08:00.000Z", level: "info", eventType: "backup.fixture", payload: { apiKey: "never-export-raw" } });
     const manifest = await provider.create(backupRoot);
     assert.equal(manifest.formatVersion, 1);
-    assert.equal(manifest.schemaVersion, "003");
+    assert.equal(manifest.schemaVersion, "004");
     assert.equal(manifest.files[0]?.relativePath, "studio.sqlite");
     assert.deepEqual(await provider.verify(backupRoot), manifest);
     const restoredManifest = await provider.restore(backupRoot, restoredRoot);

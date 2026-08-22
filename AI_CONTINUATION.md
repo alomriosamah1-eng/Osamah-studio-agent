@@ -6,11 +6,11 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 ## الحالة الدقيقة
 
-أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock؛ أحدث delivery هو Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA.
+أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore، ثم optional composition، ثم profile path policy وexclusive lock، ثم Persistent Audit وHuman Gate عند `ca7460d6c36ad64d98298d2e383d68e661f0869c` مع تطابق local وremote SHA. شريحة ApprovalStore وhydration الحالية قيد الإغلاق.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`76/76` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate؛ schema 003 وredaction/restart وpending/decide contracts ناجحة، والشريحة مدفوعة ومتحقق منها.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`78/78` اختبارًا. أضيفت Provider وApproval contracts وProviderGateway bounded فوق profile storage، ثم Agent Work Cycle وProject Context Index وFilesystemPatchAdapter، ثم typed WorkCycle IPC، ثم Persistent Audit وHuman Gate، ثم ApprovalStore وSqliteApprovalStore وhydration بعد restart؛ schema 004 وredaction/restart وpending/decide contracts ناجحة، والشريحة الحالية قيد commit/push.
 
-validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `3`، schema version `003`، 11 جدولًا و21 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail restart/redaction وHuman Gate fail-closed. full gate وGitHub push verification ناجحان؛ `local_sha == remote_sha`.
+validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `4`، schema version `004`، 12 جدولًا و24 index entry. اجتازت `pnpm check` و`pnpm typecheck`، ونجحت اختبارات SqliteAuditTrail وApprovalStore restart/redaction وHuman Gate fail-closed. full gate ناجح لشريحة hydration؛ commit/push النهائيان ما زالا مطلوبين.
 
 ## المعمارية
 
@@ -28,9 +28,9 @@ Mobile subsystem له LightweightPreview وFixturePreview في compatibility mod
 
 `src/infrastructure/fixture-provider.ts` و`src/infrastructure/in-memory.ts` يوفران adapters deterministic خفيفة. composition يصدر `approvalWorkflow` و`auditTrail` و`providerGateway` و`providerRouteAudit`، مع registry فارغ فلا توجد network calls أو model loading عند الإقلاع.
 
-`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail`، مع migration 003 لجدول `agent_audit_records`. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل. `src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` و`src/ipc/embedded-handlers.ts` يعرّفان approval pending/decide.
+`src/infrastructure/sqlite.ts` يحتوي migration runner وchecksum validation وtransactions وrepositories وevent bus وobservability و`SqliteAuditTrail` و`SqliteApprovalStore`، مع migrations 003 و004 لجدولي audit وapproval tickets. `src/infrastructure/sqlite-backup.ts` يحتوي atomic snapshot وmanifest وSHA-256 وforeign-key validation وmigration dry-run وrestore إلى profile منفصل. `src/application/human-gate.ts` يعرّف HumanGatePort وInMemoryHumanGate، و`src/ipc/contracts.ts` و`src/ipc/embedded-handlers.ts` يعرّفان approval pending/decide.
 
-التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md`.
+التوثيق التنفيذي في `docs/47-sqlite-adapter-implementation.md` و`docs/48-lightweight-preview-and-resource-policy.md` و`docs/49-production-root-picker.md` و`docs/50-optional-sqlite-composition.md` و`docs/51-profile-path-policy.md` و`docs/52-provider-approval-contracts.md` و`docs/53-agent-work-cycle.md` و`docs/54-agent-work-cycle-ipc.md` و`docs/55-persistent-audit-human-gate.md` و`docs/56-approval-hydration.md`.
 
 ## القواعد
 
@@ -53,21 +53,21 @@ python3 -m json.tool project/master-implementation-plan.json >/dev/null
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ full gate و`GITHUB_PUSH_VERIFIED=true` مثبتان.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ شريحة ApprovalStore وhydration قيد commit/push بعد full gate الناجح.
 
 ## ما يزال مؤجلًا
 
-لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate الحالية contract/fixture bounded؛ لا يوجد planner/critic أو LLM inference تلقائي أو persistent project index أو checkpoint restore أو Human Gate UI أو event streaming أو approval hydration بعد restart.
+لم يُنفذ FTS5 أو object store أو terminal sandbox أو production packaging الموقّع. ProviderGateway الحالي contract/fixture bounded فقط؛ لا يوجد remote provider أو Ollama/llama.cpp adapter أو quota/circuit breaker كامل. Agent Work Cycle وtyped IPC وPersistent Audit وHuman Gate وApproval hydration الحالية contract/fixture bounded؛ لا يوجد planner/critic أو LLM inference تلقائي أو persistent project index أو checkpoint restore أو Human Gate UI أو event streaming.
 
 Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
 
 ## التسلسل التالي
 
-بعد إغلاق Persistent Audit الحالي، تُنفذ approval hydration بعد restart وHuman Gate UI وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
+بعد إغلاق ApprovalStore وhydration الحاليين، تُنفذ Human Gate UI وevent streaming وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية.
  يأتي backup UX وencryption/key management عند الحاجة، ثم Development Environment العامة وProduction Studio وSecond Brain؛ يبقى React Native Web/Metro parity واستكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة، ثم Android doctor/ADB وmacOS-only iOS adapter وفق الأدلة.
 
 ## أسئلة مفتوحة
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ `GITHUB_PUSH_VERIFIED=true`.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ ApprovalStore وhydration قيد commit/push.

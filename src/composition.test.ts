@@ -43,6 +43,47 @@ test("composition opts into SQLite and preserves workspace data across restart",
   }
 });
 
+test("composition hydrates pending approval tickets after SQLite restart", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-composition-approval-"));
+  const storage = { kind: "sqlite" as const, databasePath: join(root, "profile.sqlite"), migrationsPath };
+  const action = { actionId: "action-hydrate", sessionId: "session-hydrate", kind: "filesystem.write" as const, risk: "high" as const, scope: "src/app.ts", idempotencyKey: "idem-hydrate" };
+  try {
+    const first = createEmbeddedApplication({ storage });
+    const workspace = first.useCases.openWorkspace({ name: "Approval workspace", rootPath: root });
+    const session = first.useCases.createSession(workspace.id);
+    const authorization = first.approvalWorkflow.authorize({ ...action, sessionId: session.id });
+    assert.equal(authorization.decision, "approval_required");
+    if (authorization.decision !== "approval_required") throw new Error("Expected approval to be required.");
+    const approvalId = authorization.approvalId;
+    assert.equal(first.humanGate.listPending(10).length, 1);
+    first.close();
+
+    const second = createEmbeddedApplication({ storage });
+    try {
+      const hydrated = second.humanGate.listPending(10);
+      assert.equal(hydrated.length, 1);
+      assert.equal(hydrated[0]?.approvalId, approvalId);
+      assert.deepEqual(hydrated[0]?.action, { ...action, sessionId: session.id });
+      const duplicate = second.approvalWorkflow.authorize({ ...action, sessionId: session.id });
+      assert.deepEqual(duplicate, { decision: "approval_required", correlationId: duplicate.correlationId, approvalId, reason: "A human approval request already exists for this action." });
+      const resolved = second.humanGate.decide(approvalId, "approved");
+      assert.equal(resolved.status, "approved");
+    } finally {
+      second.close();
+    }
+
+    const third = createEmbeddedApplication({ storage });
+    try {
+      assert.deepEqual(third.humanGate.listPending(10), []);
+      assert.equal(third.approvalWorkflow.get(approvalId)?.status, "approved");
+    } finally {
+      third.close();
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("composition uses a standard profile path and releases its exclusive lock", async () => {
   const root = await mkdtemp(join(tmpdir(), "osamah-composition-profile-"));
   const storage = { kind: "sqlite-profile" as const, userDataDirectory: root, profileId: "workspace", migrationsPath };

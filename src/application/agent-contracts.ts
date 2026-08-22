@@ -56,6 +56,11 @@ export interface ApprovalWorkflowPort extends AgentAuthorizationPort {
   resolve(approvalId: string, decision: "approved" | "denied"): ApprovalTicket;
 }
 
+export interface ApprovalStore {
+  save(ticket: ApprovalTicket): void;
+  list(limit?: number): readonly ApprovalTicket[];
+}
+
 export type AuditDecision = "allowed" | "approval_required" | "approved" | "denied";
 
 const sensitiveAuditAssignment = /\b(token|secret|password|api[-_]?key|authorization|prompt|private[-_]?key)\s*[:=]\s*[^\s,;]+/gi;

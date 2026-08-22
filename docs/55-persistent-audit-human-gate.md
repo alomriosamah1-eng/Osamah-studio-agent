@@ -1,6 +1,6 @@
 # Persistent Audit وHuman Gate
 
-**الحالة:** منفذة ومدفوعة ومتحقق منها بعد full gate؛ delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`، و`local_sha == remote_sha`.
+**الحالة:** منفذة ومدفوعة ومتحقق منها بعد full gate؛ delivery: `ca7460d6c36ad64d98298d2e383d68e661f0869c`، و`local_sha == remote_sha`. أضيف لاحقًا `ApprovalStore` وhydration في وثيقة [56].
 
 أضيفت طبقة `SqliteAuditTrail` فوق migration `003_agent_audit.sql`، مع إبقاء `InMemoryAuditTrail` للمسار memory الافتراضي. تحفظ الطبقة الدائمة حقول القرار اللازمة للمراجعة: `correlation_id` و`action_id` و`session_id` و`kind` و`risk` و`decision` و`approval_id` و`scope` و`reason`. لا تحفظ prompt أو request payload أو transcript.
 
@@ -42,7 +42,7 @@ filesystem.write request
 
 ## حدود restart الحالية
 
-سجل audit دائم، لكن `InMemoryApprovalWorkflow` و`InMemoryHumanGate` يحتفظان بمجموعات ticket في الذاكرة. بعد restart تكون approval rows موجودة في SQLite، لكن hydration للتذاكر إلى workflow وpending Human Gate list ما زالت خطوة لاحقة. لهذا لا يُدّعى أن الموافقات الدائمة قابلة للاستئناف بعد crash في هذه الشريحة؛ يلزم تنفيذ `ApprovalStore`/hydration صريح قبل production use.
+سجل audit وتذاكر الموافقة دائمان في SQLite. عند فتح profile يعيد `ApprovalStore` تحميل التذاكر bounded إلى `InMemoryApprovalWorkflow`، فتظهر pending tickets في Human Gate ويُحفظ القرار اللاحق. يبقى WorkCycle checkpoint نفسه غير دائم، لذلك لا تُدّعى crash-resumability لدورة الوكيل كاملة.
 
 كذلك لا يوجد event streaming من main إلى renderer، ولا UI فعلي للموافقة، ولا multi-user identity أو role-based authorization أو signed audit export أو tamper-evident hash chain. schema 003 تحسن المراجعة الدائمة ولا تعني compliance certification.
 
@@ -50,14 +50,14 @@ filesystem.write request
 
 | الفحص | النتيجة |
 |---|---|
-| SQLite schema | migrations 001–003، schema `003`، جدول audit وفهارس الوقت/correlation/session/approval |
+| SQLite schema | migrations 001–004، schema `004`، جدول audit وapproval tickets وفهارس الوقت/correlation/session/approval/pending |
 | persistent audit | append/list وredaction وrestart persistence PASS |
 | Human Gate | pending listing وapproved/denied وinvalid/unknown fail-closed PASS |
 | WorkCycle integration | approval ثم resume وdenial وIPC decision PASS |
-| suite | `76/76` اختبارًا ناجحًا |
-| full gate | build وdesktop/performance smoke وmigration/JSON/diff/secret PASS |
+| suite | `78/78` اختبارًا ناجحًا |
+| full gate | build وdesktop/performance smoke وmigration/JSON/diff/secret PASS؛ schema `004` |
 
-الخطوة التالية هي persistent approval hydration وHuman Gate UI، ثم audit export/retention policy وplanner/critic وprovider adapters الفعلية.
+الخطوة التالية هي Human Gate UI وevent streaming، ثم audit export/retention policy وplanner/critic وprovider adapters الفعلية.
  يبقى Lightweight Web Preview في compatibility/fixture mode ومؤجلًا إلى آخر مراحل تصميم البيئة.
 
 ## المراجع
@@ -67,5 +67,6 @@ filesystem.write request
 [3]: ./52-provider-approval-contracts.md "Provider وApproval Contracts"
 [4]: ./53-agent-work-cycle.md "Agent Work Cycle وProject Context Index"
 [5]: ./54-agent-work-cycle-ipc.md "Typed IPC Boundary لدورة الوكيل"
+[6]: ./56-approval-hydration.md "ApprovalStore وPersistent Approval Hydration"
 
 إعداد: Manus AI. تاريخ الفحص: 2026-08-22.

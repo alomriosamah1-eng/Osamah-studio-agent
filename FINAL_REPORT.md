@@ -2,10 +2,10 @@
 
 ## الخلاصة
 
-تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite adapter وobservability وbackup/restore bounded**. أضيفت profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، مع إبقاء التطبيق lightweight وmemory default عند عدم طلب persistence. ثم أضيفت عقود Provider وApproval وProviderGateway bounded مع default-deny وoffline/local-first routing. أضيفت بعدها نواة Agent Work Cycle وProject Context Index وFilesystemPatchAdapter لقراءة context موجهة وتنفيذ patch محمي قبل checkpoint/apply. ثم أضيفت typed application/IPC boundary لعمليات `context.index` و`workCycle.start` و`workCycle.inspect` و`workCycle.cancel` مع runtime payload validation. وأضيف Persistent Audit عبر migration 003 و`SqliteAuditTrail`، مع Human Gate bounded و`approval.listPending` و`approval.decide` وredaction/restart contracts.
+تم تنفيذ البرومبت الجديد على مستودع `Osamah Studio Agent` من حالة وثائقية بلا runtime إلى **Foundation slice قابل للاختبار** مع **محاكي هاتف مدمج داخل Workspace** و**typed IPC** و**SQLite adapter وobservability وbackup/restore bounded**. أضيفت profile path policy وexclusive lock لمسار SQLite المخصص للـprofiles، مع إبقاء التطبيق lightweight وmemory default عند عدم طلب persistence. ثم أضيفت عقود Provider وApproval وProviderGateway bounded مع default-deny وoffline/local-first routing. أضيفت بعدها نواة Agent Work Cycle وProject Context Index وFilesystemPatchAdapter لقراءة context موجهة وتنفيذ patch محمي قبل checkpoint/apply. ثم أضيفت typed application/IPC boundary لعمليات `context.index` و`workCycle.start` و`workCycle.inspect` و`workCycle.cancel` مع runtime payload validation. وأضيف Persistent Audit عبر migration 003 و`SqliteAuditTrail`، مع Human Gate bounded و`approval.listPending` و`approval.decide` وredaction/restart contracts. ثم أضيف `ApprovalStore` وmigration 004 و`SqliteApprovalStore` لإعادة hydration لتذاكر الموافقة bounded بعد restart مع منع duplicate decisions.
  المحاكي المدمج أصبح جزءًا من بيئة التطوير نفسها إلى جانب شجرة الملفات والمحرر والـ Inspector والـ Console. لم يُدّعَ اكتمال Desktop MVP أو Android Emulator أو iOS Simulator؛ هذه المسارات ما تزال adapters وخططًا لاحقة بحدود واضحة.
 
-أُغلقت شريحة SQLite محليًا خلف ports مستقلة: `node:sqlite` / `DatabaseSync`، migration runner بــchecksums، repositories وpersistent event bus، structured observability مع redaction، وbackup/restore بــmanifest وSHA-256 وmigration dry-run على profile منفصل. أضيف `sqlite-profile` بمسارات `studio.sqlite` و`.profile.lock` و`backups/`، ورفض profile IDs غير الآمنة، وقفل حصري يطلق عند close أو initialization failure. أضيفت طبقة Provider/Approval وProviderGateway مع fixture adapters دون network أو model loading تلقائي. أضيفت Persistent Audit وHuman Gate مع schema 003 وredaction وrestart readback وfail-closed decisions. full gate وGitHub verification ناجحان عند `ca7460d6c36ad64d98298d2e383d68e661f0869c`.
+أُغلقت شريحة SQLite محليًا خلف ports مستقلة: `node:sqlite` / `DatabaseSync`، migration runner بــchecksums، repositories وpersistent event bus، structured observability مع redaction، وbackup/restore بــmanifest وSHA-256 وmigration dry-run على profile منفصل. أضيف `sqlite-profile` بمسارات `studio.sqlite` و`.profile.lock` و`backups/`، ورفض profile IDs غير الآمنة، وقفل حصري يطلق عند close أو initialization failure. أضيفت طبقة Provider/Approval وProviderGateway مع fixture adapters دون network أو model loading تلقائي. أضيفت Persistent Audit وHuman Gate مع schema 003 وredaction وrestart readback وfail-closed decisions، ثم ApprovalStore وhydration مع schema 004. full gate وGitHub verification للشريحة السابقة ناجحان عند `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ شريحة hydration الحالية قيد الإغلاق.
 
 المستودع: [alomriosamah1-eng/Osamah-studio-agent](https://github.com/alomriosamah1-eng/Osamah-studio-agent).
 
@@ -56,9 +56,9 @@
 |---|---|
 | `pnpm install --frozen-lockfile` | ناجح |
 | `pnpm typecheck` | ناجح |
-| `pnpm test` | `76/76` ناجحة |
+| `pnpm test` | `78/78` ناجحة |
 | `pnpm check` | ناجح |
-| SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، migration count `3`، schema `003`، 11 tables، 21 index entries |
+| SQLite migration validation | `SQLITE_MIGRATION_VALID=true`، migration count `4`، schema `004`، 12 tables، 24 index entries |
 | SQLite restart/backup contracts | repositories وevent bus وobservability وtransactions وchecksum mismatch وbackup/restore وtampering ناجحة |
 | `git diff --check` | ناجح |
 | JSON validation | ناجح لكل `project/*.json` |
@@ -89,9 +89,10 @@
 | Provider وApproval Contracts + ProviderGateway | default-deny، guarded queue، approval matching، route capability/privacy/offline/local-first، fallback bounded، malformed-output validation، وmutation idempotency؛ delivery `c833f0e9c37cfaa1800aa9fcc300881984ab6878`، local == `origin/main` |
 | Agent Work Cycle + Project Context Index | context inventory وtargeted SHA وapproval resume وcheckpoint/apply وdenial/conflict/no-op وpatch safety؛ delivery `fb5d93ec87939125373dd8c450d1195af50fc911`، local == `origin/main` |
 | Typed Agent WorkCycle IPC | context index وstart/resume/inspect/cancel وmalformed payload validation وduplicate protection؛ delivery `786ea0b888634742936f546431c4d1e7251495e0`، local == `origin/main` |
+| ApprovalStore وhydration | schema 004 وfull ticket round-trip وpending hydration وduplicate prevention وdecision persistence بعد restart؛ delivery pending commit |
 | Persistent Audit وHuman Gate | schema 003 وSqliteAuditTrail وredaction/restart وpending/decide fail-closed؛ delivery `ca7460d6c36ad64d98298d2e383d68e661f0869c`، local == `origin/main` |
 
-تم التحقق من `pnpm check` بـ76/76، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وrestart وHuman Gate وcomposition opt-in/restart/fallback وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. آخر delivery هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`، وlocal SHA مطابق لـ`origin/main`.
+تم التحقق من `pnpm check` بـ78/78، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration 004 وbackup/restore وredaction وrestart وHuman Gate وApprovalStore hydration وcomposition opt-in/restart/fallback وprofile lock lifecycle وProvider/Approval/route tests وContext/WorkCycle/Patch tests وIPC contract tests و`git diff --check` وJSON validation وsecret scan. آخر delivery مكتمل هو `ca7460d6c36ad64d98298d2e383d68e661f0869c`؛ شريحة Approval hydration قيد commit/push التوثيقي.
  شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
@@ -100,13 +101,13 @@
 
 ## الحدود الحالية
 
-يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. SQLite adapter مربوط اختياريًا بـ`createEmbeddedApplication` مع memory default وrestart persistence وexplicit fallback، ومسار `sqlite-profile` يطبق profile path policy وprofile locking الحصري. Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وtyped WorkCycle IPC وPersistent Audit وHuman Gate contracts منفذة كـapplication slices bounded فقط؛ لا يوجد بعد remote/local model adapter أو planner/critic أو approval hydration بعد restart أو Human Gate UI أو event streaming أو audit export/retention policy أو تشفير أو key management أو backup UX متكامل.
+يوجد الآن Electron shell أولي وtyped preload boundary مع CSP وsender validation وdesktop smoke، وproduction root picker منفذ عبر main-process dialog وcanonical validation ومدفوع عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`. SQLite adapter مربوط اختياريًا بـ`createEmbeddedApplication` مع memory default وrestart persistence وexplicit fallback، ومسار `sqlite-profile` يطبق profile path policy وprofile locking الحصري. Provider/Approval وProviderGateway وAgent Work Cycle وContext Index وtyped WorkCycle IPC وPersistent Audit وHuman Gate وApproval hydration contracts منفذة كـapplication slices bounded فقط؛ لا يوجد بعد remote/local model adapter أو planner/critic أو Human Gate UI أو event streaming أو audit export/retention policy أو تشفير أو key management أو backup UX متكامل.
  أضيف BoundedAgentRuntime وProviderGateway وApprovalWorkflow وAgentWorkCycle كـapplication slices bounded؛ لا يوجد بعد remote/local model adapter أو planner/critic أو terminal sandbox أو Metro process adapter أو Android doctor/ADB أو iOS Xcode adapter.
  المحاكي المدمج الحالي Lightweight Web/Fixture Preview مع `nativeFidelity: compatibility`، وليس React Native native renderer أو Metro runtime حقيقيًا. `preview.openProject` يعمل عبر in-memory typed IPC خلف Electron preload تجريبي، وليس production boundary النهائي بعد. OpenTo Desktop ما يزال `UNKNOWN / REQUIRES VALIDATION` لعدم وجود source رسمي قابل للتحقق.
 
 ## الخطوة التقنية التالية
 
-بعد إغلاق هذه الشريحة، الخطوة التقنية التالية هي approval hydration بعد restart وHuman Gate UI وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية. يأتي backup UX وencryption/key management عند الحاجة، مع إبقاء استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة.
+بعد إغلاق شريحة Approval hydration، الخطوة التقنية التالية هي Human Gate UI وevent streaming وaudit export/retention policy، ثم planner/critic وprovider adapters الفعلية. يأتي backup UX وencryption/key management عند الحاجة، مع إبقاء استكمال Lightweight Web Preview إلى آخر مراحل تصميم البيئة.
  لا يبدأ Android/iOS native قبل استقرار هذه الحدود وdoctor/resource contracts وقياسات الموارد، ولا تُشغّل scripts من مشاريع الهاتف تلقائيًا.
 
 

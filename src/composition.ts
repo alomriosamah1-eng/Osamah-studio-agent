@@ -9,8 +9,9 @@ import { InMemoryHumanGate } from "./application/human-gate.js";
 import { ResourcePolicy } from "./application/resource-policy.js";
 import type { ApplicationDependencies } from "./application/ports.js";
 import type { EventBus } from "./domain/events.js";
-import { FixedClock, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
+import { FixedClock, InMemoryApprovalStore, InMemoryAuditTrail, InMemoryCheckpointStore, InMemoryEventBus, InMemoryProviderRouteAudit, InMemoryRepositories, IncrementingIds } from "./infrastructure/in-memory.js";
 import { createSqliteApplicationStorage, type SqliteApplicationStorage } from "./infrastructure/sqlite.js";
+import type { ApprovalStore } from "./application/agent-contracts.js";
 import { FileProfileLock, resolveProfilePaths, type ProfileLock, type ProfilePaths } from "./infrastructure/profile-storage.js";
 import { GitStatusAdapter } from "./infrastructure/git-status.js";
 import { FilesystemPatchAdapter } from "./infrastructure/filesystem-patch.js";
@@ -67,9 +68,10 @@ const createPersistence = (options: EmbeddedApplicationOptions): {
   readonly storageFallbackReason?: "sqlite_initialization_failed";
   readonly profilePaths?: ProfilePaths;
   readonly profileLock?: ProfileLock;
+  readonly approvalStore: ApprovalStore;
 } => {
   const storage = options.storage ?? { kind: "memory" as const };
-  if (storage.kind === "memory") return { repositories: new InMemoryRepositories(), events: new InMemoryEventBus(), storageKind: "memory" };
+  if (storage.kind === "memory") return { repositories: new InMemoryRepositories(), events: new InMemoryEventBus(), approvalStore: new InMemoryApprovalStore(), storageKind: "memory" };
 
   const ids = new IncrementingIds();
   const profilePaths = storage.kind === "sqlite-profile" ? resolveProfilePaths({ userDataDirectory: storage.userDataDirectory, profileId: storage.profileId }) : undefined;
@@ -79,13 +81,14 @@ const createPersistence = (options: EmbeddedApplicationOptions): {
   try {
     if (profilePaths) profileLock = FileProfileLock.acquire(profilePaths.profileDirectory, profilePaths.lockPath);
     const sqlite = createSqliteApplicationStorage({ databasePath, migrationsPath }, ids);
-    return { repositories: sqlite.repositories, events: sqlite.events, sqlite, storageKind: "sqlite", profilePaths, profileLock };
+    return { repositories: sqlite.repositories, events: sqlite.events, approvalStore: sqlite.approvalStore, sqlite, storageKind: "sqlite", profilePaths, profileLock };
   } catch (error) {
     profileLock?.release();
     if (!storage.allowFallback) throw error;
     return {
       repositories: new InMemoryRepositories(),
       events: new InMemoryEventBus(),
+      approvalStore: new InMemoryApprovalStore(),
       storageKind: "memory",
       storageFallbackReason: "sqlite_initialization_failed",
       profilePaths,
@@ -98,7 +101,7 @@ export const createEmbeddedApplication = (options: EmbeddedApplicationOptions = 
   const foundation = createFoundationFromStorage(persistence.repositories, persistence.events);
   const resourcePolicy = new ResourcePolicy("low_memory");
   const auditTrail = persistence.sqlite?.audit ?? new InMemoryAuditTrail();
-  const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail);
+  const approvalWorkflow = new InMemoryApprovalWorkflow(foundation.dependencies, auditTrail, persistence.approvalStore);
   const humanGate = new InMemoryHumanGate(approvalWorkflow);
   const providerRouteAudit = new InMemoryProviderRouteAudit();
   const providerGateway = new ProviderGateway([], { audit: providerRouteAudit, now: () => foundation.dependencies.clock.now() });

@@ -5,6 +5,7 @@ import type {
   AgentActionRequest,
   AgentAuthorizationDecision,
   ApprovalTicket,
+  ApprovalStore,
   ApprovalWorkflowPort,
   AuditRecord,
   AuditTrail,
@@ -76,7 +77,10 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
   public constructor(
     private readonly dependencies: Pick<ApplicationDependencies, "approvals" | "events" | "clock" | "ids">,
     private readonly audit: AuditTrail,
-  ) {}
+    private readonly approvalStore: ApprovalStore = { save: () => undefined, list: () => [] },
+  ) {
+    for (const ticket of this.approvalStore.list(256)) this.hydrate(ticket);
+  }
 
   public authorize(input: AgentActionRequest, requestedApprovalId?: string): AgentAuthorizationDecision {
     const action = normalizeAction(input);
@@ -124,6 +128,7 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
     };
     this.tickets.set(id, ticket);
     this.actionToApproval.set(key, id);
+    this.approvalStore.save(ticket);
     const entity = createApproval({
       id,
       sessionId: sessionId(action.sessionId),
@@ -160,6 +165,7 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
     this.dependencies.events.publish({ type: "ApprovalResolved", approvalId: entity.id, decision, occurredAt: resolvedAt });
     const resolved: ApprovalTicket = { ...current, status: decision, resolvedAt };
     this.tickets.set(approvalIdValue, resolved);
+    this.approvalStore.save(resolved);
     this.appendAudit({
       action: resolved.action,
       correlationId: resolved.correlationId,
@@ -168,6 +174,28 @@ export class InMemoryApprovalWorkflow implements ApprovalWorkflowPort {
       reason: `Human approval decision: ${decision}.`,
     });
     return resolved;
+  }
+
+  private hydrate(ticket: ApprovalTicket): void {
+    try {
+      const action = normalizeAction(ticket.action);
+      const approvalIdValue = trimRequired(ticket.approvalId, "approvalId");
+      const correlationId = trimRequired(ticket.correlationId, "correlationId");
+      const createdAt = trimRequired(ticket.createdAt, "createdAt");
+      if (!["requested", "approved", "denied"].includes(ticket.status)) return;
+      const hydrated: ApprovalTicket = {
+        ...ticket,
+        approvalId: approvalIdValue,
+        correlationId,
+        action,
+        createdAt,
+        ...(ticket.resolvedAt ? { resolvedAt: trimRequired(ticket.resolvedAt, "resolvedAt") } : {}),
+      };
+      this.tickets.set(approvalIdValue, hydrated);
+      if (hydrated.status === "requested") this.actionToApproval.set(actionKey(action), approvalIdValue);
+    } catch {
+      // Corrupt persisted tickets remain inaccessible; execution stays fail-closed.
+    }
   }
 
   private appendAudit(input: {

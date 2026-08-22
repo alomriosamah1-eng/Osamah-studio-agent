@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { DomainEvent, EventBus } from "../domain/events.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
-import { sanitizeAuditText, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
+import { sanitizeAuditText, type ApprovalStore, type ApprovalTicket, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
 import type { ApprovalId, DeviceProfileId, PreviewSessionId, SessionId, WorkspaceId } from "../domain/primitives.js";
 import type {
   ApprovalRepository,
@@ -321,6 +321,40 @@ export class SqliteObservabilitySink implements ObservabilitySink {
   }
 }
 
+export class SqliteApprovalStore implements ApprovalStore {
+  public constructor(private readonly database: SqlExecutor) {}
+
+  public save(ticket: ApprovalTicket): void {
+    this.database.run(`INSERT INTO approval_tickets(approval_id, correlation_id, action_id, session_id, kind, risk, scope, idempotency_key, status, created_at, resolved_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(approval_id) DO UPDATE SET correlation_id=excluded.correlation_id, action_id=excluded.action_id, session_id=excluded.session_id,
+        kind=excluded.kind, risk=excluded.risk, scope=excluded.scope, idempotency_key=excluded.idempotency_key, status=excluded.status,
+        resolved_at=excluded.resolved_at`,
+    [ticket.approvalId, ticket.correlationId, ticket.action.actionId, ticket.action.sessionId, ticket.action.kind, ticket.action.risk, ticket.action.scope, ticket.action.idempotencyKey ?? null, ticket.status, ticket.createdAt, ticket.resolvedAt ?? null]);
+  }
+
+  public list(limit = 256): readonly ApprovalTicket[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
+    const rows = this.database.all<SqlRow>(`SELECT approval_id, correlation_id, action_id, session_id, kind, risk, scope, idempotency_key, status, created_at, resolved_at
+      FROM approval_tickets ORDER BY created_at DESC, approval_id DESC LIMIT ?`, [boundedLimit]);
+    return rows.map((row) => ({
+      approvalId: asString(row.approval_id, "approval_id"),
+      correlationId: asString(row.correlation_id, "correlation_id"),
+      action: {
+        actionId: asString(row.action_id, "action_id"),
+        sessionId: asString(row.session_id, "session_id"),
+        kind: asString(row.kind, "kind") as ApprovalTicket["action"]["kind"],
+        risk: asString(row.risk, "risk") as ApprovalTicket["action"]["risk"],
+        scope: asString(row.scope, "scope"),
+        ...(row.idempotency_key === null ? {} : { idempotencyKey: asString(row.idempotency_key, "idempotency_key") }),
+      },
+      status: asString(row.status, "status") as ApprovalTicket["status"],
+      createdAt: asString(row.created_at, "created_at"),
+      ...(row.resolved_at === null ? {} : { resolvedAt: asString(row.resolved_at, "resolved_at") }),
+    }));
+  }
+}
+
 export class SqliteAuditTrail implements AuditTrail {
   public constructor(private readonly database: SqlExecutor) {}
 
@@ -356,6 +390,7 @@ export interface SqliteApplicationStorage {
   readonly events: SqliteEventBus;
   readonly observability: SqliteObservabilitySink;
   readonly audit: SqliteAuditTrail;
+  readonly approvalStore: SqliteApprovalStore;
 }
 
 export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, ids: IdGenerator): SqliteApplicationStorage => {
@@ -364,5 +399,6 @@ export const createSqliteApplicationStorage = (options: SqliteDatabaseOptions, i
   const events = new SqliteEventBus(database, ids);
   const observability = new SqliteObservabilitySink(database);
   const audit = new SqliteAuditTrail(database);
-  return { database, repositories, events, observability, audit };
+  const approvalStore = new SqliteApprovalStore(database);
+  return { database, repositories, events, observability, audit, approvalStore };
 };

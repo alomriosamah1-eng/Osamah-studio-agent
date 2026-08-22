@@ -1,5 +1,5 @@
 import type { DomainEvent, EventBus } from "../domain/events.js";
-import { sanitizeAuditText, type AuditRecord, type AuditTrail } from "../application/agent-contracts.js";
+import { sanitizeAuditText, type ApprovalStore, type AuditRecord, type AuditTrail, type ApprovalTicket } from "../application/agent-contracts.js";
 import type { ProviderRouteAudit, ProviderRouteAuditRecord } from "../application/provider-contracts.js";
 import type { Checkpoint, CheckpointStore } from "../application/agent-work-cycle.js";
 import type { AgentSession, ApprovalRequest, DeviceProfile, PreviewSession, Workspace } from "../domain/entities.js";
@@ -49,6 +49,19 @@ export class InMemoryRepositories {
   public readonly approvals: ApprovalRepository = this.approvalStore;
   public readonly devices: DeviceProfileRepository = this.deviceStore;
   public readonly previews: PreviewRepository = this.previewStore;
+}
+
+export class InMemoryApprovalStore implements ApprovalStore {
+  private readonly tickets = new Map<string, ApprovalTicket>();
+
+  public save(ticket: ApprovalTicket): void {
+    this.tickets.set(ticket.approvalId, ticket);
+  }
+
+  public list(limit = 256): readonly ApprovalTicket[] {
+    const boundedLimit = Math.max(1, Math.min(Math.floor(limit), 256));
+    return [...this.tickets.values()].slice(-boundedLimit).reverse();
+  }
 }
 
 export class InMemoryCheckpointStore implements CheckpointStore {
