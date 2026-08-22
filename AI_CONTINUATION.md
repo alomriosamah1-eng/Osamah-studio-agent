@@ -8,7 +8,7 @@ Osamah Studio Agent منصة Desktop محلية أولًا تجمع Intelligent 
 
 أصبح المستودع Foundation قابلًا للاختبار مع محاكي هاتف مدمج داخل Workspace وtyped IPC وProject Preview Runtime وPresentation Renderer وElectron shell معزولة. أضيفت شريحة SQLite adapter وobservability وbackup/restore ثم دُفعت إلى `origin/main` عند `0c51c1e00726afa798182ade0e6dc16ab627eba7`، مع تطابق local وremote SHA. آخر delivery مدفوع قبل هذه الشريحة هو `ddeb5edc939c107f808339c480cf7535f1150595`.
 
-نتيجة الاختبار الحالية: `pnpm check` يمر بـ`53/53` اختبارًا. أضيفت profile path policy وexclusive lock محليًا عبر `sqlite-profile`، والـfull gate والدفع ما زالا مطلوبين قبل إعلان الإغلاق.
+نتيجة الاختبار الحالية: `pnpm check` يمر بـ`53/53` اختبارًا. أضيفت profile path policy وexclusive lock عبر `sqlite-profile`، واجتازت full gate، ودُفعت عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع تطابق local وremote SHA.
  validator يمر بـ`SQLITE_MIGRATION_VALID=true`، migration count `2`، schema version `002`. اجتازت slice الأداء `pnpm build` و`pnpm performance:smoke` تحت V8 heap 768MB، وJSON validation وsecret heuristic وdesktop smoke؛ سجل الأداء low_memory وReact Native → lightweight_web وpreview حوالي 10ms وheap delta حوالي 0.3MB وRSS delta حوالي 3.1MB، مع root picker `DESKTOP_ROOT_PICKER_SMOKE=PASS` وcomposition SQLite opt-in/restart/fallback PASS و`PERFORMANCE_FINAL_GATE=PASS`.
 
 ## المعمارية
@@ -46,11 +46,11 @@ python3 scripts/validate_sqlite_migration.py
 git diff --check
 ```
 
-بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق مدفوع قبل الشريحة الحالية هو `e9a892a42e394b92e4708847f01eafc9205b70ae`؛ profile storage يحتاج full gate ثم push verification.
+بعد أي تعديل تالٍ نفّذ secret scan الموجود في المشروع، ثم `git status --short`، ثم commit، ثم `git push origin main`، ثم `git rev-parse HEAD` و`git ls-remote origin refs/heads/main` وتحقق من تطابق القيمتين. آخر تحقق مدفوع هو `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true` وlocal == `origin/main`.
 
 ## ما يزال مؤجلًا
 
-SQLite adapter مربوط اختياريًا داخل `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، ودُفعت الشريحة عند `e9a892a42e394b92e4708847f01eafc9205b70ae` مع تطابق local وremote SHA. أضيف محليًا `sqlite-profile` مع profile paths قياسية و`FileProfileLock` حصري ورفض IDs غير الآمنة، وتغطيه 53/53 tests.
+SQLite adapter مربوط اختياريًا داخل `createEmbeddedApplication({ storage })`؛ memory هو default، وSQLite opt-in، وfallback صريح، و`close()` idempotent، مع UUID event IDs وcleanup عند initialization failure، ودُفعت الشريحة عند `e9a892a42e394b92e4708847f01eafc9205b70ae` مع تطابق local وremote SHA. أضيف `sqlite-profile` مع profile paths قياسية و`FileProfileLock` حصري ورفض IDs غير الآمنة، ودُفعت الشريحة عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff` مع 53/53 tests وfull gate ناجح.
  لم يُنفذ FTS5 أو object store أو Provider Gateway أو terminal sandbox أو production packaging الموقّع. Web Preview الحالي lightweight compatibility mapping وليس React Native Web/Metro parity كاملة؛ ولم تُنفذ Android doctor/ADB أو macOS-only iOS adapter. لا يوجد بعد stale-lock cleanup تلقائي أو encryption/key management أو backup UX متكامل.
 
 ## التسلسل التالي
@@ -61,4 +61,4 @@ SQLite adapter مربوط اختياريًا داخل `createEmbeddedApplication
 
 OpenTo Desktop ما زال بلا source رسمي قابل للتحقق. يلزم تحديد React renderer، browser-metro/Snack integration، دعم EAS/remote، hardware baseline، وسياسة multi-device concurrency، وتشفير backup وkey management. يجب أن تظل الأسئلة في project state حتى يجيب المالك أو يظهر مصدر موثوق.
 
-إعداد: Manus AI. آخر تحديث: 2026-08-22.
+إعداد: Manus AI. آخر تحديث: 2026-08-22. آخر delivery: `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true`.

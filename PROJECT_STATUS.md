@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | profile storage code والاختبارات والتوثيق المحلي قيد بوابة الإغلاق والدفع |
+| حالة الشجرة | نظيفة بعد دفع profile storage؛ local == `origin/main` |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `53/53` اختبارًا؛ full gate قيد التنفيذ في 2026-08-22 |
+| آخر فحص مكتمل | `pnpm check` ناجح، `53/53` اختبارًا؛ full gate وGitHub push verification ناجحان في 2026-08-22 |
 | schema الحالي | migration `001` ثم `002`، schema version `002` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -64,7 +64,7 @@
 | secret scan | `SECRET_SCAN=PASS` |
 | desktop smoke | `DESKTOP_ROOT_PICKER_SMOKE=PASS` و`DESKTOP_SMOKE=PASS` و`DESKTOP_IPC_SMOKE=PASS` |
 | composition SQLite | opt-in/restart/fallback/close lifecycle PASS؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery pending full gate |
+| profile storage | deterministic paths وunsafe-ID rejection وexclusive lock وidempotent release وcomposition reopen PASS؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 
 ## العمل المتبقي
 
@@ -78,4 +78,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true`.

@@ -79,9 +79,9 @@
 | Lightweight Web Preview + Resource Governance | `ProjectKind`، React/React Native general detection، source/module/asset limits، low-memory policy، latest-only refresh، bounded agent runtime؛ `performance:smoke` ناجح تحت V8 heap 768MB؛ delivery `b9089efee33a174c3958a9295853623beae27503` |
 | Production Root Picker | main-process `dialog.showOpenDialog` بخاصية `openDirectory`، typed preload، trusted sender، canonical path validation، وroot-picker desktop smoke؛ delivery `197424dc6cbc1f02b92011903f5bbce77e819f6c` |
 | Optional SQLite Composition | `createEmbeddedApplication({ storage })` مع memory default، SQLite opt-in، restart persistence، explicit fallback، idempotent close، وUUID event IDs؛ delivery `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| Profile Path Policy + Exclusive Lock | `sqlite-profile`، مسارات profile قياسية، unsafe-ID rejection، قفل `wx` حصري، ownership-token release، واختبارات composition lifecycle؛ delivery pending full gate |
+| Profile Path Policy + Exclusive Lock | `sqlite-profile`، مسارات profile قياسية، unsafe-ID rejection، قفل `wx` حصري، ownership-token release، واختبارات composition lifecycle؛ delivery `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`، local == `origin/main` |
 
-تم التحقق من `pnpm check` بـ53/53، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback وprofile lock lifecycle و`git diff --check` وJSON validation وsecret scan.
+تم التحقق من `pnpm check` بـ53/53، و`pnpm build` و`pnpm desktop:smoke` مع `DESKTOP_ROOT_PICKER_SMOKE=PASS`، و`pnpm performance:smoke` وSQLite migration وbackup/restore وredaction وcomposition opt-in/restart/fallback وprofile lock lifecycle و`git diff --check` وJSON validation وsecret scan. تطابق local و`origin/main` عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`.
  شريحة الأداء السابقة مدفوعة عند `b9089efee33a174c3958a9295853623beae27503`، root picker عند `197424dc6cbc1f02b92011903f5bbce77e819f6c`، وSQLite composition عند `e9a892a42e394b92e4708847f01eafc9205b70ae`، مع تطابق local و`origin/main`.
 
 ## الخطة التنفيذية المعتمدة
@@ -101,4 +101,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/36-foundation-implementation-plan.md`.
 
-إعداد: Manus AI. تاريخ التسليم: 2026-08-22.
+إعداد: Manus AI. تاريخ التسليم: 2026-08-22. آخر delivery: `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`؛ `GITHUB_PUSH_VERIFIED=true`.

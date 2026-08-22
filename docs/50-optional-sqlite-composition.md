@@ -1,6 +1,6 @@
 # Optional SQLite Composition وProfile Lifecycle
 
-**الحالة:** منفذ ومدفوع ومتحقق منه عند `e9a892a42e394b92e4708847f01eafc9205b70ae`.
+**الحالة:** منفذ ومدفوع ومتحقق منه عند `e9a892a42e394b92e4708847f01eafc9205b70ae`. استُكملت profile path policy وexclusive lock في `docs/51-profile-path-policy.md` عند `e8c4ecca95dd51659b30d62f740c1f67ca5701ff`.
 
 **النطاق:** ربط `SqliteApplicationStorage` داخل composition عند طلب صريح، مع إبقاء in-memory backend هو الافتراضي، ودعم fallback اختياري عند فشل تهيئة profile.
 
@@ -27,10 +27,11 @@ createEmbeddedApplication({
 |---|---|
 | لا توجد options | `storageKind = "memory"`، ولا SQLite connection |
 | `kind: "memory"` | in-memory repositories وevent bus كما في المسار السابق |
-| `kind: "sqlite"` مع profile سليم | تطبيق migrations ثم repositories وpersistent event bus وobservability |
+| `kind: "sqlite"` مع profile سليم | تطبيق migrations ثم repositories وpersistent event bus وobservability؛ المسار الخام لا يفرض lock تلقائيًا للتوافق الخلفي |
 | SQLite initialization failure مع `allowFallback: true` | إغلاق connection إن فُتح، ثم إنشاء in-memory backend مع `storageFallbackReason` typed |
 | SQLite initialization failure دون fallback | تمرير الخطأ إلى caller بدل إخفائه أو التحول الصامت إلى backend آخر |
-| إغلاق application | `close()` idempotent ويغلق SQLite connection مرة واحدة |
+| `kind: "sqlite-profile"` | يطبق المسارات القياسية والقفل الحصري؛ التفاصيل في `docs/51-profile-path-policy.md` |
+| إغلاق application | `close()` idempotent ويغلق SQLite connection مرة واحدة، ويطلق profile lock عند استخدام `sqlite-profile` |
 
 تطبق composition نفس `ResourcePolicy("low_memory")` في كلا المسارين. لذلك لا يؤدي اختيار SQLite إلى تغيير حدود preview أو agent queue أو زيادة concurrency. تبقى default profiles ضمن application lifecycle نفسه، بينما يعاد حفظها إلى SQLite فقط في مسار opt-in.
 
@@ -52,12 +53,12 @@ createEmbeddedApplication({
 | fallback opt-in | PASS؛ backend يتحول إلى memory مع reason واضح |
 | fallback disabled | PASS؛ initialization error لا يُخفى |
 | close idempotency | PASS؛ الإغلاق المتكرر لا يرمي خطأ |
-| full suite | `50/50` اختبارًا ناجحًا |
+| full suite | `53/53` اختبارًا ناجحًا |
 | performance smoke | PASS؛ `low_memory` وpreview compatibility ضمن حدود السلسلة السابقة |
 
 ## الحدود الحالية
 
-لا يحدد هذا التغيير بعد profile path تلقائيًا من OS app-data، ولا يضيف encryption key management أو profile locking متعدد العمليات. كما لا يربط SQLite بعد بproduction root picker أو release packaging؛ يجب أن تأتي هذه الخطوة بعد تعريف profile ownership وmigration recovery وbackup UX. لا تزال FTS5 وobject store وprovider integrations مؤجلة.
+هذا التغيير لا يضيف encryption/key management أو backup UX متكاملًا، ولا يعالج stale-lock recovery تلقائيًا. أصبحت profile path policy وprofile locking الحصري منفذين لمسار `sqlite-profile` في الوثيقة التالية. كما لا يربط SQLite بعد بrelease packaging؛ لا تزال FTS5 وobject store وprovider integrations مؤجلة.
 
 ## الملفات
 
