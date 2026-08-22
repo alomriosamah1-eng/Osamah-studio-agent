@@ -570,6 +570,125 @@
     renderItems('taskCritiqueList', critiqueItems, result.critique.accepted ? 'No blocking critique issues.' : 'Critique blocked this preview.', 'task-review-item ' + (result.critique.accepted ? 'warning' : 'blocking'));
   };
 
+  let selectedSourceId = '';
+  const renderCitations = (citations) => {
+    const list = $('citationList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!citations.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No citations registered for this source.';
+      list.append(empty);
+      return;
+    }
+    citations.slice(0, 16).forEach((citation) => {
+      const item = document.createElement('div');
+      item.className = 'citation-item';
+      const location = citation.page ? `page ${citation.page}` : citation.section || (citation.span ? `span ${citation.span.start}-${citation.span.end}` : 'location not supplied');
+      item.textContent = `${citation.label} · ${citation.verificationState}\n${location}${citation.quotePreview ? `\n${citation.quotePreview}` : ''}`;
+      list.append(item);
+    });
+  };
+  const loadSourceCitations = async (sourceId) => {
+    selectedSourceId = sourceId;
+    if (typeof window.osamah?.dispatch !== 'function') {
+      renderCitations([]);
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('production-citation-list'),
+      correlationId: nextRequest('production-citation-list-correlation'),
+      method: 'production.citation.list',
+      payload: { sourceId, limit: 16 },
+    });
+    if (!response.ok) {
+      $('sourceRegistryStatus').textContent = `Citation request rejected: ${response.error.message}`;
+      log(`production.citation.list_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderCitations(response.result);
+    $('sourceRegistryStatus').textContent = `${response.result.length} citation(s) loaded · source ${sourceId}`;
+  };
+  const renderSources = (sources) => {
+    const list = $('sourceList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!sources.length) {
+      const empty = document.createElement('div');
+      empty.className = 'source-empty';
+      empty.textContent = 'No production sources yet.';
+      list.append(empty);
+      renderCitations([]);
+      return;
+    }
+    sources.slice(0, 64).forEach((source) => {
+      const item = document.createElement('div');
+      item.className = `source-item${source.sourceId === selectedSourceId ? ' active' : ''}`;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = `${source.title || source.kind}\n${source.locator}\n${source.verificationState} · ${source.bytes === undefined ? 'bytes unknown' : `${source.bytes} bytes`} · ${source.sha256 ? `sha256 ${source.sha256.slice(0, 12)}…` : 'no hash'}`;
+      button.onclick = () => { void loadSourceCitations(source.sourceId); };
+      item.append(button);
+      list.append(item);
+    });
+  };
+  const loadSources = async () => {
+    if (typeof window.osamah?.dispatch !== 'function') {
+      renderSources([]);
+      $('sourceRegistryStatus').textContent = 'Desktop IPC unavailable; no source was fetched or registered.';
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('production-source-list'),
+      correlationId: nextRequest('production-source-list-correlation'),
+      method: 'production.source.list',
+      payload: { limit: 64 },
+    });
+    if (!response.ok) {
+      $('sourceRegistryStatus').textContent = `Source list rejected: ${response.error.message}`;
+      log(`production.source.list_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    renderSources(response.result);
+    $('sourceRegistryStatus').textContent = `${response.result.length} source(s) · local registry · no fetch`;
+  };
+  const registerCurrentSource = async () => {
+    if (!currentRoot || !currentDocument || typeof window.osamah?.dispatch !== 'function') {
+      $('sourceRegistryStatus').textContent = 'Open a selected project file in Electron before registering its reference.';
+      log('production.source.register_unavailable', 'warn');
+      return;
+    }
+    const response = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: nextRequest('production-source-register'),
+      correlationId: nextRequest('production-source-register-correlation'),
+      method: 'production.source.register',
+      payload: {
+        kind: 'workspace_document',
+        locator: `workspace://${currentDocument.relativePath}`,
+        title: `${currentDocument.relativePath} reference`,
+        contentType: 'text/plain',
+        bytes: currentDocument.bytes,
+        sha256: currentDocument.sha256,
+        verificationState: 'content_validated',
+        warnings: ['Reference registered explicitly; citation remains unverified.'],
+      },
+    });
+    if (!response.ok) {
+      $('sourceRegistryStatus').textContent = `Source registration rejected: ${response.error.message}`;
+      log(`production.source.register_rejected ${response.error.message}`, 'warn');
+      return;
+    }
+    selectedSourceId = response.result.sourceId;
+    $('sourceRegistryStatus').textContent = `Registered locally · ${response.result.sourceId} · no fetch/export`;
+    log(`production.source.registered ${response.result.locator} · no mutation`, 'ok');
+    await loadSources();
+    await loadSourceCitations(response.result.sourceId);
+  };
+
   const previewCurrentTask = async () => {
     if (!currentRoot || typeof window.osamah?.dispatch !== 'function') {
       $('taskReviewStatus').textContent = 'Select a project root in Electron before requesting task review.';
@@ -661,6 +780,7 @@
         log(`project.root_selected ${rootName}`, 'ok');
         await loadProjectTree(result.rootPath);
         await loadGitStatus();
+        await loadSources();
       } else {
         $('projectState').textContent = 'root selection failed';
         $('rightStatus').textContent = 'Root picker error';
@@ -679,6 +799,8 @@
   $('proposeDiff').onclick = () => { void proposeEditorDiff(); };
   $('inspectTerminal').onclick = () => { void inspectTerminalPolicy(); };
   $('reviewTask').onclick = () => { void previewCurrentTask(); };
+  $('registerCurrentSource').onclick = () => { void registerCurrentSource(); };
+  $('refreshSources').onclick = () => { void loadSources(); };
   $('refreshGit').onclick = () => { void loadGitStatus(); };
   $('editorBuffer').addEventListener('input', () => {
     if (currentDocument) $('editorState').textContent = 'modified buffer · proposal only';
@@ -748,6 +870,52 @@
         offlineMode: true,
       },
     });
+    const sourceBytes = projectFileResponse.ok && projectFileResponse.result ? projectFileResponse.result.bytes : 1;
+    const sourceSha = projectFileResponse.ok && projectFileResponse.result ? projectFileResponse.result.sha256 : '0'.repeat(64);
+    const sourceRegisterResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-source-register',
+      correlationId: 'desktop-smoke-production-source',
+      method: 'production.source.register',
+      payload: {
+        kind: 'workspace_document',
+        locator: 'workspace://app/index.tsx',
+        title: 'Desktop smoke source',
+        contentType: 'text/typescript',
+        bytes: sourceBytes,
+        sha256: sourceSha,
+        verificationState: 'content_validated',
+        warnings: ['Desktop smoke reference; citation is unverified.'],
+      },
+    });
+    const sourceListResponse = await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-source-list',
+      correlationId: 'desktop-smoke-production-source',
+      method: 'production.source.list',
+      payload: { limit: 8 },
+    });
+    const citationResponse = sourceRegisterResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-citation-add',
+      correlationId: 'desktop-smoke-production-source',
+      method: 'production.citation.add',
+      payload: { sourceId: sourceRegisterResponse.result.sourceId, label: 'Desktop smoke span', span: { start: 0, end: Math.min(sourceBytes, 128) }, verificationState: 'unverified' },
+    }) : { ok: false };
+    const citationListResponse = sourceRegisterResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-citation-list',
+      correlationId: 'desktop-smoke-production-source',
+      method: 'production.citation.list',
+      payload: { sourceId: sourceRegisterResponse.result.sourceId, limit: 8 },
+    }) : { ok: false };
+    const provenanceListResponse = sourceRegisterResponse.ok ? await window.osamah.dispatch({
+      protocolVersion: 1,
+      requestId: 'desktop-smoke-provenance-list',
+      correlationId: 'desktop-smoke-production-source',
+      method: 'production.provenance.list',
+      payload: { entityId: sourceRegisterResponse.result.sourceId, limit: 8 },
+    }) : { ok: false };
     const editorOpenResponse = await window.osamah.dispatch({
       protocolVersion: 1,
       requestId: 'desktop-smoke-editor-open',
@@ -875,7 +1043,9 @@
       && taskPreviewResponse.result.critique.accepted
       && taskPreviewResponse.result.warnings.every((warning) => typeof warning === 'string');
     const taskPreviewNoApprovalPassed = taskPreviewResponse.ok && approvalResponse.ok && approvalResponse.result.length === 1;
-    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
+    const sourceRegistryPassed = sourceRegisterResponse.ok && sourceListResponse.ok && sourceListResponse.result.length === 1 && sourceRegisterResponse.result.verificationState === 'content_validated' && citationResponse.ok && citationListResponse.ok && citationListResponse.result.length === 1 && provenanceListResponse.ok && provenanceListResponse.result.length === 0;
+    const sourceRegistryNoMutationPassed = sourceRegistryPassed && approvalResponse.ok && approvalResponse.result.length === 1;
+    console.log(response.ok && approvalFlowPassed && providerFlowPassed && providerPlannerPassed && explorerPassed && gitPassed && editorPassed && terminalPassed && taskPreviewPassed && taskPreviewNoApprovalPassed && sourceRegistryPassed && sourceRegistryNoMutationPassed && rootPickerPassed && streamReady ? 'DESKTOP_IPC_SMOKE=PASS' : 'DESKTOP_IPC_SMOKE=FAIL');
   };
 
   renderCode();
@@ -883,5 +1053,6 @@
   subscribeToApprovalEvents();
   void loadPendingApprovals();
   void loadProviders();
+  void loadSources();
   void runDesktopSmoke();
 })();

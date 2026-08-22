@@ -1,5 +1,25 @@
 # سجل التغييرات
 
+## [Unreleased] — Production Studio: Source Registry وProvenance
+
+### Added
+
+- `SourceRegistryPort` و`SourceRecord` و`CitationRecord` و`ProvenanceLink` مع `InMemorySourceRegistry` bounded وdeduplication وSHA-256/bytes validation وverification states.
+- typed IPC methods `production.source.register` و`production.source.list` و`production.citation.add` و`production.citation.list` و`production.provenance.list` مع fail-closed validators للـmetadata والـspans والحدود.
+- Workspace Production Studio Sources panel لتسجيل مرجع الملف المحدد وعرض metadata/hash/citations عبر `textContent`، دون fetch أو upload أو export أو startup network.
+- توثيق القرار المعماري ونتائج مراجع W3C PROV-DM وC2PA في `docs/69-production-studio-source-registry.md` و`research/production-provenance-findings-01.md`.
+
+### Verified
+
+- `pnpm check`: `141/141` اختبارًا ناجحًا.
+- `pnpm build` و`pnpm desktop:smoke` و`pnpm performance:smoke`: PASS؛ Source Registry IPC وno-network/no-mutation desktop smoke PASS.
+- SQLite migration وJSON validation وsyntax و`git diff --check` وsecret scan: PASS.
+
+### Boundaries
+
+- Source Registry الحالي in-memory وreview-only؛ لا توجد persistence SQLite للمصادر أو web crawling أو browser fetch أو C2PA signing أو key management أو artifact export.
+- `verificationState` يصف حالة metadata/content validation فقط، ولا يثبت صحة claim أو citation قانونيًا أو علميًا.
+
 ## [Unreleased] — Project Context وAgent Task Review Panel
 
 ### Added

@@ -12,6 +12,7 @@ import type { GitDiffResult, GitReadOnlyPort, GitStatusSnapshot } from "../appli
 import type { ApprovalTicket } from "../application/agent-contracts.js";
 import type { LocalProviderConfig, LocalProviderId, ProviderDoctorReport } from "../application/provider-policy.js";
 import type { AgentTaskPreviewRequest, AgentTaskPreviewResult } from "../application/agent-task-preview.js";
+import type { AddCitationRequest, CitationRecord, RegisterSourceRequest, SourceRecord, SourceRegistryPort, ProvenanceLink } from "../application/source-registry.js";
 
 export type IpcMethod = keyof IpcMethodMap;
 
@@ -52,6 +53,11 @@ export interface IpcMethodMap {
   "device.get": { payload: { deviceProfileId: DeviceProfileId }; result: DeviceProfile };
   "context.index": { payload: { rootPath: string }; result: ProjectContextSnapshot };
   "task.preview": { payload: AgentTaskPreviewRequest; result: AgentTaskPreviewResult };
+  "production.source.register": { payload: RegisterSourceRequest; result: SourceRecord };
+  "production.source.list": { payload: { limit?: number }; result: readonly SourceRecord[] };
+  "production.citation.add": { payload: AddCitationRequest; result: CitationRecord };
+  "production.citation.list": { payload: { sourceId: string; limit?: number }; result: readonly CitationRecord[] };
+  "production.provenance.list": { payload: { entityId: string; limit?: number }; result: readonly ProvenanceLink[] };
   "project.tree": { payload: { rootPath: string }; result: ProjectTreeResult };
   "file.openText": { payload: { rootPath: string; relativePath: string }; result: WorkspaceFileContent | undefined };
   "editor.open": { payload: { rootPath: string; relativePath: string }; result: DocumentSnapshot | undefined };
@@ -206,6 +212,36 @@ const isTaskPreviewPayload = (value: unknown): boolean => isRecord(value)
   && (value.providerId === undefined || isString(value.providerId, 256))
   && (value.modelId === undefined || isString(value.modelId, 256))
   && (value.offlineMode === undefined || typeof value.offlineMode === "boolean");
+const isSourceKindPayload = (value: unknown): boolean => value === "local_file" || value === "user_url" || value === "generated_artifact" || value === "workspace_document";
+const isVerificationStatePayload = (value: unknown): boolean => value === "unverified" || value === "metadata_validated" || value === "content_validated" || value === "invalid";
+const isSourceRegisterPayload = (value: unknown): boolean => isRecord(value)
+  && isSourceKindPayload(value.kind)
+  && isString(value.locator, 2_048)
+  && (value.title === undefined || isString(value.title, 512))
+  && (value.contentType === undefined || isString(value.contentType, 128))
+  && (value.bytes === undefined || (typeof value.bytes === "number" && Number.isSafeInteger(value.bytes) && value.bytes >= 0 && value.bytes <= 128 * 1024 * 1024))
+  && (value.sha256 === undefined || (isString(value.sha256, 64) && /^[a-f0-9]{64}$/iu.test(value.sha256)))
+  && (value.capturedAt === undefined || isString(value.capturedAt, 128))
+  && (value.verificationState === undefined || isVerificationStatePayload(value.verificationState))
+  && (value.warnings === undefined || isStringArray(value.warnings, 16, 512));
+const isSourceListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit > 0 && value.limit <= 256));
+const isCitationSpanPayload = (value: unknown): boolean => isRecord(value)
+  && typeof value.start === "number" && Number.isSafeInteger(value.start) && value.start >= 0
+  && typeof value.end === "number" && Number.isSafeInteger(value.end) && value.end >= value.start && value.end - value.start <= 64 * 1024;
+const isCitationAddPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.sourceId, 256)
+  && isString(value.label, 256)
+  && (value.span === undefined || isCitationSpanPayload(value.span))
+  && (value.page === undefined || (typeof value.page === "number" && Number.isSafeInteger(value.page) && value.page > 0 && value.page <= 1_000_000))
+  && (value.section === undefined || isString(value.section, 512))
+  && (value.quotePreview === undefined || (typeof value.quotePreview === "string" && value.quotePreview.length > 0 && value.quotePreview.length <= 2_000 && !value.quotePreview.includes("\u0000")))
+  && (value.verificationState === undefined || isVerificationStatePayload(value.verificationState));
+const isCitationListPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.sourceId, 256)
+  && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit > 0 && value.limit <= 256));
+const isProvenanceListPayload = (value: unknown): boolean => isRecord(value)
+  && isString(value.entityId, 256)
+  && (value.limit === undefined || (typeof value.limit === "number" && Number.isSafeInteger(value.limit) && value.limit > 0 && value.limit <= 256));
 const isWorkCycleIdPayload = (value: unknown): boolean => isRecord(value) && isString(value.cycleId, 256);
 const isApprovalListPayload = (value: unknown): boolean => isRecord(value) && (value.limit === undefined || (typeof value.limit === "number" && Number.isInteger(value.limit) && value.limit > 0 && value.limit <= 64));
 const isApprovalDecisionPayload = (value: unknown): boolean => isRecord(value) && isString(value.approvalId, 256) && (value.decision === "approved" || value.decision === "denied");
@@ -230,6 +266,11 @@ const isMethodPayload = (method: string, payload: unknown): boolean => {
   if (!isRecord(payload)) return false;
   if (method === "context.index") return isString(payload.rootPath, 4096);
   if (method === "task.preview") return isTaskPreviewPayload(payload);
+  if (method === "production.source.register") return isSourceRegisterPayload(payload);
+  if (method === "production.source.list") return isSourceListPayload(payload);
+  if (method === "production.citation.add") return isCitationAddPayload(payload);
+  if (method === "production.citation.list") return isCitationListPayload(payload);
+  if (method === "production.provenance.list") return isProvenanceListPayload(payload);
   if (method === "project.tree") return isProjectTreePayload(payload);
   if (method === "file.openText") return isFileOpenTextPayload(payload);
   if (method === "editor.open") return isEditorOpenPayload(payload);

@@ -21,6 +21,7 @@ import type { ProjectContextSnapshot } from "./application/project-context.js";
 import type { GitDiffResult, GitStatusSnapshot } from "./application/git-read-only.js";
 import type { WorkCycleResult } from "./application/agent-work-cycle.js";
 import type { AgentTaskPreviewResult } from "./application/agent-task-preview.js";
+import type { CitationRecord, ProvenanceLink, SourceRecord } from "./application/source-registry.js";
 import { defaultLocalProviderConfig } from "./application/provider-policy.js";
 import { OllamaProviderAdapter } from "./infrastructure/local-http-provider.js";
 import { FixtureProviderAdapter } from "./infrastructure/fixture-provider.js";
@@ -88,6 +89,42 @@ test("typed IPC opens a filesystem project and starts the embedded preview", asy
   } as const) as IpcResponse<PreviewInspection>;
   assert.equal(inspected.ok, true);
   if (inspected.ok) assert.equal(inspected.result.bundle?.projectId, "filesystem-ipc-fixture");
+});
+
+test("typed IPC registers and lists production sources without network or filesystem mutation", async () => {
+  const root = await mkdtemp(join(tmpdir(), "osamah-ipc-source-"));
+  const app = createEmbeddedApplication();
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = (async () => { fetchCalls += 1; throw new Error("fetch must not be called"); }) as typeof fetch;
+  try {
+    await writeFile(join(root, "brief.md"), "local brief\n");
+    const registered = await app.ipc.dispatch({ protocolVersion: 1, requestId: "source-register-1", correlationId: "source-1", method: "production.source.register", payload: { kind: "workspace_document", locator: "workspace://brief.md", title: "Brief", contentType: "text/markdown", bytes: 12, sha256: "a".repeat(64), verificationState: "content_validated" } } as const) as IpcResponse<SourceRecord>;
+    assert.equal(registered.ok, true);
+    if (!registered.ok) return;
+    assert.equal(registered.result.locator, "workspace://brief.md");
+    const listed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "source-list-1", correlationId: "source-1", method: "production.source.list", payload: { limit: 8 } } as const) as IpcResponse<readonly SourceRecord[]>;
+    assert.equal(listed.ok, true);
+    if (!listed.ok) return;
+    assert.equal(listed.result.length, 1);
+    const citation = await app.ipc.dispatch({ protocolVersion: 1, requestId: "citation-add-1", correlationId: "source-1", method: "production.citation.add", payload: { sourceId: registered.result.sourceId, label: "Brief line", span: { start: 0, end: 11 }, quotePreview: "local brief", verificationState: "unverified" } } as const) as IpcResponse<CitationRecord>;
+    assert.equal(citation.ok, true);
+    if (!citation.ok) return;
+    const citations = await app.ipc.dispatch({ protocolVersion: 1, requestId: "citation-list-1", correlationId: "source-1", method: "production.citation.list", payload: { sourceId: registered.result.sourceId, limit: 8 } } as const) as IpcResponse<readonly CitationRecord[]>;
+    assert.equal(citations.ok, true);
+    const link = await app.ipc.dispatch({ protocolVersion: 1, requestId: "provenance-list-1", correlationId: "source-1", method: "production.provenance.list", payload: { entityId: registered.result.sourceId, limit: 8 } } as const) as IpcResponse<readonly ProvenanceLink[]>;
+    assert.equal(link.ok, true);
+    assert.equal(fetchCalls, 0);
+    assert.equal(await readFile(join(root, "brief.md"), "utf8"), "local brief\n");
+    const malformed = await app.ipc.dispatch({ protocolVersion: 1, requestId: "source-malformed-1", correlationId: "source-1", method: "production.source.register", payload: { kind: "user_url", locator: "https://example.test", verificationState: "content_validated" } } as const);
+    assert.equal(malformed.ok, false);
+    const unsafeQuote = await app.ipc.dispatch({ protocolVersion: 1, requestId: "citation-unsafe-1", correlationId: "source-1", method: "production.citation.add", payload: { sourceId: registered.result.sourceId, label: "bad\u0000label" } } as const);
+    assert.equal(unsafeQuote.ok, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    app.close();
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("typed IPC lists a bounded project tree and opens text through the safe reader", async () => {
