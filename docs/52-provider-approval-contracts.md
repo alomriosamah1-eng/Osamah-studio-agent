@@ -1,6 +1,6 @@
 # Provider وApproval Contracts حول Agent Runtime
 
-**الحالة:** منفذة محليًا بعد إغلاق Profile Storage، والاختبارات وfull gate ناجحة؛ قيد commit والدفع في هذه الشريحة.
+**الحالة:** منفذة ومدفوعة ومتحقق منها عند `c833f0e9c37cfaa1800aa9fcc300881984ab6878`؛ local == `origin/main`.
 
 **النطاق:** إضافة عقود typed لفعل الوكيل، وبوابة موافقة قابلة للتدقيق، وProvider Gateway محلي bounded. لا تضيف هذه الشريحة مزودًا شبكيًا أو نموذجًا محليًا أو تحميلًا تلقائيًا عند إقلاع Desktop.
 
