@@ -11,9 +11,9 @@
 | آخر commit الأداء السابق | `b9089efee33a174c3958a9295853623beae27503` (`feat: add lightweight preview and resource governance`) |
 | آخر commit root picker السابق | `197424dc6cbc1f02b92011903f5bbce77e819f6c` (`feat: add production root picker`) |
 | حالة SQLite composition الحالية | opt-in wiring منفذة ومدفوعة ومتحقق منها عند `e9a892a42e394b92e4708847f01eafc9205b70ae` |
-| حالة الشجرة | Planner/Critic وschema 004 منفذة محليًا وقيد commit/push؛ كل الشرائح السابقة مدفوعة ومتحقق منها على `origin/main` |
+| حالة الشجرة | Planner/Critic وschema 004 منفذة ومدفوعة ومتحقق منها على `origin/main`؛ الخطوة التالية provider adapters الفعلية |
 | الإصدار المحلي | `0.6.0`؛ لا يوجد bump إصدار release في هذه الشريحة |
-| آخر فحص مكتمل | `pnpm check` ناجح، `86/86` اختبارًا؛ full gate للشريحة الحالية ناجح وقيد commit/push |
+| آخر فحص مكتمل | `pnpm check` ناجح، `86/86` اختبارًا؛ full gate وGitHub verification ناجحتان في 2026-08-22 |
 | schema الحالي | migrations `001` ثم `002` ثم `003` ثم `004`، schema version `004` |
 | SQLite driver | `node:sqlite` / `DatabaseSync` من Node.js 22.13، بلا dependency native إضافية |
 | خطة التنفيذ | `docs/45-master-implementation-plan.md` و`project/master-implementation-plan.json`؛ 18 مرحلة مرتبة |
@@ -72,7 +72,7 @@
 | typed workcycle IPC | context index وstart/resume/inspect/cancel وruntime payload validation وduplicate protection PASS؛ delivery `786ea0b888634742936f546431c4d1e7251495e0`، local == `origin/main` |
 | Human Gate UI/event stream | `approval.changed` contract وpreload filter/unsubscribe وWorkspace panel وdesktop smoke callback PASS؛ delivery `0b5acbf136d168fb43312379f44846c1075c802f`، local == `origin/main` |
 | Audit Export/Retention | NDJSON/manifest/SHA/redaction/destination safety وage/count bounded purge PASS؛ delivery `5cf3d03605215ee2160473afee4c77585f0e9f61`، local == `origin/main` |
-| Planner/Critic | bounded plan generation وwarnings وunsafe target/byte mismatch/duplicate step rejection وWorkCycle no-mutation guard PASS؛ delivery pending commit |
+| Planner/Critic | bounded plan generation وwarnings وunsafe target/byte mismatch/duplicate step rejection وWorkCycle no-mutation guard PASS؛ delivery `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`، local == `origin/main` |
 
 ## العمل المتبقي
 
@@ -87,4 +87,4 @@
 
 للتسليم إلى وكيل أو مهندس لاحق، ابدأ بقراءة `AI_CONTINUATION.md` ثم `PROJECT_STATE.md` ثم `docs/45-master-implementation-plan.md` و`docs/47-sqlite-adapter-implementation.md`.
 
-آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `5cf3d03605215ee2160473afee4c77585f0e9f61`؛ Planner/Critic قيد commit/push.
+آخر تحديث: 2026-08-22. إعداد: Manus AI. آخر delivery: `a946ad2c168d1d0c8ee3812c4c26a6bb0b61d912`؛ Planner/Critic مدفوع ومتحقق منه.
